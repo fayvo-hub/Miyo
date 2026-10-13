@@ -4644,7 +4644,7 @@ dependencies = [
 
 [[package]]
 name = "rustfox"
-version = "0.0.34"
+version = "0.0.35"
 dependencies = [
  "fox-tauri",
  "serde",
