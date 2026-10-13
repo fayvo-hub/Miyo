@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://weihubeats.github.io/RustFox/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/"/>
@@ -12,7 +12,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/zh/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/"/>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/"/>
@@ -21,7 +21,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/user-guide/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/user-guide/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
@@ -30,7 +30,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/en/user-guide/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/user-guide/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
@@ -39,7 +39,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/migration/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/migration/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
@@ -48,7 +48,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/en/migration/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/migration/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
@@ -57,7 +57,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/agent/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/agent/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
@@ -66,7 +66,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/en/agent/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/agent/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
@@ -75,7 +75,7 @@
   </url>
   <url>
     <loc>https://weihubeats.github.io/RustFox/docs/changelog/</loc>
-    <lastmod>2026-09-24</lastmod>
+    <lastmod>2026-10-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>

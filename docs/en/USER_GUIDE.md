@@ -84,6 +84,19 @@ Workspace layout:
 - Shortcut overview: the toolbar "keyboard" icon or Ctrl+/ opens shortcut help.
 - All project data stays on your machine (see section 10); back up / restore anytime from Settings.
 
+### 3.1 Teams & team sync
+
+Projects are grouped by **team** (teams are plain project containers for now — no member roles yet):
+
+- **Team management**: on the dashboard, "Team manage" creates / renames / deletes teams (a team with projects cannot be deleted). The create-project dialog picks or creates a team inline; the team header "New" pre-selects that team.
+- **Sync remote**: open a project → "Team sync" to configure one git repo for the team (SSH `git@host:path` or HTTP(S)). Multiple projects in a team — and different teams — can share the same repo; snapshots live side by side as `projects/{project-id}.json`. S3 / DB remotes are coming soon.
+- **Push**: sends the project's full snapshot (endpoints / environments / mock / test cases) to the team remote. Credentials are **redacted automatically** before pushing (tokens / passwords / API keys never leave your machine), and the filtered list is shown afterwards.
+- **Pull**: preview the endpoint-level diff (added / removed / modified) first; nothing is overwritten until you confirm. A local snapshot is archived automatically beforehand (under `sync/backups/` in the data dir) so you can roll back. Local credentials are restored after pulling.
+- **Import new projects**: the team header "Sync" on the dashboard browses all project snapshots on the remote and imports a teammate's new project as a local project in one click.
+
+> Sync is an **explicit snapshot action**, not real-time collaboration: local SQLite stays the single source of truth and you trigger push/pull yourself.
+> Credentials never leave your machine (pushed redacted), and the workspace fully reloads after a pull overwrite.
+
 ## 4. Writing & sending requests (core)
 
 Workspace layout:
@@ -238,6 +251,7 @@ Everything lives under the system data directory / RustFox:
 - `rustfox.db`: main database (projects/endpoints/environments/mock rules/history)
 - `master.key`: encryption key for environment variables (**do not delete**)
 - `backups/`, `exports/`: backup and export directories
+- `sync/`: local clone cache of team sync remotes; `sync/backups/` holds the auto-archives taken before a pull overwrite
 - `snapshots/`: automatic pre-upgrade snapshots (5 kept, copy back to roll back)
 - `logs/`: app runtime logs (viewable in the Settings "Logs" tab)
 
