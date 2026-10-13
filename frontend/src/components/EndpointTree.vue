@@ -171,6 +171,21 @@ if (!inheritedIndex) {
   provide(TREE_INDEX, childIndex)
 }
 
+// ---------- 子树惰性挂载 ----------
+// 首次展开前不创建子实例（大目录导入时全量递归挂载会拖垮首屏）；
+// 展开过即保持挂载（v-show 隐藏），保住嵌套展开态与行内编辑态。
+// 搜索命中时临时挂载但不记录：清词后自动卸载，DOM 回到最小态。
+// 非响应式 Set：写入时机恒为「expanded 变更触发的当次渲染」，无需再触发。
+const mountedEver = new Set<string>()
+function ensureMounted(id: string): boolean {
+  if (expanded.value.has(id)) {
+    mountedEver.add(id)
+    return true
+  }
+  if (searchActive.value) return true
+  return mountedEver.has(id)
+}
+
 // ---------- 接口搜索（实时过滤） ----------
 const query = computed(() => props.search.trim().toLowerCase())
 const searchActive = computed(() => query.value.length > 0)
@@ -903,6 +918,7 @@ function onBatchMenuSelect(item: MenuItem): void {
       </div>
       <div v-show="expanded.has(f.id) || searchActive" class="tree-children" role="group">
         <EndpointTree
+          v-if="ensureMounted(f.id)"
           :folder-id="f.id"
           :search="props.search"
           :expand-tick="props.expandTick"
