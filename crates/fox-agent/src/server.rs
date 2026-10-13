@@ -209,6 +209,7 @@ async fn resolve_project(
                 name: "Agent 导入".into(),
                 description: "由 AI Agent 自动创建".into(),
                 variables: Default::default(),
+                team_id: Some(fox_core::model::DEFAULT_TEAM_ID),
                 created_at: now,
                 updated_at: now,
             };
@@ -502,6 +503,7 @@ mod tests {
                     name: name.into(),
                     description: String::new(),
                     variables: Default::default(),
+                    team_id: None,
                     created_at: now,
                     updated_at: now,
                 },
@@ -537,6 +539,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
+            team_id: None,
             created_at: now,
             updated_at: now,
         };

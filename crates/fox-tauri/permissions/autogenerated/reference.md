@@ -111,6 +111,19 @@ RustFox 核心插件的默认权限：允许前端调用全部 fox 命令
 - `allow-update-test-case-content`
 - `allow-update-test-case-status`
 - `allow-delete-test-case`
+- `allow-list-teams`
+- `allow-create-team`
+- `allow-update-team`
+- `allow-delete-team`
+- `allow-move-project-to-team`
+- `allow-sync-remote-list`
+- `allow-sync-remote-create`
+- `allow-sync-remote-delete`
+- `allow-sync-push`
+- `allow-sync-pull-preview`
+- `allow-sync-pull-apply`
+- `allow-sync-remote-list-projects`
+- `allow-sync-import-project`
 
 ## Permission Table
 
@@ -462,6 +475,32 @@ Denies the cookie_list command without any pre-configured scope.
 <tr>
 <td>
 
+`fox-tauri:allow-create-team`
+
+</td>
+<td>
+
+Enables the create_team command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-create-team`
+
+</td>
+<td>
+
+Denies the create_team command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fox-tauri:allow-delete-endpoint`
 
 </td>
@@ -663,6 +702,32 @@ Enables the delete_seq_counter command without any pre-configured scope.
 <td>
 
 Denies the delete_seq_counter command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-delete-team`
+
+</td>
+<td>
+
+Enables the delete_team command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-delete-team`
+
+</td>
+<td>
+
+Denies the delete_team command without any pre-configured scope.
 
 </td>
 </tr>
@@ -1658,6 +1723,32 @@ Denies the list_seq_counters command without any pre-configured scope.
 <tr>
 <td>
 
+`fox-tauri:allow-list-teams`
+
+</td>
+<td>
+
+Enables the list_teams command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-list-teams`
+
+</td>
+<td>
+
+Denies the list_teams command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fox-tauri:allow-list-test-cases`
 
 </td>
@@ -1885,6 +1976,32 @@ Enables the mock_stop command without any pre-configured scope.
 <td>
 
 Denies the mock_stop command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-move-project-to-team`
+
+</td>
+<td>
+
+Enables the move_project_to_team command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-move-project-to-team`
+
+</td>
+<td>
+
+Denies the move_project_to_team command without any pre-configured scope.
 
 </td>
 </tr>
@@ -2594,6 +2711,214 @@ Denies the sse_disconnect command without any pre-configured scope.
 <tr>
 <td>
 
+`fox-tauri:allow-sync-import-project`
+
+</td>
+<td>
+
+Enables the sync_import_project command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-import-project`
+
+</td>
+<td>
+
+Denies the sync_import_project command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-pull-apply`
+
+</td>
+<td>
+
+Enables the sync_pull_apply command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-pull-apply`
+
+</td>
+<td>
+
+Denies the sync_pull_apply command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-pull-preview`
+
+</td>
+<td>
+
+Enables the sync_pull_preview command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-pull-preview`
+
+</td>
+<td>
+
+Denies the sync_pull_preview command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-push`
+
+</td>
+<td>
+
+Enables the sync_push command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-push`
+
+</td>
+<td>
+
+Denies the sync_push command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-remote-create`
+
+</td>
+<td>
+
+Enables the sync_remote_create command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-remote-create`
+
+</td>
+<td>
+
+Denies the sync_remote_create command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-remote-delete`
+
+</td>
+<td>
+
+Enables the sync_remote_delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-remote-delete`
+
+</td>
+<td>
+
+Denies the sync_remote_delete command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-remote-list`
+
+</td>
+<td>
+
+Enables the sync_remote_list command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-remote-list`
+
+</td>
+<td>
+
+Denies the sync_remote_list command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-sync-remote-list-projects`
+
+</td>
+<td>
+
+Enables the sync_remote_list_projects command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-sync-remote-list-projects`
+
+</td>
+<td>
+
+Denies the sync_remote_list_projects command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `fox-tauri:allow-test-collection`
 
 </td>
@@ -2691,6 +3016,32 @@ Enables the update_projects_order command without any pre-configured scope.
 <td>
 
 Denies the update_projects_order command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:allow-update-team`
+
+</td>
+<td>
+
+Enables the update_team command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`fox-tauri:deny-update-team`
+
+</td>
+<td>
+
+Denies the update_team command without any pre-configured scope.
 
 </td>
 </tr>

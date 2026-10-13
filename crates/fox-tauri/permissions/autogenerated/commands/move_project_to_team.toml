@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-move-project-to-team"
+description = "Enables the move_project_to_team command without any pre-configured scope."
+commands.allow = ["move_project_to_team"]
+
+[[permission]]
+identifier = "deny-move-project-to-team"
+description = "Denies the move_project_to_team command without any pre-configured scope."
+commands.deny = ["move_project_to_team"]

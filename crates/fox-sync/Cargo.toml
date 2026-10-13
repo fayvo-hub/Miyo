@@ -1,0 +1,21 @@
+[package]
+name = "fox-sync"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "团队同步：快照推/拉（git / S3 / db 远端传输）"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+fox-core = { path = "../fox-core" }
+fox-backup = { path = "../fox-backup" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }

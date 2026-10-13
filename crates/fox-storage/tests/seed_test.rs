@@ -11,13 +11,42 @@ async fn seeds_full_fixture_set() {
     let db = memory_pool().await.unwrap();
     seed_dev_data(&db).await.unwrap();
 
-    // 项目 3 个，全部以「小奏技术」品牌命名
+    // 项目 9 个（3 个完整演示 + 6 个轻量补位），全部以「小奏技术」品牌命名
     let projects = repo::list_projects(&db).await.unwrap();
-    assert_eq!(projects.len(), 3);
+    assert_eq!(projects.len(), 9);
     assert!(
         projects.iter().all(|p| p.name.contains("小奏技术")),
         "所有种子项目名都应包含品牌「小奏技术」"
     );
+
+    // 团队：默认团队（迁移 0015）+ 平台组 + 业务组；项目按团队分组展示
+    let teams = repo::list_teams(&db).await.unwrap();
+    assert_eq!(teams.len(), 3);
+    let platform = teams
+        .iter()
+        .find(|t| t.name == "小奏技术 · 平台组")
+        .expect("平台组存在");
+    let business = teams
+        .iter()
+        .find(|t| t.name == "小奏技术 · 业务组")
+        .expect("业务组存在");
+    let count_in = |team_id: uuid::Uuid| -> usize {
+        projects
+            .iter()
+            .filter(|p| p.team_id == Some(team_id))
+            .count()
+    };
+    assert_eq!(count_in(platform.id), 3, "平台组 3 个项目");
+    assert_eq!(count_in(business.id), 3, "业务组 3 个项目");
+    assert_eq!(
+        projects
+            .iter()
+            .filter(|p| p.team_id == Some(fox_core::model::DEFAULT_TEAM_ID))
+            .count(),
+        3,
+        "默认团队 3 个项目"
+    );
+
     let users = projects
         .iter()
         .find(|p| p.name == "小奏技术 · 用户服务")

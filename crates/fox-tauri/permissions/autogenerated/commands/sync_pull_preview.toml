@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-sync-pull-preview"
+description = "Enables the sync_pull_preview command without any pre-configured scope."
+commands.allow = ["sync_pull_preview"]
+
+[[permission]]
+identifier = "deny-sync-pull-preview"
+description = "Denies the sync_pull_preview command without any pre-configured scope."
+commands.deny = ["sync_pull_preview"]

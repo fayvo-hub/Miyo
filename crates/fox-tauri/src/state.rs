@@ -405,6 +405,7 @@ mod tests {
             name: name.into(),
             description: String::new(),
             variables: Default::default(),
+            team_id: None,
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
         }

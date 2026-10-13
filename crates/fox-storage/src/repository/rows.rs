@@ -12,6 +12,7 @@ pub(crate) struct ProjectRow {
     pub(crate) name: String,
     pub(crate) description: String,
     pub(crate) variables_json: String,
+    pub(crate) team_id: Option<String>,
     pub(crate) created_at: String,
     pub(crate) updated_at: String,
 }
@@ -23,6 +24,7 @@ impl ProjectRow {
             name: model.name.clone(),
             description: model.description.clone(),
             variables_json: serde_json::to_string(&model.variables).unwrap_or_else(|_| "{}".into()),
+            team_id: model.team_id.map(|v| v.to_string()),
             created_at: model.created_at.to_rfc3339(),
             updated_at: model.updated_at.to_rfc3339(),
         }
@@ -34,6 +36,7 @@ impl ProjectRow {
             name: self.name,
             description: self.description,
             variables: serde_json::from_str(&self.variables_json).unwrap_or_default(),
+            team_id: self.team_id.map(|v| parse_uuid(&v)).transpose()?,
             created_at: parse_time(&self.created_at)?,
             updated_at: parse_time(&self.updated_at)?,
         })

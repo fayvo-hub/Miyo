@@ -107,6 +107,19 @@ const COMMANDS: &[&str] = &[
     "update_test_case_content",
     "update_test_case_status",
     "delete_test_case",
+    "list_teams",
+    "create_team",
+    "update_team",
+    "delete_team",
+    "move_project_to_team",
+    "sync_remote_list",
+    "sync_remote_create",
+    "sync_remote_delete",
+    "sync_push",
+    "sync_pull_preview",
+    "sync_pull_apply",
+    "sync_remote_list_projects",
+    "sync_import_project",
 ];
 
 fn main() {

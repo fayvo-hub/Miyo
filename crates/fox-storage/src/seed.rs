@@ -37,23 +37,111 @@ const KEY_ACTIVE_ENVIRONMENT_PREFIX: &str = "active_environment_id:";
 
 /// 开发启动时清库后的种子写入入口。
 pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
+    // ---- 团队（默认团队由迁移 0015 创建，这里补两个演示团队） ----
+    let team_platform = repo::create_team(db, "小奏技术 · 平台组").await?;
+    let team_business = repo::create_team(db, "小奏技术 · 业务组").await?;
+
     // ---- 项目 ----
     let users = project(
         "小奏技术 · 用户服务",
         "小奏技术内部用户服务演示：账号与鉴权接口。启动 Mock 服务后，\
          开发环境下基址 http://127.0.0.1:4010 的接口可直接调试。",
+        Some(team_platform.id),
     );
     let open_demo = project(
         "小奏技术 · 开放演示",
         "小奏技术开放 API 演示：后端指向公网 JSONPlaceholder（jsonplaceholder.typicode.com），\
          无需 Mock 即可直接发送体验。",
+        Some(team_business.id),
     );
     let graphql = project(
         "小奏技术 · GraphQL 网关",
         "小奏技术 GraphQL 网关演示：接入公共 GraphQL 服务（countries.trevorblades.com），用于测试 GraphQL 工作台。",
+        None, // 默认团队
     );
     for p in [&users, &open_demo, &graphql] {
         repo::save_project(db, p).await?;
+    }
+
+    // ---- 轻量演示项目（每团队补几个，凑足分组展示的数据量） ----
+    // 只给 2-3 个真实公网端点，不铺 Mock / 测试用例，保持种子数据精简。
+    for (name, desc, team_id, endpoints) in [
+        (
+            "小奏技术 · 网关服务",
+            "API 网关配置演示：路由与限流接口（指向 JSONPlaceholder 占位）。",
+            Some(team_platform.id),
+            vec![
+                ("GET", "/routes", "网关路由列表"),
+                ("POST", "/routes", "新增路由"),
+            ],
+        ),
+        (
+            "小奏技术 · 监控告警",
+            "监控告警演示：告警规则 CRUD（指向 httpbin.org 公网调试服务）。",
+            Some(team_platform.id),
+            vec![
+                ("GET", "/alerts", "告警规则列表"),
+                ("PUT", "/alerts/{id}", "更新告警规则"),
+            ],
+        ),
+        (
+            "小奏技术 · 支付中心",
+            "支付中心演示：下单 / 退款接口（指向 jsonplaceholder 占位）。",
+            Some(team_business.id),
+            vec![
+                ("POST", "/orders", "创建支付订单"),
+                ("POST", "/refunds", "发起退款"),
+            ],
+        ),
+        (
+            "小奏技术 · 营销活动",
+            "营销活动演示：活动投放接口（指向 httpbin.org 公网调试服务）。",
+            Some(team_business.id),
+            vec![
+                ("GET", "/campaigns", "活动列表"),
+                ("POST", "/campaigns", "创建活动"),
+            ],
+        ),
+        (
+            "小奏技术 · 数据大屏",
+            "数据大屏演示：指标查询接口（指向 JSONPlaceholder 占位）。",
+            None, // 默认团队
+            vec![
+                ("GET", "/metrics", "大屏指标聚合"),
+                ("GET", "/metrics/trend", "趋势数据"),
+            ],
+        ),
+        (
+            "小奏技术 · 文档中心",
+            "文档中心演示：文档发布接口（指向 httpbin.org 公网调试服务）。",
+            None, // 默认团队
+            vec![("GET", "/docs", "文档列表"), ("POST", "/docs", "发布文档")],
+        ),
+    ] {
+        let p = project(name, desc, team_id);
+        repo::save_project(db, &p).await?;
+        for (i, (method, path, ep_desc)) in endpoints.into_iter().enumerate() {
+            let method = match method {
+                "POST" => HttpMethod::POST,
+                "PUT" => HttpMethod::PUT,
+                _ => HttpMethod::GET,
+            };
+            repo::save_endpoint(
+                db,
+                &endpoint(
+                    &p,
+                    None,
+                    ep_desc,
+                    method,
+                    path,
+                    ep_desc,
+                    EndpointStatus::Released,
+                    i as i64,
+                    RequestSpec::default(),
+                ),
+            )
+            .await?;
+        }
     }
 
     // ---- 用户服务：文件夹 + 接口 + 响应示例 + Mock 规则 ----
@@ -770,13 +858,14 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
 
 /* ---------- 构造辅助 ---------- */
 
-fn project(name: &str, description: &str) -> Project {
+fn project(name: &str, description: &str, team_id: Option<Uuid>) -> Project {
     let now = Utc::now();
     Project {
         id: Uuid::new_v4(),
         name: name.to_string(),
         description: description.to_string(),
         variables: HashMap::new(),
+        team_id: team_id.or(Some(fox_core::model::DEFAULT_TEAM_ID)),
         created_at: now,
         updated_at: now,
     }

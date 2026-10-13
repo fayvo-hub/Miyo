@@ -6,7 +6,7 @@ use chrono::Utc;
 use sqlx::SqlitePool;
 use uuid::Uuid;
 
-use fox_core::model::Project;
+use fox_core::model::{Project, DEFAULT_TEAM_ID};
 use fox_core::{AppError, Result};
 
 use super::rows::ProjectRow;
@@ -18,6 +18,8 @@ pub async fn create_project(db: &SqlitePool, name: &str, description: &str) -> R
         name: name.to_string(),
         description: description.to_string(),
         variables: HashMap::new(),
+        // 未显式指定团队的项目归入默认团队。
+        team_id: Some(DEFAULT_TEAM_ID),
         created_at: now,
         updated_at: now,
     };
@@ -28,8 +30,8 @@ pub async fn create_project(db: &SqlitePool, name: &str, description: &str) -> R
             .await?;
     let row = ProjectRow::from_model(&model);
     sqlx::query(
-        "INSERT INTO projects (id, name, description, variables_json, created_at, updated_at, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO projects (id, name, description, variables_json, created_at, updated_at, sort_order, team_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(&row.id)
     .bind(&row.name)
@@ -38,6 +40,7 @@ pub async fn create_project(db: &SqlitePool, name: &str, description: &str) -> R
     .bind(row.created_at.clone())
     .bind(row.updated_at.clone())
     .bind(sort_order)
+    .bind(row.team_id.clone())
     .execute(db)
     .await?;
     Ok(model)
@@ -47,7 +50,7 @@ pub async fn list_projects<'e>(
     executor: impl sqlx::Executor<'e, Database = sqlx::Sqlite>,
 ) -> Result<Vec<Project>> {
     let rows: Vec<ProjectRow> = sqlx::query_as(
-        "SELECT id, name, description, variables_json, created_at, updated_at
+        "SELECT id, name, description, variables_json, team_id, created_at, updated_at
          FROM projects ORDER BY sort_order ASC, created_at ASC",
     )
     .fetch_all(executor)
@@ -103,7 +106,7 @@ pub async fn update_projects_order(db: &SqlitePool, project_ids: &[Uuid]) -> Res
 
 pub async fn get_project(db: &SqlitePool, project_id: Uuid) -> Result<Project> {
     let row: Option<ProjectRow> = sqlx::query_as(
-        "SELECT id, name, description, variables_json, created_at, updated_at
+        "SELECT id, name, description, variables_json, team_id, created_at, updated_at
          FROM projects WHERE id = ?",
     )
     .bind(project_id.to_string())
@@ -119,13 +122,14 @@ pub async fn update_project(db: &SqlitePool, project: &Project) -> Result<Projec
     updated.updated_at = Utc::now();
     let row = ProjectRow::from_model(&updated);
     let result = sqlx::query(
-        "UPDATE projects SET name = ?, description = ?, variables_json = ?, updated_at = ?
+        "UPDATE projects SET name = ?, description = ?, variables_json = ?, updated_at = ?, team_id = ?
          WHERE id = ?",
     )
     .bind(&row.name)
     .bind(&row.description)
     .bind(row.variables_json.clone())
     .bind(row.updated_at.clone())
+    .bind(&row.team_id)
     .bind(&row.id)
     .execute(db)
     .await?;
@@ -143,6 +147,40 @@ pub async fn delete_project(db: &SqlitePool, project_id: Uuid) -> Result<()> {
     Ok(())
 }
 
+/// 同步拉取覆盖：删除项目全部子对象（文件夹树 CASCADE 一并清掉），
+/// 供快照整体重写前清场。项目本体保留。
+pub async fn delete_project_children(
+    executor: &mut sqlx::SqliteConnection,
+    project_id: Uuid,
+) -> Result<()> {
+    let pid = project_id.to_string();
+    // 文件夹级联（子文件夹 + 其下接口）由外键 ON DELETE CASCADE 完成；
+    // 这里显式删各顶层表，覆盖未走 CASCADE 的历史边角。
+    for table in [
+        "environments",
+        "mock_rules",
+        "proto_files",
+        "request_histories",
+        "test_runs",
+    ] {
+        sqlx::query(&format!("DELETE FROM {table} WHERE project_id = ?"))
+            .bind(&pid)
+            .execute(&mut *executor)
+            .await?;
+    }
+    // 接口及其从属（示例/用例）：先按 project_id 删接口，从属表 CASCADE。
+    sqlx::query("DELETE FROM endpoints WHERE project_id = ?")
+        .bind(&pid)
+        .execute(&mut *executor)
+        .await?;
+    // 文件夹最后删（接口已随 endpoints 表删净）。
+    sqlx::query("DELETE FROM folders WHERE project_id = ?")
+        .bind(&pid)
+        .execute(&mut *executor)
+        .await?;
+    Ok(())
+}
+
 /// 备份恢复：按给定 id 原样写入项目。
 /// 带 id：原样写入项目（upsert，同一 id 重复保存时更新而非报主键冲突）。
 pub async fn save_project<'e>(
@@ -151,13 +189,14 @@ pub async fn save_project<'e>(
 ) -> Result<()> {
     let row = ProjectRow::from_model(project);
     sqlx::query(
-        "INSERT INTO projects (id, name, description, variables_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)
+        "INSERT INTO projects (id, name, description, variables_json, created_at, updated_at, team_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
             name = excluded.name,
             description = excluded.description,
             variables_json = excluded.variables_json,
-            updated_at = excluded.updated_at",
+            updated_at = excluded.updated_at,
+            team_id = excluded.team_id",
     )
     .bind(&row.id)
     .bind(&row.name)
@@ -165,6 +204,7 @@ pub async fn save_project<'e>(
     .bind(&row.variables_json)
     .bind(row.created_at.clone())
     .bind(row.updated_at.clone())
+    .bind(&row.team_id)
     .execute(executor)
     .await?;
     Ok(())

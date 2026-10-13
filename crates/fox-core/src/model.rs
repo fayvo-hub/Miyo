@@ -639,6 +639,45 @@ impl Default for RequestSpec {
     }
 }
 
+/// 默认团队 id：与迁移 0015 中插入的固定 id 一致，勿改。
+pub const DEFAULT_TEAM_ID: Uuid = Uuid::from_u128(1);
+
+/// 团队：现阶段仅作为项目的容器（schema 预留，后续扩展成员/权限）。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Team {
+    pub id: Uuid,
+    pub name: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+/// 同步远端类型（存储层枚举，与 fox-sync::RemoteKind 对应）。
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SyncRemoteKind {
+    Git,
+    S3,
+    Db,
+}
+
+/// 团队同步远端：团队绑定的快照仓库（git / S3 / db）。
+///
+/// 一个团队一个远端路径（不同团队可复用同一路径）；推/拉按项目触发，
+/// 同一仓库内按 `projects/{project_id}.json` 分文件存放各项目快照。
+/// `config` 为 RemoteConfig（fox-sync）的 JSON（含 kind tag），存储层不解析内容。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SyncRemote {
+    pub id: Uuid,
+    pub team_id: Uuid,
+    pub kind: SyncRemoteKind,
+    pub config: serde_json::Value,
+    /// 上次成功同步的远端 revision。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_synced_revision: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
 /// 项目。
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Project {
@@ -646,6 +685,9 @@ pub struct Project {
     pub name: String,
     pub description: String,
     pub variables: HashMap<String, String>,
+    /// 所属团队：None 视为默认团队（兼容无团队信息的旧备份 v3）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_id: Option<Uuid>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

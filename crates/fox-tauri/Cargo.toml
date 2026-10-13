@@ -23,6 +23,7 @@ fox-codegen = { path = "../fox-codegen" }
 fox-mock = { path = "../fox-mock" }
 fox-agent = { path = "../fox-agent" }
 fox-backup = { path = "../fox-backup" }
+fox-sync = { path = "../fox-sync" }
 fox-grpc = { path = "../fox-grpc" }
 fox-openapi = { path = "../fox-openapi" }
 fox-test = { path = "../fox-test" }

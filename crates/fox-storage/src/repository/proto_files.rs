@@ -153,6 +153,7 @@ mod tests {
                 name: "proto 测试项目".into(),
                 description: String::new(),
                 variables: Default::default(),
+                team_id: None,
                 created_at: Utc::now(),
                 updated_at: Utc::now(),
             },

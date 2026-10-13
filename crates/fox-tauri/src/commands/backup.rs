@@ -72,6 +72,12 @@ pub async fn backup_export(state: State<'_, AppState>, project_id: Uuid) -> Comm
         .flatten()
         .collect();
 
+    // 团队元数据（v4）：项目归属团队随备份走，缺失（老项目）时为空。
+    let team = match project.team_id {
+        Some(tid) => repo::get_team(&state.db, tid).await.ok(),
+        None => None,
+    };
+
     let file = build_backup(&BackupInput {
         project: &project,
         folders: &folders,
@@ -84,6 +90,7 @@ pub async fn backup_export(state: State<'_, AppState>, project_id: Uuid) -> Comm
         settings: &settings,
         global_variables: &global_variables,
         global_params: &global_params,
+        team: &team,
     });
     file.serialize().map_err(Into::into)
 }
@@ -108,6 +115,10 @@ pub async fn backup_restore(
         .await
         .map_err(fox_core::AppError::Database)?;
     let result: fox_core::Result<()> = async {
+        // v4 备份带团队元数据：先 upsert 团队（项目 team_id 外键引用它）。
+        if let Some(team) = &file.team {
+            repo::save_team(tx.as_mut(), team).await?;
+        }
         repo::save_project(tx.as_mut(), &restored.project).await?;
         // 每类实体一条多值 INSERT（每批 200 行，事务内），替代原来逐行
         // INSERT：N 行从 N 次往返降到 ceil(N/200) 次，原子性不变。

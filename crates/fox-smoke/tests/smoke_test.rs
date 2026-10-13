@@ -271,6 +271,7 @@ async fn openapi_roundtrip_and_backup() {
         settings: &std::collections::HashMap::new(),
         global_variables: &[],
         global_params: &[],
+        team: &None,
     });
     let text = file.serialize().expect("序列化备份");
     assert!(text.contains("rustfox-project-backup"));

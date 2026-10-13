@@ -451,6 +451,18 @@
           "markdownDescription": "Denies the cookie_list command without any pre-configured scope."
         },
         {
+          "description": "Enables the create_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-create-team",
+          "markdownDescription": "Enables the create_team command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the create_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-create-team",
+          "markdownDescription": "Denies the create_team command without any pre-configured scope."
+        },
+        {
           "description": "Enables the delete_endpoint command without any pre-configured scope.",
           "type": "string",
           "const": "allow-delete-endpoint",
@@ -545,6 +557,18 @@
           "type": "string",
           "const": "deny-delete-seq-counter",
           "markdownDescription": "Denies the delete_seq_counter command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the delete_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-delete-team",
+          "markdownDescription": "Enables the delete_team command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the delete_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-delete-team",
+          "markdownDescription": "Denies the delete_team command without any pre-configured scope."
         },
         {
           "description": "Enables the delete_test_case command without any pre-configured scope.",
@@ -1003,6 +1027,18 @@
           "markdownDescription": "Denies the list_seq_counters command without any pre-configured scope."
         },
         {
+          "description": "Enables the list_teams command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-list-teams",
+          "markdownDescription": "Enables the list_teams command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the list_teams command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-list-teams",
+          "markdownDescription": "Denies the list_teams command without any pre-configured scope."
+        },
+        {
           "description": "Enables the list_test_cases command without any pre-configured scope.",
           "type": "string",
           "const": "allow-list-test-cases",
@@ -1109,6 +1145,18 @@
           "type": "string",
           "const": "deny-mock-stop",
           "markdownDescription": "Denies the mock_stop command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the move_project_to_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-move-project-to-team",
+          "markdownDescription": "Enables the move_project_to_team command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the move_project_to_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-move-project-to-team",
+          "markdownDescription": "Denies the move_project_to_team command without any pre-configured scope."
         },
         {
           "description": "Enables the oauth_access_token command without any pre-configured scope.",
@@ -1435,6 +1483,102 @@
           "markdownDescription": "Denies the sse_disconnect command without any pre-configured scope."
         },
         {
+          "description": "Enables the sync_import_project command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-import-project",
+          "markdownDescription": "Enables the sync_import_project command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_import_project command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-import-project",
+          "markdownDescription": "Denies the sync_import_project command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_pull_apply command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-pull-apply",
+          "markdownDescription": "Enables the sync_pull_apply command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_pull_apply command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-pull-apply",
+          "markdownDescription": "Denies the sync_pull_apply command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_pull_preview command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-pull-preview",
+          "markdownDescription": "Enables the sync_pull_preview command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_pull_preview command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-pull-preview",
+          "markdownDescription": "Denies the sync_pull_preview command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_push command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-push",
+          "markdownDescription": "Enables the sync_push command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_push command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-push",
+          "markdownDescription": "Denies the sync_push command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_remote_create command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-remote-create",
+          "markdownDescription": "Enables the sync_remote_create command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_remote_create command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-remote-create",
+          "markdownDescription": "Denies the sync_remote_create command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_remote_delete command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-remote-delete",
+          "markdownDescription": "Enables the sync_remote_delete command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_remote_delete command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-remote-delete",
+          "markdownDescription": "Denies the sync_remote_delete command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_remote_list command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-remote-list",
+          "markdownDescription": "Enables the sync_remote_list command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_remote_list command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-remote-list",
+          "markdownDescription": "Denies the sync_remote_list command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_remote_list_projects command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-remote-list-projects",
+          "markdownDescription": "Enables the sync_remote_list_projects command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_remote_list_projects command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-remote-list-projects",
+          "markdownDescription": "Denies the sync_remote_list_projects command without any pre-configured scope."
+        },
+        {
           "description": "Enables the test_collection command without any pre-configured scope.",
           "type": "string",
           "const": "allow-test-collection",
@@ -1481,6 +1625,18 @@
           "type": "string",
           "const": "deny-update-projects-order",
           "markdownDescription": "Denies the update_projects_order command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the update_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-update-team",
+          "markdownDescription": "Enables the update_team command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the update_team command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-update-team",
+          "markdownDescription": "Denies the update_team command without any pre-configured scope."
         },
         {
           "description": "Enables the update_test_case_content command without any pre-configured scope.",
@@ -1555,10 +1711,10 @@
           "markdownDescription": "Denies the ws_send command without any pre-configured scope."
         },
         {
-          "description": "RustFox 核心插件的默认权限：允许前端调用全部 fox 命令\n（项目 / 接口 / 文件夹 / 环境 / cURL 解析 / 请求执行）。\n命令的 allow-* 权限由 tauri-build 依据 invoke_handler 自动生成。\n\n#### This default permission set includes:\n\n- `allow-get-projects`\n- `allow-save-project`\n- `allow-update-projects-order`\n- `allow-delete-project`\n- `allow-set-active-project`\n- `allow-get-active-project`\n- `allow-list-project-stats`\n- `allow-list-endpoints`\n- `allow-get-endpoint`\n- `allow-save-endpoint`\n- `allow-delete-endpoint`\n- `allow-duplicate-endpoint`\n- `allow-list-folders`\n- `allow-save-folder`\n- `allow-delete-folder`\n- `allow-parse-curl-command`\n- `allow-list-environments`\n- `allow-save-environment`\n- `allow-set-active-environment`\n- `allow-get-active-environment`\n- `allow-delete-environment`\n- `allow-export-environment`\n- `allow-import-environment`\n- `allow-get-global-variables`\n- `allow-save-global-variables`\n- `allow-get-global-params`\n- `allow-save-global-params`\n- `allow-execute-request`\n- `allow-cancel-request`\n- `allow-get-response-body`\n- `allow-list-examples`\n- `allow-save-example`\n- `allow-delete-example`\n- `allow-oauth-authorize`\n- `allow-oauth-access-token`\n- `allow-codegen-render`\n- `allow-cookie-list`\n- `allow-cookie-clear`\n- `allow-clipboard-write-text`\n- `allow-list-request-histories`\n- `allow-clear-request-histories`\n- `allow-mock-start`\n- `allow-mock-stop`\n- `allow-mock-status`\n- `allow-mock-reload`\n- `allow-agent-start`\n- `allow-agent-stop`\n- `allow-agent-status`\n- `allow-get-mcp-enabled`\n- `allow-set-mcp-enabled`\n- `allow-get-mcp-port`\n- `allow-set-mcp-port`\n- `allow-backup-export`\n- `allow-backup-restore`\n- `allow-import-document`\n- `allow-read-text-file`\n- `allow-export-openapi`\n- `allow-export-docs`\n- `allow-export-smoke-docs`\n- `allow-save-text-file`\n- `allow-test-endpoint`\n- `allow-load-test`\n- `allow-cancel-load-test`\n- `allow-test-collection`\n- `allow-cancel-test-collection`\n- `allow-log-files`\n- `allow-log-tail`\n- `allow-log-dir-path`\n- `allow-get-log-retention-days`\n- `allow-set-log-retention-days`\n- `allow-grpc-list-services`\n- `allow-grpc-invoke`\n- `allow-grpc-stream-close`\n- `allow-grpc-list-proto-files`\n- `allow-grpc-save-proto-files`\n- `allow-grpc-delete-proto-file`\n- `allow-ws-connect`\n- `allow-ws-send`\n- `allow-ws-disconnect`\n- `allow-sse-connect`\n- `allow-sse-disconnect`\n- `allow-list-mock-rules`\n- `allow-save-mock-rule`\n- `allow-delete-mock-rule`\n- `allow-get-http-proxy`\n- `allow-set-http-proxy`\n- `allow-get-http-timeout-ms`\n- `allow-set-http-timeout-ms`\n- `allow-get-data-dir`\n- `allow-get-default-data-dir`\n- `allow-set-data-dir`\n- `allow-reset-data-dir`\n- `allow-list-seq-counters`\n- `allow-set-seq-counter`\n- `allow-delete-seq-counter`\n- `allow-test-http-proxy`\n- `allow-list-request-examples`\n- `allow-save-request-example`\n- `allow-delete-request-example`\n- `allow-list-test-cases`\n- `allow-save-test-case`\n- `allow-update-test-case-meta`\n- `allow-update-test-case-content`\n- `allow-update-test-case-status`\n- `allow-delete-test-case`",
+          "description": "RustFox 核心插件的默认权限：允许前端调用全部 fox 命令\n（项目 / 接口 / 文件夹 / 环境 / cURL 解析 / 请求执行）。\n命令的 allow-* 权限由 tauri-build 依据 invoke_handler 自动生成。\n\n#### This default permission set includes:\n\n- `allow-get-projects`\n- `allow-save-project`\n- `allow-update-projects-order`\n- `allow-delete-project`\n- `allow-set-active-project`\n- `allow-get-active-project`\n- `allow-list-project-stats`\n- `allow-list-endpoints`\n- `allow-get-endpoint`\n- `allow-save-endpoint`\n- `allow-delete-endpoint`\n- `allow-duplicate-endpoint`\n- `allow-list-folders`\n- `allow-save-folder`\n- `allow-delete-folder`\n- `allow-parse-curl-command`\n- `allow-list-environments`\n- `allow-save-environment`\n- `allow-set-active-environment`\n- `allow-get-active-environment`\n- `allow-delete-environment`\n- `allow-export-environment`\n- `allow-import-environment`\n- `allow-get-global-variables`\n- `allow-save-global-variables`\n- `allow-get-global-params`\n- `allow-save-global-params`\n- `allow-execute-request`\n- `allow-cancel-request`\n- `allow-get-response-body`\n- `allow-list-examples`\n- `allow-save-example`\n- `allow-delete-example`\n- `allow-oauth-authorize`\n- `allow-oauth-access-token`\n- `allow-codegen-render`\n- `allow-cookie-list`\n- `allow-cookie-clear`\n- `allow-clipboard-write-text`\n- `allow-list-request-histories`\n- `allow-clear-request-histories`\n- `allow-mock-start`\n- `allow-mock-stop`\n- `allow-mock-status`\n- `allow-mock-reload`\n- `allow-agent-start`\n- `allow-agent-stop`\n- `allow-agent-status`\n- `allow-get-mcp-enabled`\n- `allow-set-mcp-enabled`\n- `allow-get-mcp-port`\n- `allow-set-mcp-port`\n- `allow-backup-export`\n- `allow-backup-restore`\n- `allow-import-document`\n- `allow-read-text-file`\n- `allow-export-openapi`\n- `allow-export-docs`\n- `allow-export-smoke-docs`\n- `allow-save-text-file`\n- `allow-test-endpoint`\n- `allow-load-test`\n- `allow-cancel-load-test`\n- `allow-test-collection`\n- `allow-cancel-test-collection`\n- `allow-log-files`\n- `allow-log-tail`\n- `allow-log-dir-path`\n- `allow-get-log-retention-days`\n- `allow-set-log-retention-days`\n- `allow-grpc-list-services`\n- `allow-grpc-invoke`\n- `allow-grpc-stream-close`\n- `allow-grpc-list-proto-files`\n- `allow-grpc-save-proto-files`\n- `allow-grpc-delete-proto-file`\n- `allow-ws-connect`\n- `allow-ws-send`\n- `allow-ws-disconnect`\n- `allow-sse-connect`\n- `allow-sse-disconnect`\n- `allow-list-mock-rules`\n- `allow-save-mock-rule`\n- `allow-delete-mock-rule`\n- `allow-get-http-proxy`\n- `allow-set-http-proxy`\n- `allow-get-http-timeout-ms`\n- `allow-set-http-timeout-ms`\n- `allow-get-data-dir`\n- `allow-get-default-data-dir`\n- `allow-set-data-dir`\n- `allow-reset-data-dir`\n- `allow-list-seq-counters`\n- `allow-set-seq-counter`\n- `allow-delete-seq-counter`\n- `allow-test-http-proxy`\n- `allow-list-request-examples`\n- `allow-save-request-example`\n- `allow-delete-request-example`\n- `allow-list-test-cases`\n- `allow-save-test-case`\n- `allow-update-test-case-meta`\n- `allow-update-test-case-content`\n- `allow-update-test-case-status`\n- `allow-delete-test-case`\n- `allow-list-teams`\n- `allow-create-team`\n- `allow-update-team`\n- `allow-delete-team`\n- `allow-move-project-to-team`\n- `allow-sync-remote-list`\n- `allow-sync-remote-create`\n- `allow-sync-remote-delete`\n- `allow-sync-push`\n- `allow-sync-pull-preview`\n- `allow-sync-pull-apply`\n- `allow-sync-remote-list-projects`\n- `allow-sync-import-project`",
           "type": "string",
           "const": "default",
-          "markdownDescription": "RustFox 核心插件的默认权限：允许前端调用全部 fox 命令\n（项目 / 接口 / 文件夹 / 环境 / cURL 解析 / 请求执行）。\n命令的 allow-* 权限由 tauri-build 依据 invoke_handler 自动生成。\n\n#### This default permission set includes:\n\n- `allow-get-projects`\n- `allow-save-project`\n- `allow-update-projects-order`\n- `allow-delete-project`\n- `allow-set-active-project`\n- `allow-get-active-project`\n- `allow-list-project-stats`\n- `allow-list-endpoints`\n- `allow-get-endpoint`\n- `allow-save-endpoint`\n- `allow-delete-endpoint`\n- `allow-duplicate-endpoint`\n- `allow-list-folders`\n- `allow-save-folder`\n- `allow-delete-folder`\n- `allow-parse-curl-command`\n- `allow-list-environments`\n- `allow-save-environment`\n- `allow-set-active-environment`\n- `allow-get-active-environment`\n- `allow-delete-environment`\n- `allow-export-environment`\n- `allow-import-environment`\n- `allow-get-global-variables`\n- `allow-save-global-variables`\n- `allow-get-global-params`\n- `allow-save-global-params`\n- `allow-execute-request`\n- `allow-cancel-request`\n- `allow-get-response-body`\n- `allow-list-examples`\n- `allow-save-example`\n- `allow-delete-example`\n- `allow-oauth-authorize`\n- `allow-oauth-access-token`\n- `allow-codegen-render`\n- `allow-cookie-list`\n- `allow-cookie-clear`\n- `allow-clipboard-write-text`\n- `allow-list-request-histories`\n- `allow-clear-request-histories`\n- `allow-mock-start`\n- `allow-mock-stop`\n- `allow-mock-status`\n- `allow-mock-reload`\n- `allow-agent-start`\n- `allow-agent-stop`\n- `allow-agent-status`\n- `allow-get-mcp-enabled`\n- `allow-set-mcp-enabled`\n- `allow-get-mcp-port`\n- `allow-set-mcp-port`\n- `allow-backup-export`\n- `allow-backup-restore`\n- `allow-import-document`\n- `allow-read-text-file`\n- `allow-export-openapi`\n- `allow-export-docs`\n- `allow-export-smoke-docs`\n- `allow-save-text-file`\n- `allow-test-endpoint`\n- `allow-load-test`\n- `allow-cancel-load-test`\n- `allow-test-collection`\n- `allow-cancel-test-collection`\n- `allow-log-files`\n- `allow-log-tail`\n- `allow-log-dir-path`\n- `allow-get-log-retention-days`\n- `allow-set-log-retention-days`\n- `allow-grpc-list-services`\n- `allow-grpc-invoke`\n- `allow-grpc-stream-close`\n- `allow-grpc-list-proto-files`\n- `allow-grpc-save-proto-files`\n- `allow-grpc-delete-proto-file`\n- `allow-ws-connect`\n- `allow-ws-send`\n- `allow-ws-disconnect`\n- `allow-sse-connect`\n- `allow-sse-disconnect`\n- `allow-list-mock-rules`\n- `allow-save-mock-rule`\n- `allow-delete-mock-rule`\n- `allow-get-http-proxy`\n- `allow-set-http-proxy`\n- `allow-get-http-timeout-ms`\n- `allow-set-http-timeout-ms`\n- `allow-get-data-dir`\n- `allow-get-default-data-dir`\n- `allow-set-data-dir`\n- `allow-reset-data-dir`\n- `allow-list-seq-counters`\n- `allow-set-seq-counter`\n- `allow-delete-seq-counter`\n- `allow-test-http-proxy`\n- `allow-list-request-examples`\n- `allow-save-request-example`\n- `allow-delete-request-example`\n- `allow-list-test-cases`\n- `allow-save-test-case`\n- `allow-update-test-case-meta`\n- `allow-update-test-case-content`\n- `allow-update-test-case-status`\n- `allow-delete-test-case`"
+          "markdownDescription": "RustFox 核心插件的默认权限：允许前端调用全部 fox 命令\n（项目 / 接口 / 文件夹 / 环境 / cURL 解析 / 请求执行）。\n命令的 allow-* 权限由 tauri-build 依据 invoke_handler 自动生成。\n\n#### This default permission set includes:\n\n- `allow-get-projects`\n- `allow-save-project`\n- `allow-update-projects-order`\n- `allow-delete-project`\n- `allow-set-active-project`\n- `allow-get-active-project`\n- `allow-list-project-stats`\n- `allow-list-endpoints`\n- `allow-get-endpoint`\n- `allow-save-endpoint`\n- `allow-delete-endpoint`\n- `allow-duplicate-endpoint`\n- `allow-list-folders`\n- `allow-save-folder`\n- `allow-delete-folder`\n- `allow-parse-curl-command`\n- `allow-list-environments`\n- `allow-save-environment`\n- `allow-set-active-environment`\n- `allow-get-active-environment`\n- `allow-delete-environment`\n- `allow-export-environment`\n- `allow-import-environment`\n- `allow-get-global-variables`\n- `allow-save-global-variables`\n- `allow-get-global-params`\n- `allow-save-global-params`\n- `allow-execute-request`\n- `allow-cancel-request`\n- `allow-get-response-body`\n- `allow-list-examples`\n- `allow-save-example`\n- `allow-delete-example`\n- `allow-oauth-authorize`\n- `allow-oauth-access-token`\n- `allow-codegen-render`\n- `allow-cookie-list`\n- `allow-cookie-clear`\n- `allow-clipboard-write-text`\n- `allow-list-request-histories`\n- `allow-clear-request-histories`\n- `allow-mock-start`\n- `allow-mock-stop`\n- `allow-mock-status`\n- `allow-mock-reload`\n- `allow-agent-start`\n- `allow-agent-stop`\n- `allow-agent-status`\n- `allow-get-mcp-enabled`\n- `allow-set-mcp-enabled`\n- `allow-get-mcp-port`\n- `allow-set-mcp-port`\n- `allow-backup-export`\n- `allow-backup-restore`\n- `allow-import-document`\n- `allow-read-text-file`\n- `allow-export-openapi`\n- `allow-export-docs`\n- `allow-export-smoke-docs`\n- `allow-save-text-file`\n- `allow-test-endpoint`\n- `allow-load-test`\n- `allow-cancel-load-test`\n- `allow-test-collection`\n- `allow-cancel-test-collection`\n- `allow-log-files`\n- `allow-log-tail`\n- `allow-log-dir-path`\n- `allow-get-log-retention-days`\n- `allow-set-log-retention-days`\n- `allow-grpc-list-services`\n- `allow-grpc-invoke`\n- `allow-grpc-stream-close`\n- `allow-grpc-list-proto-files`\n- `allow-grpc-save-proto-files`\n- `allow-grpc-delete-proto-file`\n- `allow-ws-connect`\n- `allow-ws-send`\n- `allow-ws-disconnect`\n- `allow-sse-connect`\n- `allow-sse-disconnect`\n- `allow-list-mock-rules`\n- `allow-save-mock-rule`\n- `allow-delete-mock-rule`\n- `allow-get-http-proxy`\n- `allow-set-http-proxy`\n- `allow-get-http-timeout-ms`\n- `allow-set-http-timeout-ms`\n- `allow-get-data-dir`\n- `allow-get-default-data-dir`\n- `allow-set-data-dir`\n- `allow-reset-data-dir`\n- `allow-list-seq-counters`\n- `allow-set-seq-counter`\n- `allow-delete-seq-counter`\n- `allow-test-http-proxy`\n- `allow-list-request-examples`\n- `allow-save-request-example`\n- `allow-delete-request-example`\n- `allow-list-test-cases`\n- `allow-save-test-case`\n- `allow-update-test-case-meta`\n- `allow-update-test-case-content`\n- `allow-update-test-case-status`\n- `allow-delete-test-case`\n- `allow-list-teams`\n- `allow-create-team`\n- `allow-update-team`\n- `allow-delete-team`\n- `allow-move-project-to-team`\n- `allow-sync-remote-list`\n- `allow-sync-remote-create`\n- `allow-sync-remote-delete`\n- `allow-sync-push`\n- `allow-sync-pull-preview`\n- `allow-sync-pull-apply`\n- `allow-sync-remote-list-projects`\n- `allow-sync-import-project`"
         }
       ]
     }

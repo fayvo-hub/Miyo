@@ -869,6 +869,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "fox-sync"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "fox-backup",
+ "fox-core",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "fox-test"
 version = "0.0.1"
 dependencies = [

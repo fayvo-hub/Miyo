@@ -1469,6 +1469,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "fox-sync"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "fox-backup",
+ "fox-core",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "fox-tauri"
 version = "0.0.2"
 dependencies = [
@@ -1485,6 +1501,7 @@ dependencies = [
  "fox-oauth",
  "fox-openapi",
  "fox-storage",
+ "fox-sync",
  "fox-test",
  "futures",
  "reqwest 0.12.28",

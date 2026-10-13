@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-sync-pull-apply"
+description = "Enables the sync_pull_apply command without any pre-configured scope."
+commands.allow = ["sync_pull_apply"]
+
+[[permission]]
+identifier = "deny-sync-pull-apply"
+description = "Denies the sync_pull_apply command without any pre-configured scope."
+commands.deny = ["sync_pull_apply"]

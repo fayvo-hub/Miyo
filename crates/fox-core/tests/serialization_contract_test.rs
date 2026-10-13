@@ -101,6 +101,7 @@ fn ipc_models_serialize_snake_case_keys() {
             name: "P".into(),
             description: String::new(),
             variables: HashMap::new(),
+            team_id: None,
             created_at: now,
             updated_at: now,
         },

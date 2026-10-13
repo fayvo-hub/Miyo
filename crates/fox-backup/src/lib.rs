@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use chrono::Utc;
 use fox_core::model::{
     Endpoint, Environment, EnvironmentVariable, Folder, GlobalParam, MockRule, Project, ProtoFile,
-    RequestExample, ResponseExample,
+    RequestExample, ResponseExample, Team,
 };
 use fox_core::AppError;
 use serde::{Deserialize, Serialize};
@@ -41,12 +41,15 @@ pub struct BackupFile {
     /// 全局参数（旧备份缺失按空处理；恢复时按 key 合并，缺失才补）。
     #[serde(default)]
     pub global_params: Vec<GlobalParam>,
+    /// 团队元数据（v4 起；旧备份缺失时为 None，项目 team_id 兜底为默认团队）。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team: Option<Team>,
 }
 
 /// 备份格式标识。
 pub const FORMAT: &str = "rustfox-project-backup";
-/// 当前 schema 版本（v3：环境回归项目维度 project_id + 单一 Base URL）。
-pub const SCHEMA_VERSION: u32 = 3;
+/// 当前 schema 版本（v4：引入团队 team 元数据 + project.team_id）。
+pub const SCHEMA_VERSION: u32 = 4;
 
 impl BackupFile {
     pub fn serialize(&self) -> Result<String, AppError> {
@@ -182,6 +185,8 @@ pub struct BackupInput<'a> {
     pub settings: &'a HashMap<String, String>,
     pub global_variables: &'a [EnvironmentVariable],
     pub global_params: &'a [GlobalParam],
+    /// 团队元数据（v4）：项目所属团队，可空。
+    pub team: &'a Option<Team>,
 }
 
 pub fn build_backup(input: &BackupInput) -> BackupFile {
@@ -200,6 +205,7 @@ pub fn build_backup(input: &BackupInput) -> BackupFile {
         settings: input.settings.clone(),
         global_variables: input.global_variables.to_vec(),
         global_params: input.global_params.to_vec(),
+        team: input.team.clone(),
     }
 }
 
@@ -319,6 +325,7 @@ mod tests {
             name: "示例项目".into(),
             description: "desc".into(),
             variables: HashMap::from([("base_url".into(), "http://127.0.0.1".into())]),
+            team_id: None,
             created_at: Utc::now(),
             updated_at: Utc::now(),
         };
@@ -427,6 +434,7 @@ mod tests {
             settings: &HashMap::from([("http_timeout_ms".into(), "30000".into())]),
             global_variables: &[],
             global_params: &[],
+            team: &None,
         })
     }
 
@@ -527,6 +535,20 @@ mod tests {
         let env = &parsed.environments[0];
         assert_eq!(env.base_url, "https://pay.example.com");
         assert_eq!(env.project_id, data.project.id);
+    }
+
+    /// v3（无团队信息）备份升级到 v4：team 缺失 → None，project.team_id 缺失 → None。
+    #[test]
+    fn parse_v3_backup_without_team_metadata() {
+        let data = sample_data();
+        let mut v3 = serde_json::json!(data);
+        v3["schema_version"] = serde_json::json!(3);
+        v3.as_object_mut().unwrap().remove("team");
+        v3["project"].as_object_mut().unwrap().remove("team_id");
+        let parsed = BackupFile::parse(&v3.to_string()).unwrap();
+        assert_eq!(parsed.schema_version, SCHEMA_VERSION);
+        assert!(parsed.team.is_none());
+        assert!(parsed.project.team_id.is_none());
     }
 
     #[test]

@@ -21,6 +21,8 @@ pub mod request;
 pub mod request_example;
 pub mod seq;
 pub mod settings;
+pub mod sync;
+pub mod team;
 pub mod test_case;
 pub mod ws;
 
@@ -47,5 +49,7 @@ pub use request::*;
 pub use request_example::*;
 pub use seq::*;
 pub use settings::*;
+pub use sync::*;
+pub use team::*;
 pub use test_case::*;
 pub use ws::*;

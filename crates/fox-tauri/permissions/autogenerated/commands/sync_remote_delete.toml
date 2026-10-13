@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-sync-remote-delete"
+description = "Enables the sync_remote_delete command without any pre-configured scope."
+commands.allow = ["sync_remote_delete"]
+
+[[permission]]
+identifier = "deny-sync-remote-delete"
+description = "Denies the sync_remote_delete command without any pre-configured scope."
+commands.deny = ["sync_remote_delete"]
