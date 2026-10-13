@@ -41,6 +41,7 @@ const SettingsDialog = lazyComponent(() => import('../components/SettingsDialog.
 const CurlImportDialog = lazyComponent(() => import('../components/CurlImportDialog.vue'))
 const ImportDialog = lazyComponent(() => import('../components/ImportDialog.vue'))
 const MockRuleDialog = lazyComponent(() => import('../components/MockRuleDialog.vue'))
+const SyncDialog = lazyComponent(() => import('../components/SyncDialog.vue'))
 
 const store = useWorkspaceStore()
 const router = useRouter()
@@ -56,6 +57,7 @@ const curlFolderId = ref<string | null>(null)
 const showDocImport = ref(false)
 const showMockRules = ref(false)
 const showSettings = ref(false)
+const showSync = ref(false)
 const showShortcuts = ref(false)
 
 /** 快捷键帮助（默认 Ctrl+/，可在设置 → 快捷键中自定义）：集中注册表驱动，列表自动生成。 */
@@ -198,6 +200,15 @@ async function load(): Promise<void> {
     // loadError 已在 store 内写入，界面展示重试
   } finally {
     loading.value = false
+  }
+}
+
+/** 同步拉取覆盖成功：远端快照已重建项目数据，全量重载工作区。 */
+async function onSyncApplied(): Promise<void> {
+  try {
+    await store.reloadAfterOverwrite()
+  } catch {
+    // loadError 已在 store 内写入（如有）；界面展示重试
   }
 }
 
@@ -473,6 +484,13 @@ onBeforeUnmount(() => {
             @click="showShortcuts = true"
           />
           <HeaderUpdateTag />
+          <IconButton
+            class="tb-tool"
+            name="refresh"
+            :size="15"
+            :title="t('sync.title')"
+            @click="showSync = true"
+          />
           <span class="rf-update-wrap">
             <IconButton
               class="tb-tool"
@@ -659,6 +677,15 @@ onBeforeUnmount(() => {
     <ImportDialog v-if="showDocImport" @close="showDocImport = false" />
     <MockRuleDialog v-if="showMockRules" @close="showMockRules = false" />
     <SettingsDialog v-if="showSettings" @close="showSettings = false" />
+    <SyncDialog
+      v-if="showSync"
+      :open="showSync"
+      :project-id="store.project?.id ?? null"
+      :project-name="store.project?.name ?? ''"
+      :team-id="store.project?.team_id ?? null"
+      @update:open="showSync = $event"
+      @applied="onSyncApplied"
+    />
     <ShortcutsHelp :open="showShortcuts" @update:open="showShortcuts = $event" />
   </div>
 </template>

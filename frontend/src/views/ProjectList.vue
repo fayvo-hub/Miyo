@@ -8,7 +8,7 @@
  * - 工具栏：名称过滤 + 视图切换（网格/列表）+ 排序（最近修改/名称/API数量）+ 新建项目；
  * - 项目卡片 / 弹窗（新建、重命名、删除、快速请求）拆分至 components/projectlist/。
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ensureSwapMounted } from '../utils/sortable'
 import Sortable from 'sortablejs'
@@ -27,8 +27,12 @@ import DashboardNav from '../components/projectlist/DashboardNav.vue'
 import ProjectTabs from '../components/ProjectTabs.vue'
 import ImportDialog from '../components/ImportDialog.vue'
 import ProjectCard from '../components/projectlist/ProjectCard.vue'
+import CustomSelect from '../components/ui/CustomSelect.vue'
+import type { SelectOption } from '../components/ui/CustomSelect.vue'
 import Skeleton from '../components/ui/Skeleton.vue'
 import ProjectCreateModal from '../components/projectlist/ProjectCreateModal.vue'
+import TeamManageModal from '../components/projectlist/TeamManageModal.vue'
+import SyncImportDialog from '../components/projectlist/SyncImportDialog.vue'
 import ProjectRenameModal from '../components/projectlist/ProjectRenameModal.vue'
 import ProjectDeleteModal from '../components/projectlist/ProjectDeleteModal.vue'
 import ScratchRequestModal from '../components/projectlist/ScratchRequestModal.vue'
@@ -37,7 +41,7 @@ import { aggregateProjectStats, totalEndpointCount } from '../utils/projectStats
 import { methodTone } from '../utils/methodTone'
 import { useWindowDrag } from '../composables/useWindowDrag'
 import logo from '../assets/rustfox-logo.png'
-import type { HttpMethod, Project } from '../types/foxApi'
+import type { HttpMethod, Project, Team } from '../types/foxApi'
 
 const api = useFoxApi()
 const toast = useToast()
@@ -47,6 +51,7 @@ const locale = useLocaleStore()
 const t = locale.t
 
 const projects = ref<Project[]>([])
+const teams = ref<Team[]>([])
 const counts = ref<Record<string, number>>({})
 /** 每个项目最近更新的接口摘要（仅 method/path，统计命令返回，不拉全量）。 */
 const latestEndpoints = ref<Record<string, { method: HttpMethod; path: string } | null>>({})
@@ -98,14 +103,69 @@ const filtered = computed(() => {
   return projects.value.filter((p) => p.name.toLowerCase().includes(q))
 })
 
+// ---------- 团队分组 ----------
+/** 默认团队固定 UUID（与迁移 0015 / fox_core::model::DEFAULT_TEAM_ID 一致）。 */
+const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000001'
+/** 团队筛选：全部分组哨兵值。 */
+const TEAM_ALL = '__all__'
+
+/** 团队筛选下拉（工具栏视角切换）。 */
+const teamFilter = ref<string>(TEAM_ALL)
+const teamFilterOptions = computed<SelectOption[]>(() => [
+  { value: TEAM_ALL, label: t('projectlist.teamAll') },
+  ...teams.value.map((team) => ({ value: team.id, label: team.name })),
+])
+
+/** 单团队视角：选中了具体团队（Header 计数文案随视角切换）。 */
+const isSingleTeamView = computed(() => teamFilter.value !== TEAM_ALL)
+
+interface TeamGroup {
+  team: Team
+  projects: Project[]
+}
+
+/** 按团队分组（团队按创建顺序，项目保持组内全局顺序）。 */
+const grouped = computed<TeamGroup[]>(() => {
+  // 先套团队筛选，再按团队归桶
+  const visible =
+    teamFilter.value === TEAM_ALL
+      ? filtered.value
+      : filtered.value.filter((p) => (p.team_id ?? DEFAULT_TEAM_ID) === teamFilter.value)
+  const map = new Map<string, TeamGroup>()
+  for (const team of teams.value) {
+    if (teamFilter.value === TEAM_ALL || team.id === teamFilter.value) {
+      map.set(team.id, { team, projects: [] })
+    }
+  }
+  // team_id 缺失/指向已消失团队：兜底进默认团队组
+  const fallback = (): TeamGroup => {
+    let g = map.get(DEFAULT_TEAM_ID)
+    if (!g) {
+      g = {
+        team: { id: DEFAULT_TEAM_ID, name: t('projectlist.defaultTeam'), created_at: '', updated_at: '' },
+        projects: [],
+      }
+      map.set(DEFAULT_TEAM_ID, g)
+    }
+    return g
+  }
+  for (const p of visible) {
+    const g = (p.team_id && map.get(p.team_id)) || fallback()
+    g.projects.push(p)
+  }
+  const groups = [...map.values()]
+  // 搜索时只留命中的团队组，避免空组占位
+  return search.value.trim() ? groups.filter((g) => g.projects.length) : groups
+})
+
 // ---------- 拖拽排序 ----------
 /** 手动顺序 + 无搜索过滤时才允许拖拽（否则顺序无意义）。 */
 const dragEnabled = computed(
   () => !search.value.trim() && projects.value.length > 1,
 )
 
-const gridEl = ref<HTMLElement | null>(null)
-const sortable = ref<Sortable | null>(null)
+const groupsEl = ref<HTMLElement | null>(null)
+const sortables: Sortable[] = []
 const savingOrder = ref(false)
 
 /** 交换式拖拽：A 拖到 B 后面时 B 直接让位到 A 原位，无 ghost 空白占位。 */
@@ -114,17 +174,23 @@ ensureSwapMounted()
 /** 拖拽结束后的短暂窗口内抑制卡片 click（防止拖完被带进项目）。 */
 let suppressClickUntil = 0
 
-/** 按当前 DOM 顺序重排 projects 并持久化。 */
+/**
+ * 按当前 DOM 顺序重排 projects 并持久化。
+ * 团队分组后 DOM = 各团队组按序拼接，因此逐组收集组内 DOM 顺序再展平，
+ * 即得到与视觉一致的全局顺序（拖拽只能组内换位，组间不可跨）。
+ */
 async function onDragEnd(): Promise<void> {
   suppressClickUntil = Date.now() + 400
   const ordered: Project[] = []
-  const els = gridEl.value?.querySelectorAll<HTMLElement>('[data-project-id]') ?? []
+  const grids = groupsEl.value?.querySelectorAll<HTMLElement>('.team-grid') ?? []
   // id → 项目 的一次建表：卡片数平方级的 find 换成 Map 查找（拖拽重排只有这一个热循环）
   const byId = new Map(projects.value.map((p) => [p.id, p]))
-  for (const el of els) {
-    const id = el.dataset.projectId
-    const found = id ? byId.get(id) : undefined
-    if (found) ordered.push(found)
+  for (const grid of grids) {
+    for (const el of grid.querySelectorAll<HTMLElement>('[data-project-id]')) {
+      const id = el.dataset.projectId
+      const found = id ? byId.get(id) : undefined
+      if (found) ordered.push(found)
+    }
   }
   if (ordered.length !== projects.value.length) return
   projects.value = ordered
@@ -145,44 +211,51 @@ function onCardOpen(p: Project): void {
   void enter(p)
 }
 
-function initSortable(): void {
-  if (sortable.value || !gridEl.value) return
-  sortable.value = Sortable.create(gridEl.value, {
-    animation: 200,
-    easing: 'cubic-bezier(0.2, 0, 0, 1)',
-    swap: true,
-    swapClass: 'sortable-swap',
-    swapThreshold: 0.75,
-    forceFallback: true,
-    fallbackClass: 'sortable-drag',
-    fallbackOnBody: true,
-    fallbackTolerance: 3,
-    ghostClass: 'sortable-ghost',
-    dragClass: 'sortable-drag',
-    chosenClass: 'sortable-chosen',
-    disabled: !dragEnabled.value,
-    filter: 'button, a, input, select, textarea, [data-no-drag]',
-    preventOnFilter: true,
-    onMove: (evt) =>
-      !evt.related?.closest('button, a, input, select, textarea, [data-no-drag]'),
-    onEnd: () => void onDragEnd(),
-  })
+/** 每个团队组一个 Sortable 实例（组内换位，组间由分组结构天然隔离）。 */
+function initSortables(): void {
+  const grids = groupsEl.value?.querySelectorAll<HTMLElement>('.team-grid') ?? []
+  // 清理已卸载的旧容器（分组/搜索变化会重建 DOM）
+  for (let i = sortables.length - 1; i >= 0; i--) {
+    if (!sortables[i]!.el.isConnected) {
+      sortables[i]!.destroy()
+      sortables.splice(i, 1)
+    }
+  }
+  for (const grid of grids) {
+    if (sortables.some((s) => s.el === grid)) continue
+    sortables.push(
+      Sortable.create(grid, {
+        animation: 200,
+        easing: 'cubic-bezier(0.2, 0, 0, 1)',
+        swap: true,
+        swapClass: 'sortable-swap',
+        swapThreshold: 0.75,
+        forceFallback: true,
+        fallbackClass: 'sortable-drag',
+        fallbackOnBody: true,
+        fallbackTolerance: 3,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        chosenClass: 'sortable-chosen',
+        disabled: !dragEnabled.value,
+        filter: 'button, a, input, select, textarea, [data-no-drag]',
+        preventOnFilter: true,
+        onMove: (evt) =>
+          !evt.related?.closest('button, a, input, select, textarea, [data-no-drag]'),
+        onEnd: () => void onDragEnd(),
+      }),
+    )
+  }
 }
 
-onMounted(initSortable)
+onMounted(() => nextTick(initSortables))
 
-/** 列表容器挂载/重建时初始化（v-if 延迟渲染，ref 变化是最可靠信号）。 */
-watch(gridEl, (el) => {
-  if (el && !sortable.value) initSortable()
-})
-
-watch(dragEnabled, (enabled) => {
-  sortable.value?.option('disabled', !enabled)
-})
+/** 分组/过滤变化重建 DOM 后重新挂载（ref+watch 单容器信号已不适用）。 */
+watch([grouped, dragEnabled], () => nextTick(initSortables))
 
 onBeforeUnmount(() => {
-  sortable.value?.destroy()
-  sortable.value = null
+  for (const s of sortables) s.destroy()
+  sortables.length = 0
 })
 
 function isActive(p: Project): boolean {
@@ -211,6 +284,8 @@ async function load(): Promise<void> {
   try {
     projects.value = await api.getProjects()
     counts.value = {}
+    // 团队加载失败不阻塞首页（分组退化为默认团队兜底组）
+    api.listTeams().then((list) => (teams.value = list)).catch(() => {})
     await loadCounts()
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : String(e)
@@ -224,10 +299,37 @@ onMounted(load)
 
 // ---------- 新建 ----------
 const showCreate = ref(false)
+const showTeamMgr = ref(false)
+/** 快捷新建的预选团队（团队组头部「＋ 新建」）。 */
+const presetTeamId = ref<string | null>(null)
+
+function openCreateForTeam(teamId: string): void {
+  presetTeamId.value = teamId
+  showCreate.value = true
+}
+
+// ---------- 从远端导入（团队组头部「同步」入口） ----------
+const importTeam = ref<{ id: string; name: string } | null>(null)
+
+function openImportForTeam(team: { id: string; name: string }): void {
+  importTeam.value = team
+}
+
+/** 团队管理弹窗变更后：刷新团队分组 + 项目（改名/删除影响归属展示）。 */
+async function onTeamsChanged(): Promise<void> {
+  try {
+    teams.value = await api.listTeams()
+  } catch {
+    /* 团队刷新失败不影响已有分组展示 */
+  }
+  projects.value = await api.getProjects()
+}
 
 function onCreated(project: Project): void {
   projects.value.push(project)
   counts.value[project.id] = 0
+  // 弹窗里可能行内新建了团队：刷新团队列表让新组立即出现
+  api.listTeams().then((list) => (teams.value = list)).catch(() => {})
 }
 
 // ---------- 进入工作区 ----------
@@ -491,39 +593,83 @@ useWindowDrag(topBarEl)
           </section>
 
           <section class="toolbar">
-            <div class="toolbar-filter">
-              <Icon name="search" :size="14" />
-              <input
-                v-model="search"
-                class="toolbar-filter-input"
-                :placeholder="t('projectlist.filterPh')"
-                spellcheck="false"
+            <div class="toolbar-left">
+              <div class="toolbar-filter">
+                <Icon name="search" :size="14" />
+                <input
+                  v-model="search"
+                  class="toolbar-filter-input"
+                  :placeholder="t('projectlist.filterPh')"
+                  spellcheck="false"
+                />
+              </div>
+              <CustomSelect
+                v-model="teamFilter"
+                class="toolbar-team"
+                size="sm"
+                :options="teamFilterOptions"
+                pop-auto-width
               />
             </div>
-            <button class="btn-new" type="button" @click="showCreate = true">
-              <Icon name="plus" :size="15" /> {{ t('projectlist.newProject') }}
-            </button>
+            <div class="toolbar-right">
+              <button class="team-mgr-btn" type="button" @click="showTeamMgr = true">
+                <Icon name="users" :size="14" /> {{ t('team.manage') }}
+              </button>
+              <button class="btn-new" type="button" @click="showCreate = true">
+                <Icon name="plus" :size="14" /> {{ t('projectlist.newProject') }}
+              </button>
+            </div>
           </section>
 
-          <div
-            v-if="filtered.length"
-            ref="gridEl"
-            class="card-grid"
-          >
-            <ProjectCard
-              v-for="p in filtered"
-              :key="p.id"
-              :project="p"
-              :count="counts[p.id] ?? 0"
-              :active="isActive(p)"
-              :menu-open="menuOpenId === p.id"
-              :draggable="dragEnabled"
-              @open="onCardOpen(p)"
-              @toggle-menu="toggleMenu(p.id)"
-              @rename="openRename(p)"
-              @duplicate="duplicate(p)"
-              @delete="openDelete(p)"
-            />
+          <div v-if="filtered.length" ref="groupsEl" class="team-groups">
+            <section v-for="g in grouped" :key="g.team.id" class="team-group">
+              <header class="team-divider">
+                <div class="team-divider-left">
+                  <span class="team-avatar"><Icon name="users" :size="12" /></span>
+                  <h2 class="team-name">{{ g.team.name }}</h2>
+                  <!-- 单团队视角：括号计数；全部分组：等宽胶囊 Badge -->
+                  <span v-if="isSingleTeamView" class="team-count-text">
+                    ({{ t('projectlist.teamCount', { n: g.projects.length }) }})
+                  </span>
+                  <span v-else class="team-badge">{{ g.projects.length }}</span>
+                </div>
+                <div class="team-divider-actions">
+                  <button
+                    class="team-add ghost"
+                    type="button"
+                    :title="t('projectlist.teamSyncHint')"
+                    @click="openImportForTeam(g.team)"
+                  >
+                    <Icon name="refresh" :size="12" /> {{ t('projectlist.teamSync') }}
+                  </button>
+                  <button
+                    class="team-add"
+                    type="button"
+                    :title="t('projectlist.teamQuickAdd')"
+                    @click="openCreateForTeam(g.team.id)"
+                  >
+                    <Icon name="plus" :size="12" /> {{ t('projectlist.teamAdd') }}
+                  </button>
+                </div>
+              </header>
+              <div class="card-grid team-grid" :data-team-id="g.team.id">
+                <ProjectCard
+                  v-for="p in g.projects"
+                  :key="p.id"
+                  :project="p"
+                  :count="counts[p.id] ?? 0"
+                  :active="isActive(p)"
+                  :menu-open="menuOpenId === p.id"
+                  :draggable="dragEnabled"
+                  @open="onCardOpen(p)"
+                  @toggle-menu="toggleMenu(p.id)"
+                  @rename="openRename(p)"
+                  @duplicate="duplicate(p)"
+                  @delete="openDelete(p)"
+                />
+              </div>
+              <p v-if="!g.projects.length" class="team-empty">{{ t('projectlist.teamNoProjects') }}</p>
+            </section>
           </div>
 
           <div v-else-if="loading" class="sk-grid" aria-busy="true" :aria-label="t('common.loading')">
@@ -571,7 +717,16 @@ useWindowDrag(topBarEl)
       </main>
     </div>
 
-    <ProjectCreateModal v-model:open="showCreate" @created="onCreated" />
+    <ProjectCreateModal v-model:open="showCreate" :preset-team-id="presetTeamId" @created="onCreated" />
+    <TeamManageModal v-model:open="showTeamMgr" @changed="onTeamsChanged" />
+    <SyncImportDialog
+      v-if="importTeam"
+      :open="!!importTeam"
+      :team-id="importTeam.id"
+      :team-name="importTeam.name"
+      @update:open="importTeam = null"
+      @imported="load"
+    />
 
     <ProjectRenameModal :project="renaming" @close="renaming = null" @saved="onRenamed" />
 
@@ -1053,20 +1208,33 @@ useWindowDrag(topBarEl)
   color: var(--accent-hover);
 }
 
-/* ---------- 工具栏：过滤 + 视图切换 + 排序 + 新建 ---------- */
+/* ---------- 工具栏：左（搜索 + 分组切换）/ 右（团队管理 + 新建），统一 h-9 ---------- */
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
-.toolbar-filter {
-  /* w-64：固定宽度，右侧留给主按钮 */
-  width: 256px;
+.toolbar-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-filter {
+  /* w-60：固定宽度 */
+  width: 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
   padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -1095,25 +1263,30 @@ useWindowDrag(topBarEl)
   color: var(--text-3);
 }
 
+/* 分组切换下拉：w-44 */
+.toolbar-team {
+  width: 176px;
+}
+.toolbar-team :deep(.cs-trigger) {
+  height: 36px;
+}
+
 .btn-new {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 34px;
+  gap: 6px;
+  height: 36px;
   padding: 0 16px;
   border: none;
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: #fff;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 4px 14px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
   transition:
     background var(--dur) var(--ease),
     transform var(--dur) var(--ease),
@@ -1128,6 +1301,27 @@ useWindowDrag(topBarEl)
 .btn-new:active {
   transform: translateY(1px);
 }
+.team-mgr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.team-mgr-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
 
 /* ---------- 项目卡片网格（卡片自身样式见 ProjectCard） ---------- */
 /* auto-fill + minmax(300px,1fr)：按容器宽度自适应列数；
@@ -1137,6 +1331,93 @@ useWindowDrag(topBarEl)
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
+}
+
+/* ---------- 团队分组：轻量 Divider（无大卡片外壳，网格直接铺在主背景上） ---------- */
+.team-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.team-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.team-divider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 10px;
+  margin-top: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.team-divider-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+.team-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.team-badge {
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  background: var(--bg-hover);
+  border-radius: 999px;
+}
+/* 单团队视角的括号计数：纯弱化文本，无胶囊底 */
+.team-count-text {
+  font-size: 12px;
+  color: var(--text-3);
+}
+/* 极简 Ghost「＋ 新建」：hover 才染 accent 色 */
+.team-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    color var(--dur) var(--ease),
+    background var(--dur) var(--ease);
+}
+.team-add:hover {
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+.team-empty {
+  margin: 0;
+  padding: 4px 0 12px;
+  font-size: 12.5px;
+  color: var(--text-3);
 }
 
 /* ---------- 加载骨架（与卡片网格同列型） ---------- */

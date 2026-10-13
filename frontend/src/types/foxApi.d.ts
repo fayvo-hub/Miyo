@@ -260,8 +260,103 @@ export interface Project {
   name: string
   description: string
   variables: Record<string, string>
+  /** 所属团队 id（旧数据 / 旧备份为 null → 默认团队）。 */
+  team_id?: string | null
   created_at: string
   updated_at: string
+}
+
+/** 团队（Rust `Team`）：现阶段仅作为项目的容器。 */
+export interface Team {
+  id: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+/** 同步远端类型。 */
+export type SyncRemoteKind = 'git' | 's3' | 'db'
+
+/** git 远端配置。 */
+export interface GitRemoteConfig {
+  kind: 'git'
+  url: string
+  branch: string
+  /** 快照文件在仓库内的路径。 */
+  path: string
+}
+
+export interface S3RemoteConfig {
+  kind: 's3'
+  bucket: string
+  prefix: string
+}
+
+export interface DbRemoteConfig {
+  kind: 'db'
+  dsn_ref: string
+  table: string
+}
+
+export type SyncRemoteConfig = GitRemoteConfig | S3RemoteConfig | DbRemoteConfig
+
+/** 团队同步远端（Rust `SyncRemote`）：绑定在团队上，推/拉按项目触发。 */
+export interface SyncRemote {
+  id: string
+  team_id: string
+  kind: SyncRemoteKind
+  config: SyncRemoteConfig
+  last_synced_revision: string | null
+  created_at: string
+  updated_at: string
+}
+
+/** 远端项目快照条目（首页导入入口：发现远端新增项目）。 */
+export interface RemoteProjectEntry {
+  project_id: string
+  name: string
+  endpoint_count: number
+  updated_at: string
+  /** 同 id 项目本地已存在（不可重复导入，进项目内拉取覆盖）。 */
+  exists_locally: boolean
+}
+
+/** 推送结果。 */
+export interface SyncPushResult {
+  revision: string
+  /** 快照与远端一致（幂等推送，无实际变更）。 */
+  noop: boolean
+  /** 被脱敏的项（凭证未离开本机）。 */
+  redacted: string[]
+}
+
+/** 接口粒度快照差异。 */
+export interface SyncDiff {
+  added: string[]
+  removed: string[]
+  modified: string[]
+}
+
+/** 拉取预览（不改本地）。 */
+export interface SyncPullPreview {
+  revision: string
+  diff: SyncDiff
+  snapshot_summary: {
+    project: string
+    endpoints: number
+    folders: number
+    environments: number
+    exported_at: string
+  }
+}
+
+/** 拉取应用结果。 */
+export interface SyncPullResult {
+  revision: string
+  applied: boolean
+  endpoints: number
+  /** 覆盖前本地快照留档路径。 */
+  local_backup: string | null
 }
 
 /** 项目仪表板统计（Rust `ProjectStat`，list_project_stats 命令）。 */

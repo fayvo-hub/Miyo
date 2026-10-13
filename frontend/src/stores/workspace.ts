@@ -313,6 +313,28 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     endpoints.value = e
   }
 
+  /**
+   * 同步拉取覆盖后全量重载：远端快照以远端 id 重建了全部子对象，
+   * 需要重取项目本体 + 文件夹 + 接口 + 环境，并关闭已失效的标签
+   * （远端 id 与本地不一致时标签指向的接口已不存在）。
+   */
+  async function reloadAfterOverwrite(): Promise<void> {
+    if (!project.value) return
+    const [p, f, e] = await Promise.all([
+      api.getActiveProject(),
+      api.listFolders(project.value.id),
+      api.listEndpoints(project.value.id),
+    ])
+    project.value = p
+    folders.value = f
+    endpoints.value = e
+    const valid = new Set(e.map((x) => x.id))
+    for (const id of [...openTabs.value]) {
+      if (!valid.has(id)) closeTab(id)
+    }
+    await loadEnvironments()
+  }
+
   /** 切换到另一项目：当前项目 UI 态入快照，目标项目恢复快照或全新加载。
    *  草稿 / 打开的标签页 / 环境选择等在项目间来回切换均不丢失。 */
   async function switchProject(projectId: string): Promise<void> {
@@ -1965,6 +1987,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     init,
     load,
     refresh,
+    reloadAfterOverwrite,
     switchProject,
     openProjects,
     closeProjectTab,

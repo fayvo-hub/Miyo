@@ -5,15 +5,19 @@
  * - 名称必填（不超过 50 字符）、描述可选（不超过 200 字符）；
  * - 创建成功后 emit('created', project)，由父级并入列表。
  */
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Modal from '../ui/Modal.vue'
+import CustomSelect from '../ui/CustomSelect.vue'
+import type { SelectOption } from '../ui/CustomSelect.vue'
 import { useFoxApi } from '../../composables/useFoxApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
-import type { Project } from '../../types/foxApi'
+import type { Project, Team } from '../../types/foxApi'
 
 const NAME_MAX = 50
 const DESC_MAX = 200
+/** 行内新建团队哨兵值（CustomSelect 选项）。 */
+const NEW_TEAM = '__new__'
 
 const api = useFoxApi()
 const toast = useToast()
@@ -22,16 +26,47 @@ const t = locale.t
 
 const open = defineModel<boolean>('open', { default: false })
 
+const props = defineProps<{
+  /** 预选团队（团队组头部「＋ 新建」快捷新建时传入）。 */
+  presetTeamId?: string | null
+}>()
+
 const newName = ref('')
 const newDesc = ref('')
 const createError = ref<string | null>(null)
+const teams = ref<Team[]>([])
+const selectedTeamId = ref<string | null>(null)
+/** 行内新建团队输入（选择"新建团队…"时展开）。 */
+const newTeamName = ref('')
 
-// 每次打开时重置表单
+/** 团队选项：团队列表（含默认团队）+ 行内新建。 */
+const teamOptions = computed<SelectOption[]>(() => [
+  ...teams.value.map((team) => ({ value: team.id, label: team.name })),
+  { value: NEW_TEAM, label: t('pcreate.teamNew') },
+])
+
+async function loadTeams(): Promise<void> {
+  try {
+    teams.value = await api.listTeams()
+  } catch {
+    teams.value = []
+  }
+}
+
+// 每次打开时重置表单（预选团队优先，否则默认团队；避免 null 与列表里的「默认团队」重复出现）
 watch(open, (v) => {
   if (v) {
     newName.value = ''
     newDesc.value = ''
     createError.value = null
+    newTeamName.value = ''
+    void loadTeams().then(() => {
+      const fallback =
+        (props.presetTeamId && teams.value.find((team) => team.id === props.presetTeamId)) ||
+        teams.value.find((team) => team.id === '00000000-0000-0000-0000-000000000001') ||
+        teams.value[0]
+      selectedTeamId.value = fallback?.id ?? null
+    })
   }
 })
 
@@ -49,11 +84,23 @@ async function confirmCreate(): Promise<void> {
   }
   const now = new Date().toISOString()
   try {
+    // 选了"新建团队"：先建团队再建项目。
+    let teamId = selectedTeamId.value
+    if (teamId === NEW_TEAM) {
+      const tn = newTeamName.value.trim()
+      if (!tn) {
+        createError.value = t('pcreate.teamNameRequired')
+        return
+      }
+      const team = await api.createTeam(tn)
+      teamId = team.id
+    }
     const project = await api.saveProject({
       id: crypto.randomUUID(),
       name,
       description: newDesc.value.trim(),
       variables: {},
+      team_id: teamId,
       created_at: now,
       updated_at: now,
     })
@@ -82,6 +129,22 @@ async function confirmCreate(): Promise<void> {
         @keyup.enter="confirmCreate"
       />
       <p v-if="createError" class="rf-field-error" role="alert">{{ createError }}</p>
+    </div>
+    <div class="form-field">
+      <label class="form-label">{{ t('pcreate.team') }}</label>
+      <CustomSelect
+        v-model="selectedTeamId"
+        :options="teamOptions"
+        pop-auto-width
+      />
+      <input
+        v-if="selectedTeamId === NEW_TEAM"
+        v-model="newTeamName"
+        class="rf-input"
+        :placeholder="t('pcreate.teamNamePh')"
+        maxlength="30"
+        @keyup.enter="confirmCreate"
+      />
     </div>
     <div class="form-field">
       <label class="form-label" for="new-project-desc">{{ t('workspace.projectDesc') }}</label>

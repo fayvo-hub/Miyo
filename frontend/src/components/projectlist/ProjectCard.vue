@@ -94,10 +94,10 @@ const emit = defineEmits<{
   position: relative;
   display: flex;
   gap: 14px;
-  padding: 18px 20px;
+  padding: 16px;
   /* 网格子项：允许收缩到轨道宽，长描述走 ellipsis 而不是撑爆网格 */
   min-width: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   /* 半透明深底（#18181b 质感）+ 1px 微光描边，与面板底色拉开层次 */
   border: 1px solid rgba(255, 255, 255, 0.055);
   background:
@@ -257,7 +257,10 @@ html[data-theme='light'] .proj-card:hover {
 .proj-metrics {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  /* 防换行：窄卡片下 API 数/更新时间保持单行，交给 ellipsis 截断而不是乱折行 */
+  white-space: nowrap;
+  font-family: var(--font-mono);
   font-size: var(--fs-xxs);
   line-height: 1.5;
   color: var(--text-3);
@@ -267,6 +270,7 @@ html[data-theme='light'] .proj-card:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  white-space: nowrap;
 }
 
 .metric-sep {

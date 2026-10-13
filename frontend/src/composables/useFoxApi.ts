@@ -63,6 +63,13 @@ import type {
   ResponseExample,
   SeqCounter,
   ServiceCatalog,
+  RemoteProjectEntry,
+  SyncPullPreview,
+  SyncPullResult,
+  SyncPushResult,
+  SyncRemote,
+  SyncRemoteConfig,
+  Team,
   TestCase,
   TestCaseStatus,
 } from '../types/foxApi'
@@ -419,6 +426,59 @@ export function useFoxApi() {
   const backupRestore = (text: string) =>
     run(() => call<BackupSummary>('backup_restore', { text }))
 
+  // ---------- 团队 ----------
+  /** 全部团队（含默认团队，恒在首位）。 */
+  const listTeams = () => quiet<Team[]>('list_teams', {})
+
+  /** 新建团队。 */
+  const createTeam = (name: string) => run(() => call<Team>('create_team', { name }))
+
+  const updateTeam = (team: Team) => run(() => call<Team>('update_team', { team }))
+
+  /** 删除团队：有下属项目时后端拒绝。 */
+  const deleteTeam = (teamId: string) => run(() => call<void>('delete_team', { teamId }))
+
+  /** 项目移入团队。 */
+  const moveProjectToTeam = (projectId: string, teamId: string) =>
+    run(() => call<void>('move_project_to_team', { projectId, teamId }))
+
+  // ---------- 团队同步（快照推/拉：远端绑定团队，推/拉按项目触发） ----------
+  /** 团队的同步远端列表。 */
+  const syncRemoteList = (teamId: string) =>
+    quiet<SyncRemote[]>('sync_remote_list', { teamId })
+
+  /** 新建团队同步远端（config 为 RemoteConfig，含 kind tag）。 */
+  const syncRemoteCreate = (teamId: string, config: SyncRemoteConfig) =>
+    run(() => call<SyncRemote>('sync_remote_create', { teamId, config }))
+
+  const syncRemoteDelete = (remoteId: string) =>
+    run(() => call<void>('sync_remote_delete', { remoteId }))
+
+  /** 推送项目快照到团队远端（推送前自动脱敏凭证）。 */
+  const syncPush = (remoteId: string, projectId: string, message?: string) =>
+    run(() => call<SyncPushResult>('sync_push', { remoteId, projectId, message }))
+
+  /** 拉取预览：差异 + 远端快照摘要，不改本地。 */
+  const syncPullPreview = (remoteId: string, projectId: string) =>
+    run(() => call<SyncPullPreview>('sync_pull_preview', { remoteId, projectId }))
+
+  /** 应用拉取：覆盖前自动留档本地快照，再以远端覆盖。 */
+  const syncPullApply = (remoteId: string, projectId: string) =>
+    run(() => call<SyncPullResult>('sync_pull_apply', { remoteId, projectId }))
+
+  /** 远端项目快照清单（首页导入入口）。 */
+  const syncRemoteListProjects = (remoteId: string) =>
+    run(() => call<RemoteProjectEntry[]>('sync_remote_list_projects', { remoteId }))
+
+  /** 导入远端项目快照为本地新项目（远端有、本地无）。 */
+  const syncImportProject = (remoteId: string, projectId: string) =>
+    run(() =>
+      call<{ projectId: string; name: string; endpoints: number }>('sync_import_project', {
+        remoteId,
+        projectId,
+      }),
+    )
+
   // ---------- 数据目录（设置页；变更重启后生效） ----------
   const getDataDir = () => run(() => call<string>('get_data_dir', {}))
 
@@ -647,6 +707,19 @@ export function useFoxApi() {
     agentStatus,
     backupExport,
     backupRestore,
+    listTeams,
+    createTeam,
+    updateTeam,
+    deleteTeam,
+    moveProjectToTeam,
+    syncRemoteList,
+    syncRemoteCreate,
+    syncRemoteDelete,
+    syncPush,
+    syncPullPreview,
+    syncPullApply,
+    syncRemoteListProjects,
+    syncImportProject,
     getDataDir,
     getDefaultDataDir,
     setDataDir,
