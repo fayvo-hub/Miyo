@@ -260,6 +260,9 @@ html[data-theme='light'] .proj-card:hover {
   gap: 8px;
   /* 防换行：窄卡片下 API 数/更新时间保持单行，交给 ellipsis 截断而不是乱折行 */
   white-space: nowrap;
+  /* 允许收缩截断：右侧「进入项目」已禁收缩，指标行超宽时在此裁掉而非溢出卡片 */
+  min-width: 0;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: var(--fs-xxs);
   line-height: 1.5;
@@ -291,6 +294,10 @@ html[data-theme='light'] .proj-card:hover {
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  /* 防压扁：flex 子项默认可缩到 min-content，CJK 可逐字断行会竖排成
+     一字一行（窄卡片 + 长指标行时「进入项目」变竖排）。禁收缩 + 单行。 */
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: var(--fs-xxs);
   font-weight: 600;
   color: var(--accent);
