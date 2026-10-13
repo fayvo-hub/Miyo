@@ -310,6 +310,12 @@ mod tests {
     /// 端到端：裸仓库当远端，push → 第二个 transport pull → diff。
     #[tokio::test]
     async fn push_pull_roundtrip_via_bare_repo() {
+        // CI 环境无全局 git 身份：commit 会因缺 user.name/email 失败，测试内兜底。
+        std::env::set_var("GIT_AUTHOR_NAME", "RustFox CI");
+        std::env::set_var("GIT_AUTHOR_EMAIL", "ci@rustfox.local");
+        std::env::set_var("GIT_COMMITTER_NAME", "RustFox CI");
+        std::env::set_var("GIT_COMMITTER_EMAIL", "ci@rustfox.local");
+
         let tmp = std::env::temp_dir().join(format!("fox-sync-test-{}", uuid::Uuid::new_v4()));
         let bare = tmp.join("remote.git");
         // 建裸仓库 + 初始化默认分支。
