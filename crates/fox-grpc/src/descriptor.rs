@@ -81,17 +81,54 @@ impl ServiceCatalog {
 
 /// 描述符池缓存：键为来源内容摘要（proto 内容哈希 / 反射地址），
 /// 同一 proto 集或同一服务的反射结果进程内只取一次。
-static POOL_CACHE: OnceLock<Mutex<HashMap<String, Arc<DescriptorPool>>>> = OnceLock::new();
-
-fn pool_cache() -> &'static Mutex<HashMap<String, Arc<DescriptorPool>>> {
-    POOL_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+/// `order` 记录插入序（HashMap 无序），供 [`POOL_CACHE_CAP`] 淘汰最早项。
+struct PoolCache {
+    map: HashMap<String, Arc<DescriptorPool>>,
+    order: std::collections::VecDeque<String>,
 }
 
-fn cache_key(source: &GrpcSource) -> String {
+static POOL_CACHE: OnceLock<Mutex<PoolCache>> = OnceLock::new();
+
+/// 缓存上限：反射按地址成键、proto 按内容哈希成键，长期使用会无限累积
+///（每次改 proto / 换地址都新增一项，池可达数 MB）。超限淘汰最早插入项。
+const POOL_CACHE_CAP: usize = 32;
+
+fn pool_cache() -> &'static Mutex<PoolCache> {
+    POOL_CACHE.get_or_init(|| {
+        Mutex::new(PoolCache {
+            map: HashMap::new(),
+            order: std::collections::VecDeque::new(),
+        })
+    })
+}
+
+impl PoolCache {
+    fn get(&self, key: &str) -> Option<Arc<DescriptorPool>> {
+        self.map.get(key).map(Arc::clone)
+    }
+
+    fn insert(&mut self, key: String, pool: Arc<DescriptorPool>) {
+        if self.map.insert(key.clone(), pool).is_none() {
+            self.order.push_back(key);
+        }
+        while self.map.len() > POOL_CACHE_CAP {
+            if let Some(old) = self.order.pop_front() {
+                self.map.remove(&old);
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+fn cache_key(source: &GrpcSource, address: &str, use_tls: bool) -> String {
     use std::hash::{Hash, Hasher};
     match source {
-        GrpcSource::Reflection => "reflection".to_string(),
+        // 反射池内容由服务端决定：键必须含地址（含 TLS 模式），否则跨服务端
+        // 串池——对服务 A 反射后，服务 B 会直接命中 A 的描述符（方法解析全错）。
+        GrpcSource::Reflection => format!("reflection:{use_tls}@{address}"),
         GrpcSource::Files(files) => {
+            // proto 文件集内容自包含，池与地址无关（同内容跨端点复用命中）。
             let mut hasher = std::collections::hash_map::DefaultHasher::new();
             for f in files {
                 (&f.name, &f.content).hash(&mut hasher);
@@ -109,10 +146,10 @@ pub async fn acquire_pool(
     metadata: &[(String, String)],
     force_reload: bool,
 ) -> Result<Arc<DescriptorPool>> {
-    let key = cache_key(&source);
+    let key = cache_key(&source, address, use_tls);
     if !force_reload {
         if let Some(hit) = pool_cache().lock().expect("pool cache").get(&key) {
-            return Ok(Arc::clone(hit));
+            return Ok(hit);
         }
     }
     let pool = match source {
@@ -399,4 +436,62 @@ fn to_reflect_error(status: tonic::Status) -> ReflectError {
         return ReflectError::Unimplemented;
     }
     ReflectError::Fatal(AppError::Grpc(format!("服务反射失败：{status}")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fixture_files() -> Vec<ProtoFileInput> {
+        vec![ProtoFileInput {
+            id: "p1".into(),
+            name: "a.proto".into(),
+            content: "syntax = \"proto3\"; message A { string x = 1; }".into(),
+        }]
+    }
+
+    /// 回归锁定：反射池按地址成键——此前固定 "reflection" 键导致跨服务端串池
+    /// （对服务 A 反射后，服务 B 直接命中 A 的描述符，方法解析全部错位）。
+    #[test]
+    fn reflection_key_isolated_per_address() {
+        let src = GrpcSource::Reflection;
+        let a = cache_key(&src, "a:443", true);
+        let b = cache_key(&src, "b:443", true);
+        let a_plain = cache_key(&src, "a:443", false);
+        assert_ne!(a, b, "不同地址不得共享缓存键");
+        assert_ne!(a, a_plain, "同地址 TLS / 明文不得共享缓存键");
+        assert_eq!(a, cache_key(&src, "a:443", true), "同参数键应稳定");
+    }
+
+    /// proto 文件集内容自包含：与地址无关，同内容必须命中同一键。
+    #[test]
+    fn files_key_ignores_address() {
+        let a = cache_key(&GrpcSource::Files(fixture_files()), "a:443", true);
+        let b = cache_key(&GrpcSource::Files(fixture_files()), "b:1", false);
+        assert_eq!(a, b, "proto 内容哈希键不应掺入地址");
+    }
+
+    /// 缓存超上限淘汰最早插入项，且已有项不被误删。
+    #[test]
+    fn pool_cache_evicts_oldest_at_cap() {
+        let pool = DescriptorPool::from_file_descriptor_set(prost_types::FileDescriptorSet {
+            file: vec![],
+        })
+        .expect("空池");
+        let pool = Arc::new(pool);
+        let mut cache = PoolCache {
+            map: HashMap::new(),
+            order: std::collections::VecDeque::new(),
+        };
+        for i in 0..POOL_CACHE_CAP {
+            cache.insert(format!("k{i}"), Arc::clone(&pool));
+        }
+        assert_eq!(cache.map.len(), POOL_CACHE_CAP);
+        // 淘汰线：再插一项应踢掉 k0，保留其余。
+        cache.insert("new".into(), Arc::clone(&pool));
+        assert_eq!(cache.map.len(), POOL_CACHE_CAP);
+        assert!(cache.get("k0").is_none(), "最旧项应被淘汰");
+        assert!(cache.get("k1").is_some(), "未超龄项应保留");
+        assert!(cache.get("new").is_some(), "新项应入缓存");
+    }
 }
