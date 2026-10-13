@@ -168,6 +168,33 @@ describe('AboutDialog：更新下载流程', () => {
     expect(collector.errors).toEqual([])
   })
 
+  it('发现新版后关闭重开，点下载仍生效（展示态随关闭清空，重开从共享暂存接管）', async () => {
+    const dai = vi.fn(() => Promise.resolve())
+    mocks.check.mockResolvedValue(fakeUpdate(dai))
+    const wrapper = mount(AboutDialog, { props: { open: true }, attachTo: document.body })
+    await flush()
+    await clickCheck()
+    expect(updateCard()).toBeTruthy()
+
+    // 关闭：Update 放回共享暂存，本地展示态（pendingVersion）必须一并清空
+    await wrapper.setProps({ open: false })
+    await flush()
+    expect(updateCard()).toBeNull()
+
+    // 重开：takePendingUpdate 重新接管 → 卡片与 Update 对象同时在
+    await wrapper.setProps({ open: true })
+    await flush()
+    expect(updateCard()).toBeTruthy()
+    expect(cardText()).toContain('v1.2.3')
+
+    // 点下载必须真正发起（回归：修复前 pending 为 null，此处静默 return）
+    click('.a-update-btn')
+    await flush()
+    expect(dai).toHaveBeenCalledTimes(1)
+
+    wrapper.unmount()
+  })
+
   it('下载失败：卡片内就地展示错误，按钮恢复可点即重试', async () => {
     const dai = vi
       .fn()

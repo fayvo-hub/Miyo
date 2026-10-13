@@ -75,11 +75,17 @@ watch(
   () => props.open,
   (open) => {
     if (!open) {
-      // 关闭未安装：放回暂存（小红点重新点亮，下次打开继续承接）
+      // 关闭未安装：放回暂存（小红点重新点亮，下次打开继续承接）。
+      // 展示态必须一并清空——否则重开时 `pendingVersion` 早退守卫先命中，
+      // takePendingUpdate 永远不执行：卡片渲染着、Update 对象却在共享暂存里，
+      // 点下载走 `!update` 静默 return（回归锁定，见 spec「关闭重开仍可下载」）。
       if (pendingVersion.value && pending) {
         restorePendingUpdate(pending)
         pending = null
       }
+      pendingVersion.value = null
+      pendingNotes.value = ''
+      failMsg.value = ''
       return
     }
     if (pendingVersion.value) return
