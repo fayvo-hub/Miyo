@@ -13,9 +13,9 @@ import type { AuthSpec, BodySpec, ExecuteResponse, HttpMethod, KeyValue, TestCas
 import { TEST_CASE_CATEGORIES, caseCategoryLabel, formatDuration, restoreBody, statusToneOf, statusTextOf } from '../utils/testCases'
 import { methodTextTone } from '../utils/methodTone'
 import { useLocaleStore } from '../stores/locale'
+import { useWorkspaceStore } from '../stores/workspace'
 import CodeExportMenu from './CodeExportMenu.vue'
 import CustomSelect from './ui/CustomSelect.vue'
-import EnvBadge from './ui/EnvBadge.vue'
 import FindBar from './ui/FindBar.vue'
 import Icon from './ui/Icon.vue'
 import JsonCodeMirror from './JsonCodeMirror.vue'
@@ -53,6 +53,18 @@ const emit = defineEmits<{ 'update:open': [open: boolean] }>()
 
 const locale = useLocaleStore()
 const t = locale.t
+const store = useWorkspaceStore()
+
+/** 环境选项：无环境（''）+ 项目内环境；与顶栏环境选择器同源数据。 */
+const envOptions = computed(() => [
+  { value: '', label: t('envbar.noEnv') },
+  ...store.environments.map((e) => ({ value: e.id, label: e.name })),
+])
+
+/** 切换环境：与顶栏走同一 store 动作，运行链路（store.activeEnvId）即时生效。 */
+function onEnvChange(value: string | number): void {
+  void store.setEnvironment(value === '' ? null : String(value))
+}
 
 const name = ref('')
 const category = ref<TestCaseCategory>('正向')
@@ -426,9 +438,19 @@ function onSplitterDblClick(): void {
           </header>
 
           <div class="drw-body">
-            <!-- ① 用例基本信息 -->
+            <!-- ① 用例基本信息（右上角环境选择器：运行前确认/切换请求发往哪个环境） -->
             <section class="drw-sec">
-              <h4 class="drw-sec-title">{{ t('casedrawer.basicInfo') }}</h4>
+              <div class="drw-sec-head">
+                <h4 class="drw-sec-title">{{ t('casedrawer.basicInfo') }}</h4>
+                <CustomSelect
+                  class="drw-env-select"
+                  :model-value="store.activeEnvId ?? ''"
+                  :options="envOptions"
+                  size="sm"
+                  :pop-min-width="240"
+                  @update:model-value="onEnvChange"
+                />
+              </div>
               <div class="drw-grid3">
                 <label class="drw-field drw-span2">
                   <span class="drw-label">{{ t('testcase.name') }}</span>
@@ -625,8 +647,6 @@ function onSplitterDblClick(): void {
               :auth="NO_AUTH"
               :disabled="!urlPath.trim()"
             />
-            <!-- 运行环境上下文：与运行链路同源（store.activeEnvId），点击前可见 -->
-            <EnvBadge />
             <button
               class="rf-btn drw-run-btn"
               type="button"
@@ -769,6 +789,22 @@ function onSplitterDblClick(): void {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+/* 顶部环境选择器（基本信息卡右上）：几何对齐 6px 12px 内距 / 8px 圆角 /
+   12px 中黑字规范；底与描边走主题变量（字面 zinc-900/60、white/10
+   在浅色主题下失真，仓规一律变量表达）。 */
+.drw-env-select :deep(.cs-trigger) {
+  gap: 8px;
+  padding: 0 12px;
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--text-1) 6%, transparent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-weight: 500;
+}
+.drw-env-select :deep(.cs-trigger:hover:not(:disabled)) {
+  background: color-mix(in srgb, var(--text-1) 10%, transparent);
 }
 
 .drw-sec-title {

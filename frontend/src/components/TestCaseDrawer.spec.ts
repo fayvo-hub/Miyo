@@ -7,7 +7,7 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import TestCaseDrawer from './TestCaseDrawer.vue'
 import CodeExportMenu from './CodeExportMenu.vue'
-import EnvBadge from './ui/EnvBadge.vue'
+import CustomSelect from './ui/CustomSelect.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import type { Environment, TestCase } from '../types/foxApi'
@@ -167,7 +167,7 @@ describe('TestCaseDrawer', () => {
     })
   })
 
-  it('底部操作栏展示当前激活环境（立即运行的环境上下文徽章）', () => {
+  it('顶部用例基本信息右侧提供环境选择器，切换写回激活环境', () => {
     const env: Environment = {
       id: 'e1',
       project_id: 'p1',
@@ -180,11 +180,38 @@ describe('TestCaseDrawer', () => {
     const store = useWorkspaceStore()
     store.environments = [env]
     store.activeEnvId = 'e1'
+    const setEnv = vi.spyOn(store, 'setEnvironment').mockResolvedValue(undefined)
     const { wrapper } = mountDrawer()
-    const badge = wrapper.findComponent(EnvBadge)
-    expect(badge.exists()).toBe(true)
-    expect(badge.text()).toContain('开发环境')
-    expect(badge.text()).toContain('http://127.0.0.1:4010')
+    const envSelect = wrapper
+      .findAllComponents(CustomSelect)
+      .find((c) => c.classes().includes('drw-env-select'))
+    expect(envSelect).toBeTruthy()
+    // 顶部选择器展示当前激活环境名
+    expect(envSelect!.text()).toContain('开发环境')
+    // 切到「无环境」→ 与顶栏同源写回（setEnvironment(null)）
+    envSelect!.vm.$emit('update:model-value', '')
+    expect(setEnv).toHaveBeenCalledWith(null)
+    // 切到指定环境 → 写回环境 id
+    envSelect!.vm.$emit('update:model-value', 'e1')
+    expect(setEnv).toHaveBeenCalledWith('e1')
+  })
+
+  it('底部操作栏只保留核心动作（环境控件已移至顶部）', () => {
+    mountDrawer()
+    // 抽屉 Teleport 到 body，DOM 断言走 document（与既有用例一致）
+    const foot = document.querySelector('.drw-foot')
+    expect(foot).toBeTruthy()
+    // 无环境徽章 / 选择器残留
+    expect(foot!.querySelector('.env-badge')).toBeNull()
+    expect(foot!.querySelector('.drw-env-select')).toBeNull()
+    // 核心动作齐全：导出代码 / 立即运行 / 取消 / 保存
+    const footText = foot!.textContent ?? ''
+    expect(footText).toContain('导出代码')
+    expect(footText).toContain('立即运行')
+    expect(footText).toContain('取消')
+    expect(footText).toContain('保存修改')
+    // 选择器在顶部基本信息卡内
+    expect(document.querySelector('.drw-sec-head .drw-env-select')).toBeTruthy()
   })
 
   it('运行失败展示 Failed 与错误信息', async () => {
