@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
  * ReleaseNotesModal：独立版本更新详情弹窗（顶部更新 Tag / 设置更新卡片的统一落地页）。
- * - Header：🚀 发现新版本 vX（白色加粗等宽，样式在文末非 scoped 段覆写 Modal 容器/标题）；
- * - Body：Markdown 更新日志（markdownLite 转义渲染，深底包裹框固定高度可滚动，无序列表紫点）；
+ * - Header：🚀 发现新版本 vX（加粗等宽，样式在文末非 scoped 段覆写 Modal 容器/标题）；
+ * - Body：Markdown 更新日志（markdownLite 转义渲染，主题化井底包裹框固定高度可滚动，紫点列表）；
  * - Footer：稍后再说（次要按钮）+ 立即下载并重启（主紫按钮），下载中就地展示进度条；
  * - 打开时接管共享暂存的 Update；未安装关闭（Esc / 遮罩 / ✕ / 稍后再说）放回暂存，
  *   顶部 Tag 复亮；下载/安装中禁止关闭，成功后自动关闭并延迟重启。
@@ -87,17 +87,15 @@ function guardClose(): boolean {
     :title="title"
     width="440px"
     dialog-class="rn-modal"
-    mask-class="backdrop-blur-md rn-mask"
+    mask-class="backdrop-blur-md"
     :guard-close="guardClose"
     @update:open="emit('update:open', $event)"
   >
-    <!-- 固定高度 + 滚动；深底浅字在深/浅主题下均可读；space-y-2 行距由
-         .rn-notes 内部兄弟间距承接（内容经 v-html 包了一层） -->
-    <div
-      class="my-4 max-h-[160px] overflow-y-auto rounded-xl border border-white/5 bg-zinc-950/80 p-4 text-xs text-zinc-300 space-y-2"
-    >
+    <!-- 固定高度 + 滚动；井底配色走主题变量（--bg-code 等），深/浅均可读；
+         space-y-2 行距由 .rn-notes 内部兄弟间距承接（内容经 v-html 包了一层） -->
+    <div class="my-4 rn-notes-box space-y-2">
       <div v-if="notesHtml" class="rn-notes" v-html="notesHtml"></div>
-      <p v-else class="m-0 text-xs text-zinc-400">{{ t('release.noNotes') }}</p>
+      <p v-else class="rn-notes-empty">{{ t('release.noNotes') }}</p>
     </div>
 
     <template #footer>
@@ -121,12 +119,7 @@ function guardClose(): boolean {
         </div>
         <p v-else-if="failMsg" class="rn-error" role="alert">{{ failMsg }}</p>
         <div class="rn-actions">
-          <button
-            class="cursor-pointer rounded-lg px-4 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-white/5 hover:text-white disabled:cursor-default disabled:opacity-50"
-            type="button"
-            :disabled="downloading"
-            @click="later"
-          >
+          <button class="rn-btn-ghost" type="button" :disabled="downloading" @click="later">
             {{ t('release.later') }}
           </button>
           <button
@@ -144,23 +137,68 @@ function guardClose(): boolean {
 </template>
 
 <style scoped>
+/* 日志包裹框：井底配色走主题变量（--bg-code 深 #19191d / 浅 #f8fafc），
+   描边与文字走主题令牌，不再写死深色字面量类（浅色下原黑底框突兀） */
+.rn-notes-box {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-code);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+
+/* 空态（无更新说明） */
+.rn-notes-empty {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+
+/* 次要按钮「稍后再说」：主题化 ghost（原写死灰字 + hover 反白，
+   浅色下 hover 白字隐形） */
+.rn-btn-ghost {
+  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.rn-btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+.rn-btn-ghost:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
 /* 段落/列表纵向行距（等价 space-y-2：非首子元素 8px 上边距，多行日志逐条呼吸） */
 .rn-notes > :deep(* + *) {
   margin-top: 8px;
 }
 
-/* 无序列表：半透明紫点 marker（字号/行高继承包裹框 text-xs） */
+/* 无序列表：半透明紫点 marker（色随 --accent，字号/行高继承包裹框） */
 .rn-notes :deep(ul > li::marker) {
-  color: rgba(196, 181, 253, 0.55);
+  color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* 深底容器内的排版（浅字固定色，深/浅主题均落在深底上） */
+/* 井底容器内的排版：文字令牌随主题（--text-*），深浅井底均可读 */
 .rn-notes :deep(h3),
 .rn-notes :deep(h4),
 .rn-notes :deep(h5),
 .rn-notes :deep(h6) {
   margin: 10px 0 4px;
-  color: #fafafa;
+  color: var(--text-1);
   font-size: 13px;
   font-weight: 600;
 }
@@ -185,12 +223,12 @@ function guardClose(): boolean {
   margin: 2px 0;
 }
 .rn-notes :deep(strong) {
-  color: #ffffff;
+  color: var(--text-1);
 }
 .rn-notes :deep(code) {
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--text-1) 8%, transparent);
   font-family: var(--font-mono);
   font-size: 11.5px;
 }
@@ -199,26 +237,26 @@ function guardClose(): boolean {
   padding: 8px;
   overflow-x: auto;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--bg-elevated);
 }
 .rn-notes :deep(pre code) {
   padding: 0;
   background: none;
 }
 .rn-notes :deep(a) {
-  color: #c4b5fd;
+  color: var(--accent);
   text-decoration: underline;
 }
 .rn-notes :deep(hr) {
   margin: 8px 0;
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid var(--border);
 }
 .rn-notes :deep(blockquote) {
   margin: 0 0 6px;
   padding-left: 8px;
-  border-left: 2px solid rgba(255, 255, 255, 0.2);
-  color: #a1a1aa;
+  border-left: 2px solid var(--border-strong);
+  color: var(--text-3);
 }
 
 /* Footer：进度 / 错误 + 按钮行 */
@@ -279,25 +317,15 @@ function guardClose(): boolean {
 
 <style>
 /* Modal 遮罩/容器经 Teleport 挂到 body，覆写须非 scoped（同 SettingsDialog .sd-dialog 的变量先例）；
-   类名 rn-modal / rn-mask 仅本弹窗使用，不会波及其他 Modal。
-   选择器加 body 前缀保证特异性压过 Modal 自带的 scoped 规则（.m-xxx[data-v]）。 */
+   类名 rn-modal 仅本弹窗使用，不会波及其他 Modal。
+   选择器加 body 前缀保证特异性压过 Modal 自带的 scoped 规则（.m-xxx[data-v]）。
+   配色一律不在此覆写：容器/标题/分隔线随主题令牌（--bg-elevated、--border、
+   --text-*），遮罩走 Modal 自带 var(--mask)（深/浅各一套）——原「双主题恒深底」
+   覆写在浅色下产出黑底弹窗，已移除。 */
 
-/* 遮罩：bg-black/60 走 --mask 变量（元素级声明直接生效），高斯模糊走 backdrop-blur-sm 类 */
-.rn-mask {
-  --mask: rgba(0, 0, 0, 0.6);
-}
-
-/* 容器：rounded-2xl / border-white/10 / bg-zinc-900/95 / shadow-2xl，经变量覆写；双主题恒深底，
-   文本令牌一并覆写，浅色主题下正文不发黑 */
+/* 容器：仅覆写圆角（rounded 16px 结构性设计），颜色令牌全部回落主题 */
 .rn-modal {
-  --bg-elevated: rgba(24, 24, 27, 0.95);
-  --border-strong: rgba(255, 255, 255, 0.1);
   --radius-lg: 16px;
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --text-1: #fafafa;
-  --text-2: #a1a1aa;
-  --text-3: #71717a;
-  --bg-3: rgba(255, 255, 255, 0.14);
 }
 
 /* p-6：内边距统一收到容器，内部三段归零 */
@@ -308,7 +336,7 @@ body .rn-modal.m-dialog {
    标题「🚀 发现新版本 vX」与右上 ✕ 垂直绝对居中对齐 */
 body .rn-modal .m-head {
   padding: 0 0 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
 }
 body .rn-modal .m-body {
   padding: 0;
@@ -318,11 +346,11 @@ body .rn-modal .m-foot {
   padding: 12px 0 0;
 }
 
-/* 标题：白色加粗等宽，与右侧关闭 Icon 垂直对齐（m-head 已 flex center） */
+/* 标题：加粗等宽（文字随 --text-1 主题令牌），与右侧关闭 Icon 垂直对齐（m-head 已 flex center） */
 body .rn-modal .m-title {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-1);
 }
 </style>

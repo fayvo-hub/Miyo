@@ -1,9 +1,12 @@
 /**
  * ReleaseNotesModal 单测：独立更新详情弹窗。
  * 锁定：打开接管暂存（标题 + Markdown 日志渲染）/ 稍后再说放回暂存 /
- * 下载进度与下载中禁关（Esc 被守卫拦截）/ 成功自动关闭 + 延迟重启。
+ * 下载进度与下载中禁关（Esc 被守卫拦截）/ 成功自动关闭 + 延迟重启 /
+ * 浅色主题适配（主题化包裹框与 ghost 按钮，无恒深底覆写）。
  * 注：本地 flush 走纯微任务（VTU flushPromises 走 setTimeout，与假时钟组合会挂起）。
  */
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
@@ -189,5 +192,28 @@ describe('ReleaseNotesModal：更新详情弹窗', () => {
     expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false])
 
     wrapper.unmount()
+  })
+
+  it('浅色主题适配：日志框/次要按钮主题化，源码无恒深底覆写与写死深色类', async () => {
+    const wrapper = await openModal(fakeUpdate(vi.fn()))
+
+    // 日志包裹框走主题化类（--bg-code 井底），不带写死的深色字面量类
+    const box = dialog()?.querySelector('.rn-notes-box')
+    expect(box).toBeTruthy()
+    expect(box!.className).not.toContain('bg-zinc-950/80')
+    expect(box!.className).not.toContain('border-white/5')
+    expect(box!.className).not.toContain('text-zinc-300')
+    // 次要按钮主题化 ghost（原 hover 反白在浅色下白字隐形）
+    expect(dialog()?.querySelector('.rn-btn-ghost')).toBeTruthy()
+    expect(box!.closest('.m-dialog')?.querySelector('.bg-purple-600')).toBeTruthy()
+
+    wrapper.unmount()
+
+    // 组件源：非 scoped 段不再强制恒深底（文本/底色 token 覆写已除，随主题）
+    const src = readFileSync(join(process.cwd(), 'src/components/ReleaseNotesModal.vue'), 'utf8')
+    expect(src).not.toContain('--text-1: #fafafa')
+    expect(src).not.toContain('--bg-elevated: rgba(24, 24, 27')
+    expect(src).not.toContain('bg-zinc-950/80')
+    expect(src).not.toContain('hover:text-white')
   })
 })

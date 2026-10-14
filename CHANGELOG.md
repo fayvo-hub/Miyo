@@ -50,6 +50,10 @@ UI（浅色主题对比度重构）：
   --update-card-bg / --check-bg / --danger-fg / --projcard-*），组件只
   消费 var()；themePattern 回归测试升级为拦截任何组件级
   html[data-theme] 选择器
+- 更新弹窗浅色适配：ReleaseNotesModal 移除「双主题恒深底」覆写
+ （弹窗底/标题/分隔线随主题令牌，遮罩走 --mask 深浅两套），更新日志
+  框改主题化井底（--bg-code + --border + --text-2），Markdown 内文与
+  次要按钮「稍后再说」全部走变量（原 hover 反白浅色下白字隐形）
 - 用例运行环境可见：用例面板工具栏挂 EnvBadge（语义色点 + 环境名 +
   Base URL）；用例详情抽屉在「用例基本信息」卡右上提供环境选择器
   （与顶栏同源 store.setEnvironment，可直接切换），底部操作栏只保留
