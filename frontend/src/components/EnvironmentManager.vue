@@ -1153,7 +1153,7 @@ async function remove(env: Environment): Promise<void> {
   gap: 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg-panel);
+  background: var(--bg-code);
   padding: 10px;
   overflow: hidden;
 }
@@ -1457,7 +1457,7 @@ async function remove(env: Environment): Promise<void> {
 .em-table {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg-panel);
+  background: var(--bg-code);
   padding: 6px;
 }
 

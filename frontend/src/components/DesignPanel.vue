@@ -1166,7 +1166,7 @@ onBeforeUnmount(() => {
 .path-group .method-select {
   width: 104px;
   flex-shrink: 0;
-  background: var(--bg-panel);
+  background: var(--bg-code);
 }
 .path-group .method-select :deep(.cs-trigger) {
   height: 100%;
@@ -1322,7 +1322,7 @@ html[data-theme='light'] .body-json {
   padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--bg-panel);
+  background: var(--bg-code);
   color: var(--text-2);
   font-size: 12.5px;
   cursor: pointer;
@@ -1406,7 +1406,7 @@ html[data-theme='light'] .body-json {
   padding: 2px 9px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--bg-panel);
+  background: var(--bg-code);
   color: var(--success);
   font-family: var(--font-mono);
   font-size: var(--fs-xxs);

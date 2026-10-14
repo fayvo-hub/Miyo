@@ -256,7 +256,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-panel);
+  background: var(--bg-code);
 }
 
 .qv-env-name {
@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-panel);
+  background: var(--bg-code);
 }
 
 .qv-base-icon {
@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   padding: 8px 12px;
   border-top: 1px solid var(--border);
-  background: var(--bg-panel);
+  background: var(--bg-code);
 }
 
 /* ---- 环境色点 ---- */
