@@ -246,6 +246,7 @@ html[data-theme='light'] .proj-card:hover {
 
 /* 底栏：分隔线 + 指标行（修复文案重叠：显式行高与间距）+ hover「进入项目 →」 */
 .proj-footer {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -260,7 +261,8 @@ html[data-theme='light'] .proj-card:hover {
   gap: 8px;
   /* 防换行：窄卡片下 API 数/更新时间保持单行，交给 ellipsis 截断而不是乱折行 */
   white-space: nowrap;
-  /* 允许收缩截断：右侧「进入项目」已禁收缩，指标行超宽时在此裁掉而非溢出卡片 */
+  /* 防换行 + 兜底裁剪：指标行拿回完整宽度后正常不再截断，
+     极窄卡片（长计数 + 绝对日期）下仍在此裁掉而非溢出卡片 */
   min-width: 0;
   overflow: hidden;
   font-family: var(--font-mono);
@@ -288,28 +290,36 @@ html[data-theme='light'] .proj-card:hover {
   flex-shrink: 0;
 }
 
-/* 进入项目 →：hover 浮现于底栏右下角 */
+/* 进入项目 →：hover 浮现为底栏右侧悬浮 chip。
+   绝对定位不占流宽——此前 inline-flow 常驻占位（flex-shrink:0 保宽度），
+   窄卡下指标行被挤到硬裁成「2026-08-1」半截字；改覆盖层后指标行拿回
+   完整宽度。半透明浮底压住潜在重叠的指标文字，双主题走 --bg-elevated。 */
 .proj-open {
-  margin-left: auto;
+  position: absolute;
+  right: 0;
+  top: 50%;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  /* 防压扁：flex 子项默认可缩到 min-content，CJK 可逐字断行会竖排成
-     一字一行（窄卡片 + 长指标行时「进入项目」变竖排）。禁收缩 + 单行。 */
-  flex-shrink: 0;
   white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   font-size: var(--fs-xxs);
   font-weight: 600;
   color: var(--accent);
   opacity: 0;
-  transform: translateX(-4px);
+  transform: translateY(-50%) translateX(-4px);
   transition:
     opacity var(--dur) var(--ease),
     transform var(--dur) var(--ease);
+  pointer-events: none;
+  user-select: none;
 }
 .proj-card:hover .proj-open {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(-50%) translateX(0);
 }
 
 .proj-more {
