@@ -87,13 +87,14 @@ function guardClose(): boolean {
     :title="title"
     width="440px"
     dialog-class="rn-modal"
-    mask-class="backdrop-blur-sm rn-mask"
+    mask-class="backdrop-blur-md rn-mask"
     :guard-close="guardClose"
     @update:open="emit('update:open', $event)"
   >
-    <!-- 固定高度 + 滚动；深底浅字在深/浅主题下均可读 -->
+    <!-- 固定高度 + 滚动；深底浅字在深/浅主题下均可读；space-y-2 行距由
+         .rn-notes 内部兄弟间距承接（内容经 v-html 包了一层） -->
     <div
-      class="my-4 min-h-[80px] max-h-[200px] overflow-y-auto rounded-xl border border-white/5 bg-zinc-950/80 p-4 text-xs leading-relaxed text-zinc-300"
+      class="my-4 max-h-[160px] overflow-y-auto rounded-xl border border-white/5 bg-zinc-950/80 p-4 text-xs text-zinc-300 space-y-2"
     >
       <div v-if="notesHtml" class="rn-notes" v-html="notesHtml"></div>
       <p v-else class="m-0 text-xs text-zinc-400">{{ t('release.noNotes') }}</p>
@@ -121,7 +122,7 @@ function guardClose(): boolean {
         <p v-else-if="failMsg" class="rn-error" role="alert">{{ failMsg }}</p>
         <div class="rn-actions">
           <button
-            class="cursor-pointer rounded-lg px-4 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-white/5 hover:text-zinc-200 disabled:cursor-default disabled:opacity-50"
+            class="cursor-pointer rounded-lg px-4 py-2 text-xs font-medium text-zinc-400 transition-all hover:bg-white/5 hover:text-white disabled:cursor-default disabled:opacity-50"
             type="button"
             :disabled="downloading"
             @click="later"
@@ -129,7 +130,7 @@ function guardClose(): boolean {
             {{ t('release.later') }}
           </button>
           <button
-            class="rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-purple-600/30 transition-all hover:bg-purple-500 disabled:cursor-default disabled:opacity-60"
+            class="cursor-pointer rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-purple-950/60 transition-all hover:bg-purple-500 disabled:cursor-default disabled:opacity-60"
             type="button"
             :disabled="downloading"
             @click="install"
@@ -143,9 +144,9 @@ function guardClose(): boolean {
 </template>
 
 <style scoped>
-/* 段落/列表纵向行距（等价 space-y-1.5：非首子元素 6px 上边距） */
+/* 段落/列表纵向行距（等价 space-y-2：非首子元素 8px 上边距，多行日志逐条呼吸） */
 .rn-notes > :deep(* + *) {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* 无序列表：半透明紫点 marker（字号/行高继承包裹框 text-xs） */
@@ -303,9 +304,10 @@ function guardClose(): boolean {
 body .rn-modal.m-dialog {
   padding: 24px;
 }
-/* Header：flex 垂直居中 + 底分隔线（justify-between/space-between 由 Modal .m-head 提供） */
+/* Header：flex items-center + justify-between（Modal .m-head 自带），pb-4 + 底分隔线，
+   标题「🚀 发现新版本 vX」与右上 ✕ 垂直绝对居中对齐 */
 body .rn-modal .m-head {
-  padding: 0 0 12px;
+  padding: 0 0 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 body .rn-modal .m-body {
