@@ -209,7 +209,9 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 0 16px 14px;
+  /* 底部操作栏：hairline 分隔（浅色 = slate-200，深色 = 深灰线），双主题自适配 */
+  border-top: 1px solid var(--border);
+  padding: 12px 16px 14px;
 }
 
 .m-enter-active,

@@ -314,7 +314,8 @@ body .rn-modal .m-body {
   padding: 0;
 }
 body .rn-modal .m-foot {
-  padding: 0;
+  /* 上方 hairline 由通用 .m-foot 提供，保留 12px 呼吸 */
+  padding: 12px 0 0;
 }
 
 /* 标题：白色加粗等宽，与右侧关闭 Icon 垂直对齐（m-head 已 flex center） */

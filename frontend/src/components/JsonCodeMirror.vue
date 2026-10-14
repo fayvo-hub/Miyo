@@ -132,6 +132,8 @@ const lightTheme = EditorView.theme({
     height: '100%',
     fontSize: '12px',
     color: '#1f2329',
+    // 显式浅底（slate-50）：不依赖容器透传，任何包裹处都不会退回深色残留
+    backgroundColor: '#f8fafc',
   },
   '.cm-scroller': {
     fontFamily: 'var(--font-mono)',
@@ -147,7 +149,7 @@ const lightTheme = EditorView.theme({
   '.cm-gutters': {
     backgroundColor: 'transparent',
     borderRight: '1px solid rgba(107, 114, 128, 0.2)',
-    color: '#9ca3af',
+    color: '#94a3b8',
   },
   '.cm-foldGutter .cm-gutterElement': {
     cursor: 'pointer',

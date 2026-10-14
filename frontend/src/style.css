@@ -213,44 +213,49 @@
 
 [data-theme='light'] {
   color-scheme: light;
-  --bg-app: #eef0f3;
-  --bg-panel: #f5f6f8;
+  /* ---- 表面色阶：app = slate-100 低层灰，panel/card/elevated 统一纯白，
+     层次交给 border（slate-200/300）与 shadow-sm 表达 ---- */
+  --bg-app: #f1f5f9;
+  --bg-panel: #ffffff;
   --bg-card: #ffffff;
   --bg-elevated: #ffffff;
-  --bg-code: #f8f9fb;
+  --bg-code: #f8fafc;
   --bg-hover: rgba(0, 0, 0, 0.04);
   --bg-active: rgba(0, 0, 0, 0.08);
-  --border: #e4e7ec;
-  --border-strong: #d0d5dd;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
   --border-editor: rgba(0, 0, 0, 0.1);
   --border-panel: rgba(23, 28, 48, 0.08);
   --shadow-panel:
     0 20px 25px -5px rgba(23, 28, 48, 0.1),
     0 8px 10px -6px rgba(23, 28, 48, 0.08);
+  /* ---- 文本：text-3 提到 gray-500（4.8:1），占位/三级文字满足 WCAG AA ---- */
   --text-1: #1f2329;
-  --text-2: #5c6670;
-  --text-3: #98a1ab;
-  --text-value: #52525b;
+  --text-2: #4b5563;
+  --text-3: #6b7280;
+  --text-value: #3f4652;
   --accent: #5f5ad4;
   --accent-hover: #4e49c7;
-  --success: #16a34a;
-  --warning: #d97706;
-  --orange: #ea580c;
+  /* ---- 状态/方法色：700 档（白底 4.5:1+），徽章底由 10% tint 派生即
+     amber-50/emerald-50 级淡底，文字 amber-700 级高对比 ---- */
+  --success: #15803d;
+  --warning: #b45309;
+  --orange: #c2410c;
   --danger: #dc2626;
-  --info: #2563eb;
-  --get: #059669;
-  --post: #d97706;
-  --put: #2563eb;
-  --patch: #8b5cf6;
-  --delete: #dc2626;
-  --grpc: #0891b2;
+  --info: #1d4ed8;
+  --get: #047857;
+  --post: #b45309;
+  --put: #1d4ed8;
+  --patch: #6d28d9;
+  --delete: #b91c1c;
+  --grpc: #0e7490;
 
   --accent-tint: rgba(95, 90, 212, 0.12);
-  --success-tint: rgba(22, 163, 74, 0.1);
-  --warning-tint: rgba(217, 119, 6, 0.1);
-  --danger-tint: rgba(220, 38, 38, 0.08);
-  --info-tint: rgba(37, 99, 235, 0.08);
-  --patch-tint: rgba(139, 92, 246, 0.1);
+  --success-tint: rgba(21, 128, 61, 0.1);
+  --warning-tint: rgba(180, 83, 9, 0.1);
+  --danger-tint: rgba(185, 28, 28, 0.08);
+  --info-tint: rgba(29, 78, 216, 0.08);
+  --patch-tint: rgba(109, 40, 217, 0.1);
 
   --shadow-sm: 0 1px 2px rgba(23, 28, 48, 0.12);
   --shadow: 0 8px 24px rgba(23, 28, 48, 0.12);
@@ -273,10 +278,10 @@
   --tok-bool: #4078f2;
   --tok-null: #986801;
   --tok-punct: #5c6670;
-  --tok-gutter: #9aa0a6;
+  --tok-gutter: #94a3b8;
 
-  /* ---- 代码编辑区表面（JsonEditor 覆盖层） ---- */
-  --code-bg: #fbfcfe;
+  /* ---- 代码编辑区表面（JsonEditor 覆盖层，slate-50） ---- */
+  --code-bg: #f8fafc;
   --code-fg: #1f2329;
   --code-caret: #6e5ce6;
   --code-placeholder: rgba(31, 35, 41, 0.35);
@@ -502,7 +507,9 @@ kbd,
 
 .rf-input,
 .rf-textarea {
-  border: 1px solid var(--border);
+  /* 浅色下 --border-strong = slate-300，与纯白输入底形成清晰边界；
+     深色下 = #3a3a42（原 --border 几乎不可见，一并提亮） */
+  border: 1px solid var(--border-strong);
   background: var(--bg-card);
   color: var(--text-1);
   border-radius: var(--radius);
