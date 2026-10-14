@@ -13,6 +13,7 @@ import { CATEGORY_TONE, TEST_CASE_CATEGORIES, caseCategoryLabel, formatDuration,
 import { methodTextTone } from '../utils/methodTone'
 import type { Endpoint, TestCase, TestCaseCategory } from '../types/foxApi'
 import EmptyState from './ui/EmptyState.vue'
+import EnvBadge from './ui/EnvBadge.vue'
 import Icon from './ui/Icon.vue'
 import IconButton from './ui/IconButton.vue'
 import Menu, { type MenuItem } from './ui/Menu.vue'
@@ -333,6 +334,8 @@ watch(
         </button>
       </div>
       <div class="tcp-actions">
+        <!-- 运行环境上下文：全部运行 / 行内运行均走 store.activeEnvId，此处同源可见 -->
+        <EnvBadge />
         <button
           class="rf-btn rf-btn-sm"
           type="button"

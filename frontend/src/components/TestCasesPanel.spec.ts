@@ -24,7 +24,9 @@ const store = vi.hoisted(() => ({
     store.map.clear()
     for (const [k, v] of entries) store.map.set(k, v)
   },
-  activeEnvId: null,
+  activeEnvId: null as string | null,
+  /** EnvBadge（运行环境徽章）读取；面板 spec mock 的 store 需自带。 */
+  environments: [] as Array<{ id: string; name: string; base_url: string }>,
   runTestCase: vi.fn(),
   runAllTestCases: vi.fn(),
   applyTestCaseToDraft: vi.fn(),
@@ -77,6 +79,8 @@ describe('TestCasesPanel', () => {
     useLocaleStore().setMode('zh')
     store.set([['ep-1', [makeCase('c1', '内部划转-SGB', '正向'), makeCase('c2', '金额超限', '边界值')]]])
     store.meta.clear()
+    store.environments = []
+    store.activeEnvId = null
     vi.clearAllMocks()
   })
 
@@ -107,6 +111,16 @@ describe('TestCasesPanel', () => {
     expect(filterTexts).toContain('全部 2')
     expect(filterTexts).toContain('正向 1')
     expect(filterTexts).toContain('边界值 1')
+  })
+
+  it('工具栏展示当前激活环境（全部运行的环境上下文徽章）', () => {
+    store.environments = [{ id: 'e1', name: '开发环境', base_url: 'http://127.0.0.1:4010' }]
+    store.activeEnvId = 'e1'
+    const wrapper = mountPanel(draft())
+    const badge = wrapper.find('.env-badge')
+    expect(badge.exists()).toBe(true)
+    expect(badge.text()).toContain('开发环境')
+    expect(badge.text()).toContain('http://127.0.0.1:4010')
   })
 
   it('点击分类 Tab 过滤列表', async () => {

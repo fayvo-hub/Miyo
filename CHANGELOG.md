@@ -50,6 +50,10 @@ UI（浅色主题对比度重构）：
   --update-card-bg / --check-bg / --danger-fg / --projcard-*），组件只
   消费 var()；themePattern 回归测试升级为拦截任何组件级
   html[data-theme] 选择器
+- 用例运行环境可见：新增 EnvBadge（语义色点 + 环境名 + Base URL），
+  挂在用例详情抽屉「立即运行」旁与用例面板工具栏（全部运行前），
+  与运行链路同源 store.activeEnvId——运行前即知请求发往哪个环境
+  （无激活环境回落「无环境」）
 
 性能：
 

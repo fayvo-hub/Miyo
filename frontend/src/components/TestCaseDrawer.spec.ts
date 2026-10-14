@@ -7,8 +7,10 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import TestCaseDrawer from './TestCaseDrawer.vue'
 import CodeExportMenu from './CodeExportMenu.vue'
+import EnvBadge from './ui/EnvBadge.vue'
 import { useLocaleStore } from '../stores/locale'
-import type { TestCase } from '../types/foxApi'
+import { useWorkspaceStore } from '../stores/workspace'
+import type { Environment, TestCase } from '../types/foxApi'
 
 function makeCase(): TestCase {
   return {
@@ -163,6 +165,26 @@ describe('TestCaseDrawer', () => {
       expect(document.body.textContent).toContain('320ms')
       expect(document.body.textContent).toContain('"ok": true')
     })
+  })
+
+  it('底部操作栏展示当前激活环境（立即运行的环境上下文徽章）', () => {
+    const env: Environment = {
+      id: 'e1',
+      project_id: 'p1',
+      name: '开发环境',
+      base_url: 'http://127.0.0.1:4010',
+      variables: [],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z',
+    }
+    const store = useWorkspaceStore()
+    store.environments = [env]
+    store.activeEnvId = 'e1'
+    const { wrapper } = mountDrawer()
+    const badge = wrapper.findComponent(EnvBadge)
+    expect(badge.exists()).toBe(true)
+    expect(badge.text()).toContain('开发环境')
+    expect(badge.text()).toContain('http://127.0.0.1:4010')
   })
 
   it('运行失败展示 Failed 与错误信息', async () => {

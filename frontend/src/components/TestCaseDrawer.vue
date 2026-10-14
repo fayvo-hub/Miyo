@@ -15,6 +15,7 @@ import { methodTextTone } from '../utils/methodTone'
 import { useLocaleStore } from '../stores/locale'
 import CodeExportMenu from './CodeExportMenu.vue'
 import CustomSelect from './ui/CustomSelect.vue'
+import EnvBadge from './ui/EnvBadge.vue'
 import FindBar from './ui/FindBar.vue'
 import Icon from './ui/Icon.vue'
 import JsonCodeMirror from './JsonCodeMirror.vue'
@@ -624,6 +625,8 @@ function onSplitterDblClick(): void {
               :auth="NO_AUTH"
               :disabled="!urlPath.trim()"
             />
+            <!-- 运行环境上下文：与运行链路同源（store.activeEnvId），点击前可见 -->
+            <EnvBadge />
             <button
               class="rf-btn drw-run-btn"
               type="button"
