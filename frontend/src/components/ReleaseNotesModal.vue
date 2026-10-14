@@ -3,7 +3,7 @@
  * ReleaseNotesModal：独立版本更新详情弹窗（顶部更新 Tag / 设置更新卡片的统一落地页）。
  * - Header：🚀 发现新版本 vX（加粗等宽，样式在文末非 scoped 段覆写 Modal 容器/标题）；
  * - Body：Markdown 更新日志（markdownLite 转义渲染，主题化井底包裹框固定高度可滚动，紫点列表）；
- * - Footer：稍后再说（次要按钮）+ 立即下载并重启（主紫按钮），下载中就地展示进度条；
+ * - Footer：稍后再说（rf-btn 次要按钮）+ 立即下载并重启（rf-btn-primary 主按钮），下载中就地展示进度条；
  * - 打开时接管共享暂存的 Update；未安装关闭（Esc / 遮罩 / ✕ / 稍后再说）放回暂存，
  *   顶部 Tag 复亮；下载/安装中禁止关闭，成功后自动关闭并延迟重启。
  */
@@ -119,15 +119,10 @@ function guardClose(): boolean {
         </div>
         <p v-else-if="failMsg" class="rn-error" role="alert">{{ failMsg }}</p>
         <div class="rn-actions">
-          <button class="rn-btn-ghost" type="button" :disabled="downloading" @click="later">
+          <button class="rf-btn" type="button" :disabled="downloading" @click="later">
             {{ t('release.later') }}
           </button>
-          <button
-            class="cursor-pointer rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white shadow-lg shadow-purple-950/60 transition-all hover:bg-purple-500 disabled:cursor-default disabled:opacity-60"
-            type="button"
-            :disabled="downloading"
-            @click="install"
-          >
+          <button class="rf-btn rf-btn-primary" type="button" :disabled="downloading" @click="install">
             {{ t('release.install') }}
           </button>
         </div>
@@ -155,31 +150,6 @@ function guardClose(): boolean {
   margin: 0;
   font-size: var(--fs-xs);
   color: var(--text-3);
-}
-
-/* 次要按钮「稍后再说」：主题化 ghost（原写死灰字 + hover 反白，
-   浅色下 hover 白字隐形） */
-.rn-btn-ghost {
-  cursor: pointer;
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--text-2);
-  font-family: inherit;
-  font-size: var(--fs-xs);
-  font-weight: 500;
-  transition:
-    background var(--dur) var(--ease),
-    color var(--dur) var(--ease);
-}
-.rn-btn-ghost:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text-1);
-}
-.rn-btn-ghost:disabled {
-  cursor: default;
-  opacity: 0.5;
 }
 
 /* 段落/列表纵向行距（等价 space-y-2：非首子元素 8px 上边距，多行日志逐条呼吸） */
