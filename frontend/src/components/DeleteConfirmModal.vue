@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /**
  * DeleteConfirmModal：删除确认居中弹窗（接口 / 文件夹删除统一落地）。
- * - 柔和模糊遮罩（backdrop-blur-sm bg-black/50）+ 深底卡片容器（w-400 rounded-2xl p-6，
- *   双主题恒深色，经 CSS 变量覆写，同 ReleaseNotesModal 先例）；
+ * - 柔和模糊遮罩（backdrop-blur-sm，遮罩色走 --mask 深/浅两套）+ 卡片容器
+ *   （w-400 rounded-2xl p-6，配色随主题令牌，浅色白底——原「双主题恒深色
+ *   变量覆写」浅色下产出黑底弹窗，已移除，同 ReleaseNotesModal 先例）；
  * - 布局：警告徽章 + 基础标题（「删除接口」）+ 句式提示（含名称与不可撤销）+
  *   method/path 语义化代码卡片（方法色走 methodTone 单一真源）；
- * - 取消（Ghost）+ 确认删除（红实心 + 深红发光）；Esc / 遮罩 / ✕ 可关。
+ * - 取消（Ghost）+ 确认删除（红实心 + 柔红晕）；Esc / 遮罩 / ✕ 可关。
  */
 import { useLocaleStore } from '../stores/locale'
 import { methodTone } from '../utils/methodTone'
@@ -35,7 +36,7 @@ const t = useLocaleStore().t
     :open="open"
     width="400px"
     dialog-class="dc-modal"
-    mask-class="backdrop-blur-sm dc-mask"
+    mask-class="backdrop-blur-sm"
     @update:open="emit('update:open', $event)"
   >
     <!-- 右上快捷关闭（容器 position: relative 定位，见文末样式） -->
@@ -80,7 +81,7 @@ const t = useLocaleStore().t
   gap: 16px;
 }
 
-/* 警告徽章：圆角红底 red-500/15 + red-400 图标 */
+/* 警告徽章：圆角红底 red-500/15 + 危险图标色（--danger-fg 随主题） */
 .dc-badge {
   flex-shrink: 0;
   display: inline-flex;
@@ -89,7 +90,7 @@ const t = useLocaleStore().t
   padding: 8px;
   border-radius: 12px;
   background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  color: var(--danger-fg, #f87171);
 }
 
 .dc-texts {
@@ -102,7 +103,7 @@ const t = useLocaleStore().t
   margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-1);
   word-break: break-word;
 }
 
@@ -110,20 +111,20 @@ const t = useLocaleStore().t
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 1.55;
-  color: #a1a1aa;
+  color: var(--text-2);
   word-break: break-word;
 }
 
-/* method/path 代码卡片：微暗容器 + 方法徽章 + 等宽路径 */
+/* method/path 代码卡片：井底容器（--bg-code 随主题） + 方法徽章 + 等宽路径 */
 .dc-code {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: rgba(9, 9, 11, 0.6);
+  background: var(--bg-code);
 }
 
 .dc-method {
@@ -142,7 +143,7 @@ const t = useLocaleStore().t
   overflow: hidden;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: #d4d4d8;
+  color: var(--text-2);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -154,7 +155,7 @@ const t = useLocaleStore().t
   width: 100%;
 }
 
-/* 右上快捷关闭：zinc-500 → hover 白 */
+/* 右上快捷关闭：随主题（--text-3 → hover --text-1） */
 .dc-close {
   position: absolute;
   top: 16px;
@@ -165,12 +166,12 @@ const t = useLocaleStore().t
   padding: 2px;
   border: none;
   background: none;
-  color: #71717a;
+  color: var(--text-3);
   cursor: pointer;
   transition: color var(--dur) var(--ease);
 }
 .dc-close:hover {
-  color: #ffffff;
+  color: var(--text-1);
 }
 
 .dc-cancel {
@@ -181,56 +182,42 @@ const t = useLocaleStore().t
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-2);
   cursor: pointer;
   transition: all var(--dur) var(--ease);
 }
 .dc-cancel:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #e4e4e7;
+  background: var(--bg-hover);
+  color: var(--text-1);
 }
 
-/* 高危按钮：红底 + 红描边 + 深红发光（shadow-red-950/60），减弱纯红刺眼感 */
+/* 高危按钮：红底 + 红描边 + 柔化红晕（原深红双层阴影浅色下糊成脏块），减弱纯红刺眼感 */
 .dc-confirm {
   padding: 6px 16px;
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  background: #dc2626;
+  background: var(--danger);
   font-family: inherit;
   font-size: 12px;
   font-weight: 500;
   color: #fff;
-  box-shadow:
-    0 10px 15px -3px rgba(127, 29, 29, 0.6),
-    0 4px 6px -4px rgba(127, 29, 29, 0.6);
+  box-shadow: 0 8px 16px -8px rgba(220, 38, 38, 0.5);
   cursor: pointer;
   transition: all var(--dur) var(--ease);
 }
 .dc-confirm:hover {
-  background: #ef4444;
+  background: color-mix(in srgb, var(--danger) 88%, #fff);
 }
 </style>
 
 <style>
 /* 遮罩/容器经 Teleport 挂 body，覆写须非 scoped；body 前缀压过 Modal 的 scoped 规则。
-   类名 dc-modal / dc-mask 仅本弹窗使用。 */
+   类名 dc-modal 仅本弹窗使用。配色一律不覆写：容器/文字随主题令牌，
+   遮罩走 Modal 自带 var(--mask)（深/浅各一套）——原恒深底 token 覆写已移除。 */
 
-/* 遮罩 bg-black/50 走 --mask 变量，高斯模糊走 backdrop-blur-sm 类 */
-.dc-mask {
-  --mask: rgba(0, 0, 0, 0.5);
-}
-
-/* 容器：w-[400px]（width prop）rounded-2xl bg-zinc-900/95 border-white/10 shadow-2xl
-   + backdrop-blur-md；双主题恒深底，文本令牌一并覆写，浅色主题下不发黑 */
+/* 容器：仅覆写圆角（16px 结构性设计）+ 关闭图标定位锚点 + 背景毛玻璃 */
 .dc-modal {
-  --bg-elevated: rgba(24, 24, 27, 0.95);
-  --border-strong: rgba(255, 255, 255, 0.1);
   --radius-lg: 16px;
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --text-1: #fafafa;
-  --text-2: #a1a1aa;
-  --text-3: #71717a;
-  /* 右上关闭图标的定位锚点 */
   position: relative;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);

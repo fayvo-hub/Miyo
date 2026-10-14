@@ -138,10 +138,10 @@ watch(
 }
 
 .csp-body {
-  /* 沉浸式纯深色代码底（neutral-950），与卡片背景拉开层次 */
-  border: 1px solid rgba(38, 38, 38, 0.8);
+  /* 代码井：底随主题（--bg-code），描边走 --border（原 #0a0a0a 写死深底浅色下黑洞） */
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  background: #0a0a0a;
+  background: var(--bg-code);
   max-height: 320px;
   overflow: auto;
 }
@@ -178,7 +178,8 @@ watch(
   color: var(--warning);
 }
 .csp-code :deep(.hl-n) {
-  color: #c084fc;
+  /* 紫档随主题（--patch 深紫 / 浅紫），原 #c084fc 浅底下近不可读 */
+  color: var(--patch);
 }
 .csp-code :deep(.hl-p) {
   color: var(--text-2);

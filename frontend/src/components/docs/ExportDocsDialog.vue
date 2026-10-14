@@ -385,7 +385,7 @@ async function startExport(): Promise<void> {
   padding: 2px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #0a0a0a;
+  background: var(--bg-code);
 }
 
 .variant-btn {

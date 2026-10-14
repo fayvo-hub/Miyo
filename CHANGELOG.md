@@ -56,6 +56,25 @@ UI（浅色主题对比度重构）：
   次要按钮「稍后再说」全部走变量（原 hover 反白浅色下白字隐形）；
   底部按钮统一换 rf-btn / rf-btn-primary 按钮族（原硬编码紫 +
   深紫阴影 shadow-purple-950/60 在浅色下糊成脏影）
+- 全仓浅色扫尾（同类病灶统一修复）：
+  - DeleteConfirmModal 同款「恒深底」覆写全部移除——容器/标题/正文/
+    代码卡/关闭/取消钮随主题令牌，遮罩回落 --mask，高危钮深红双层
+    阴影改柔红晕
+  - ExportDocsDialog 开关组与 CodeSnippetsPanel 代码井 `#0a0a0a`
+    写死深底 → `--bg-code`；语法高亮 `.hl-n` 固定 `#c084fc` 浅底近
+    不可读 → `--patch`
+  - 主行动紫 token 化：新增 `--primary / --grad-primary(-hover) /
+    --primary-glow(-hover)` 深浅成对令牌；rf-btn-primary、rf-btn-send、
+    ProjectList（logo/CTA/新建钮）、EndpointTree 选中 pill、
+    WorkspaceView 工具钮光晕全部消费——**浅色降一档刺眼**
+   （violet-500→600→700 渐变 + 光晕 0.4→0.22）
+  - SettingsDialog 主题/语言选中 chip、Tab 高亮条、更新卡按钮
+    （bg-purple-600 字面）→ --primary 令牌 / rf-btn-primary 族
+  - HeaderUpdateTag `shadow-purple-950/50` 脏影 → primary 光晕；
+    ProjectList ghost 钮白 2% 底 → 主题文字 3% mix
+  - themePattern spec 升级：黑名单拦截组件级恒深底 token 直写、
+    `#0a0a0a` 代码井、亮紫填充/脏影字面量（注释剥离后判定）；
+    stash 回退 6 组件实证恰 1 条失败
 - 用例运行环境可见：用例面板工具栏挂 EnvBadge（语义色点 + 环境名 +
   Base URL）；用例详情抽屉在「用例基本信息」卡右上提供环境选择器
   （与顶栏同源 store.setEnvironment，可直接切换），底部操作栏只保留

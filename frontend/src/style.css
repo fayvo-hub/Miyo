@@ -112,6 +112,12 @@
   /* 单一 accent：靛青降饱和（saturation ≈ 70%，避开 AI 紫大饱和），hover 略提亮 */
   --accent: #8380e8;
   --accent-hover: #9995ef;
+  /* ---- 主行动紫（按钮/CTA 渐变 + 光晕的单一真源；浅色降一档见 light 块） ---- */
+  --primary: #8b5cf6;
+  --grad-primary: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  --grad-primary-hover: linear-gradient(135deg, #9d71f7, #8b5cf6);
+  --primary-glow: rgba(124, 58, 237, 0.4);
+  --primary-glow-hover: rgba(124, 58, 237, 0.5);
   --success: #22c55e;
   --warning: #f59e0b;
   --orange: #f97316;
@@ -273,6 +279,12 @@
   --text-value: #3f4652;
   --accent: #5f5ad4;
   --accent-hover: #4e49c7;
+  /* ---- 主行动紫：浅色降刺眼——同色相下沉两档（violet-600→700）+ 光晕减淡 ---- */
+  --primary: #7c3aed;
+  --grad-primary: linear-gradient(135deg, #7c3aed, #6d28d9);
+  --grad-primary-hover: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  --primary-glow: rgba(109, 40, 217, 0.22);
+  --primary-glow-hover: rgba(109, 40, 217, 0.3);
   /* ---- 状态/方法色：700 档（白底 4.5:1+），徽章底由 10% tint 派生即
      amber-50/emerald-50 级淡底，文字 amber-700 级高对比 ---- */
   --success: #15803d;
@@ -480,47 +492,47 @@ kbd,
   cursor: default;
 }
 
-/* Obsidian 主按钮：紫渐变 + 光晕（对标参考图的 Create 按钮） */
+/* Obsidian 主按钮：紫渐变 + 光晕（对标参考图的 Create 按钮），配色走 --grad-primary 系令牌 */
 .rf-btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   border-color: transparent;
   color: #fff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 4px 16px rgba(124, 58, 237, 0.35);
+    0 4px 16px var(--primary-glow);
 }
 .rf-btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #9d71f7, #8b5cf6);
+  background: var(--grad-primary-hover);
   border-color: transparent;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 6px 20px rgba(124, 58, 237, 0.45);
+    0 6px 20px var(--primary-glow-hover);
 }
 .rf-btn-primary:active:not(:disabled) {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  background: var(--grad-primary);
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 .rf-btn-send {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   border-color: transparent;
   color: #fff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 3px 12px rgba(124, 58, 237, 0.4);
+    0 3px 12px var(--primary-glow);
 }
 .rf-btn-send:hover:not(:disabled) {
-  background: linear-gradient(135deg, #9d71f7, #8b5cf6);
+  background: var(--grad-primary-hover);
   border-color: transparent;
   transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 6px 18px rgba(124, 58, 237, 0.5);
+    0 6px 18px var(--primary-glow-hover);
 }
 .rf-btn-send:active:not(:disabled) {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 .rf-btn-danger {

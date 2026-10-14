@@ -805,10 +805,10 @@ useWindowDrag(topBarEl)
   justify-content: center;
   color: #fff;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 2px 8px rgba(124, 58, 237, 0.4);
+    0 2px 8px var(--primary-glow);
 }
 
 .top-title {
@@ -1124,28 +1124,28 @@ useWindowDrag(topBarEl)
 /* 主 CTA：紫渐变光晕（与全局 rf-btn-primary 同语言） */
 .quick-btn.primary {
   border: 1px solid transparent;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   color: #fff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 3px 12px rgba(124, 58, 237, 0.4);
+    0 3px 12px var(--primary-glow);
 }
 .quick-btn.primary:hover {
   border-color: transparent;
-  background: linear-gradient(135deg, #9d71f7, #8b5cf6);
+  background: var(--grad-primary-hover);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 5px 16px rgba(124, 58, 237, 0.5);
+    0 5px 16px var(--primary-glow-hover);
 }
 .quick-btn.primary:active {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  background: var(--grad-primary);
+  box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 /* 次要动作（导入）：中性描边样式 */
 .quick-btn.ghost {
   border: 1px solid var(--border-strong);
-  background: rgba(255, 255, 255, 0.02);
+  background: color-mix(in srgb, var(--text-1) 3%, transparent);
   color: var(--text-2);
 }
 .quick-btn.ghost:hover {
@@ -1280,23 +1280,23 @@ useWindowDrag(topBarEl)
   padding: 0 16px;
   border: none;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: var(--grad-primary);
   color: #fff;
   font-size: 12.5px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 4px 14px var(--primary-glow);
   transition:
     background var(--dur) var(--ease),
     transform var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
 }
 .btn-new:hover {
-  background: linear-gradient(135deg, #9d71f7, #8b5cf6);
+  background: var(--grad-primary-hover);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 6px 18px rgba(124, 58, 237, 0.5);
+    0 6px 18px var(--primary-glow-hover);
 }
 .btn-new:active {
   transform: translateY(1px);

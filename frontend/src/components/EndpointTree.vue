@@ -1061,12 +1061,12 @@ function onBatchMenuSelect(item: MenuItem): void {
 .tree-row:hover {
   background: var(--bg-hover);
 }
-/* 选中态：Obsidian 全宽紫 pill（渐变 + 光晕 + 白字），对标参考图侧边栏 */
+/* 选中态：Obsidian 全宽紫 pill（渐变 + 光晕 + 白字），渐变走 --grad-primary 系令牌（浅色降刺眼） */
 .tree-row.active {
-  background: linear-gradient(135deg, #7e57ff, #6e46ff);
+  background: var(--grad-primary);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 4px 14px rgba(126, 87, 255, 0.35);
+    0 4px 14px var(--primary-glow);
 }
 .tree-row.active::before {
   content: none;

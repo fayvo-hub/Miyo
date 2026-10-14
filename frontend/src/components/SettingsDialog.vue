@@ -902,7 +902,7 @@ const projectSummary = computed(() => {
           <!-- 选中时的左侧高亮细条 -->
           <span
             v-if="activeTab === tab.id"
-            class="absolute left-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-purple-600 dark:bg-purple-500"
+            class="su-tab-marker absolute left-1 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full"
           />
           <Icon
             :name="tab.icon"
@@ -978,7 +978,7 @@ const projectSummary = computed(() => {
                       class="flex h-8 items-center gap-1.5 rounded-md px-3 text-xs transition-all duration-150"
                       :class="
                         theme.mode === opt.value
-                          ? 'bg-purple-600 font-medium text-white shadow-sm'
+                          ? 'su-chip-active font-medium text-white shadow-sm'
                           : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                       "
                       @click="theme.setMode(opt.value)"
@@ -1008,7 +1008,7 @@ const projectSummary = computed(() => {
                         class="flex h-8 items-center gap-1.5 rounded-md px-3 text-xs transition-all duration-150"
                         :class="
                           locale.mode === opt.value
-                            ? 'bg-purple-600 font-medium text-white shadow-sm'
+                            ? 'su-chip-active font-medium text-white shadow-sm'
                             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
                         "
                         @click="locale.setMode(opt.value)"
@@ -1046,7 +1046,7 @@ const projectSummary = computed(() => {
                       <p class="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">{{ t('settings.updateAvailableDesc') }}</p>
                     </div>
                     <button
-                      class="shrink-0 cursor-pointer rounded-lg bg-purple-600 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-purple-500"
+                      class="rf-btn rf-btn-primary rf-btn-sm shrink-0"
                       type="button"
                       @click="openUpdateDetail"
                     >
@@ -1689,6 +1689,13 @@ const projectSummary = computed(() => {
 </template>
 
 <style scoped>
+/* 选中态紫色填充（Tab 高亮条 / 主题·语言 radio chip）：走 --primary 令牌
+   （浅色降刺眼 violet-600，深色 violet-500），替代字面 bg-purple-600 */
+.su-tab-marker,
+.su-chip-active {
+  background: var(--primary);
+}
+
 .pane-enter-active,
 .pane-leave-active {
   transition:

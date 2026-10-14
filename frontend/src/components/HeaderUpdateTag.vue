@@ -17,7 +17,7 @@ const t = useLocaleStore().t
 <template>
   <button
     v-if="hasPendingUpdate"
-    class="flex cursor-pointer items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/20 px-3 py-1 font-mono text-xs font-medium text-purple-700 shadow-sm shadow-purple-950/50 transition-all hover:bg-purple-500/30 dark:text-purple-300"
+    class="rf-update-tag flex cursor-pointer items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/20 px-3 py-1 font-mono text-xs font-medium text-purple-700 transition-all hover:bg-purple-500/30 dark:text-purple-300"
     type="button"
     :title="t('app.updateFound', { v: pendingUpdateVersion() ?? '' })"
     @click="requestOpenRelease()"
@@ -28,6 +28,11 @@ const t = useLocaleStore().t
 </template>
 
 <style scoped>
+/* 投影走 primary 光晕（原 shadow-purple-950/50 浅色下糊成暗紫脏影） */
+.rf-update-tag {
+  box-shadow: 0 1px 3px var(--primary-glow);
+}
+
 /* 火箭微亮呼吸：prefers-reduced-motion 由 style.css 全局兜底关闭 */
 .rf-update-tag-icon {
   font-size: 11px;
