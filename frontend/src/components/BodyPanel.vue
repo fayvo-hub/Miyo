@@ -653,14 +653,12 @@ const binPath = useDebouncedField(
 }
 .bp-json-status.invalid {
   background: color-mix(in srgb, var(--danger) 16%, transparent);
-  color: color-mix(in srgb, var(--danger) 72%, #fff);
+  /* 危险态文字走 --danger-fg（暗底提亮 / 浅底本色） */
+  color: var(--danger-fg);
 }
 .bp-json-status.large {
   background: var(--warning-tint);
   color: var(--warning);
-}
-html[data-theme='light'] .bp-json-status.invalid {
-  color: var(--danger);
 }
 .bp-json-dot {
   width: 4px;

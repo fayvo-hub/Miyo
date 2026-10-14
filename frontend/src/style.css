@@ -70,6 +70,35 @@
   --bg-2: var(--bg-panel);
   /* 抽屉投影：横向柔和阴影（浅色不能用纯黑浓影，会糊成脏边） */
   --shadow-drawer: -12px 0 40px rgba(0, 0, 0, 0.4);
+  /* ---- 组件语义别名（原组件级 html[data-theme] 覆写收敛为双主题变量，
+     组件内只消费 var()，主题差异全部回到本文件表达） ---- */
+  /* inset 数字输入（设置面板深陷底） */
+  --inset-input-bg: rgba(0, 0, 0, 0.3);
+  --inset-input-border: rgba(255, 255, 255, 0.1);
+  --inset-input-border-hover: rgba(255, 255, 255, 0.2);
+  /* 对话框表面（设置弹窗比通用 elevated 深一档 + 更重投影） */
+  --dialog-bg: #121215;
+  --dialog-border-strong: rgba(255, 255, 255, 0.1);
+  --dialog-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.8);
+  /* 「发现新版本」高亮卡渐变（深色 = 紫→锌，浅色下会压暗文字故浅档另给） */
+  --update-card-bg: linear-gradient(to right, rgba(88, 28, 135, 0.3), rgba(24, 24, 27, 0.5));
+  /* 未勾选复选框井底 / 危险态文字（暗底提亮保可读） */
+  --check-bg: color-mix(in srgb, black 26%, transparent);
+  --danger-fg: color-mix(in srgb, var(--danger) 72%, #fff);
+  /* 项目卡表面（深色微光半透底 + 1px 光描边） */
+  --projcard-bg: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0) 60%
+  ), rgba(255, 255, 255, 0.018);
+  --projcard-border: rgba(255, 255, 255, 0.055);
+  --projcard-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --projcard-hover-bg: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 5%, transparent),
+    rgba(255, 255, 255, 0) 60%
+  ), rgba(255, 255, 255, 0.028);
+  --projcard-hover-shadow: 0 14px 34px rgba(9, 12, 22, 0.5);
   /* 主面板浮层：white/8 极细边框 + 深色沉浸阴影（shadow-xl shadow-black/50） */
   --border-panel: rgba(255, 255, 255, 0.08);
   --shadow-panel:
@@ -271,6 +300,21 @@
   /* 抽屉：低透明度冷灰柔影替代纯黑浓影（配合纯白抽屉体，边缘只留一道
      slate-200 hairline，不再出现深色污边 + 亮线并存的割裂感） */
   --shadow-drawer: -8px 0 32px rgba(15, 23, 48, 0.1);
+  /* ---- 组件语义别名（浅色档，与 :root 同名成对） ---- */
+  --inset-input-bg: #ffffff;
+  --inset-input-border: rgba(24, 24, 27, 0.15);
+  --inset-input-border-hover: rgba(24, 24, 27, 0.25);
+  --dialog-bg: #ffffff;
+  --dialog-border-strong: rgba(24, 24, 27, 0.12);
+  --dialog-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.18);
+  --update-card-bg: linear-gradient(to right, rgba(168, 85, 247, 0.14), rgba(244, 244, 245, 0.9));
+  --check-bg: color-mix(in srgb, black 5%, transparent);
+  --danger-fg: var(--danger);
+  --projcard-bg: var(--bg-panel);
+  --projcard-border: var(--border);
+  --projcard-shadow: var(--shadow);
+  --projcard-hover-bg: var(--bg-panel);
+  --projcard-hover-shadow: var(--shadow-lg);
   --focus-ring: rgba(95, 90, 212, 0.45);
 
   --danger-border: rgba(220, 38, 38, 0.3);

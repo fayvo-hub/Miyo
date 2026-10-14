@@ -159,20 +159,13 @@ function onBlur(): void {
   cursor: default;
 }
 
-/* ---- inset 基调：深陷半透明底（设置面板用） ---- */
+/* ---- inset 基调：深陷半透明底（设置面板用）；双主题值走 --inset-input-* ---- */
 .cni.tone-inset .cni-input {
-  background: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-html[data-theme='light'] .cni.tone-inset .cni-input {
-  background: #ffffff;
-  border-color: rgba(24, 24, 27, 0.15);
+  background: var(--inset-input-bg);
+  border-color: var(--inset-input-border);
 }
 .cni.tone-inset .cni-input:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-html[data-theme='light'] .cni.tone-inset .cni-input:hover:not(:disabled) {
-  border-color: rgba(24, 24, 27, 0.25);
+  border-color: var(--inset-input-border-hover);
 }
 .cni.tone-inset .cni-input:focus {
   border-color: rgba(168, 85, 247, 0.5);

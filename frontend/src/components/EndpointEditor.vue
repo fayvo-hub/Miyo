@@ -2111,14 +2111,12 @@ onUnmounted(() => {
   place-content: center;
   border: 1px solid var(--border-editor);
   border-radius: 4px;
-  background: color-mix(in srgb, black 26%, transparent);
+  /* 井底走 --check-bg（深 26% 黑 / 浅 5% 黑） */
+  background: var(--check-bg);
   cursor: pointer;
   transition:
     background var(--dur) var(--ease),
     border-color var(--dur) var(--ease);
-}
-html[data-theme='light'] .rs-check input[type='checkbox'] {
-  background: color-mix(in srgb, black 5%, transparent);
 }
 .rs-check input[type='checkbox']::before {
   content: '';

@@ -41,6 +41,15 @@ UI（浅色主题对比度重构）：
   这些内嵌带与承载面同色、仅剩分隔线）
 - req-settings 底色收敛到 --bg-code，移除组件级 html[data-theme] 覆写
   与 color-mix(black N%) 脏灰
+- 环境浮层右缘夹取：CustomSelect measure() 按实测宽左移、不越出视口
+  （触发器贴右缘时右侧选项/底栏曾被窗口截断），.cs-pop 另加
+  max-width 兜底
+- 主题单源收口：10 处组件级 html[data-theme] 覆写（CustomNumberInput /
+  DesignPanel / ProjectCard / SettingsDialog / EndpointEditor / BodyPanel）
+  全部收敛为 style.css 成对 token（--inset-input-* / --dialog-* /
+  --update-card-bg / --check-bg / --danger-fg / --projcard-*），组件只
+  消费 var()；themePattern 回归测试升级为拦截任何组件级
+  html[data-theme] 选择器
 
 性能：
 

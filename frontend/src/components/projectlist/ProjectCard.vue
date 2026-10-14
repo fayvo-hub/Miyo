@@ -98,12 +98,10 @@ const emit = defineEmits<{
   /* 网格子项：允许收缩到轨道宽，长描述走 ellipsis 而不是撑爆网格 */
   min-width: 0;
   border-radius: var(--radius-xl);
-  /* 半透明深底（#18181b 质感）+ 1px 微光描边，与面板底色拉开层次 */
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0) 60%),
-    rgba(255, 255, 255, 0.018);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  /* 表面/描边/投影走 --projcard-*（深色微光半透底；浅色档在 style.css = 纯白卡） */
+  border: 1px solid var(--projcard-border);
+  background: var(--projcard-bg);
+  box-shadow: var(--projcard-shadow);
   cursor: pointer;
   transition:
     border-color var(--dur) var(--ease),
@@ -113,20 +111,9 @@ const emit = defineEmits<{
 }
 .proj-card:hover {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, transparent), rgba(255, 255, 255, 0) 60%),
-    rgba(255, 255, 255, 0.028);
+  background: var(--projcard-hover-bg);
   transform: translateY(-2px);
-  box-shadow: 0 14px 34px rgba(9, 12, 22, 0.5);
-}
-html[data-theme='light'] .proj-card {
-  border-color: var(--border);
-  background: var(--bg-panel);
-  box-shadow: var(--shadow);
-}
-html[data-theme='light'] .proj-card:hover {
-  background: var(--bg-panel);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--projcard-hover-shadow);
 }
 
 .proj-avatar {

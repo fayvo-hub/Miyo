@@ -1847,23 +1847,16 @@ const projectSummary = computed(() => {
 /* 设置弹窗容器：覆写 Modal 的 CSS 变量。
    深色 = 深邃高级暗色底 + 极细白描边 + 柔和深影；浅色 = macOS 原生白色面板质感。 */
 .sd-dialog {
-  --bg-elevated: #121215;
-  --border-strong: rgba(255, 255, 255, 0.1);
+  /* 表面比通用 elevated 深一档 + 更重投影；双主题值走 --dialog-* 别名 */
+  --bg-elevated: var(--dialog-bg);
+  --border-strong: var(--dialog-border-strong);
   --radius-lg: 16px;
-  --shadow-lg: 0 25px 60px -12px rgba(0, 0, 0, 0.8);
-}
-html[data-theme='light'] .sd-dialog {
-  --bg-elevated: #ffffff;
-  --border-strong: rgba(24, 24, 27, 0.12);
-  --shadow-lg: 0 25px 60px -12px rgba(0, 0, 0, 0.18);
+  --shadow-lg: var(--dialog-shadow);
 }
 
-/* 通用设置「发现新版本」高亮卡片：深色 = 紫→锌渐变（purple-900/30 → zinc-900/50），
-   浅色 = 浅紫→浅灰渐变保证正文可读（深色系半透渐变在浅底上会压暗文字）。 */
+/* 通用设置「发现新版本」高亮卡片：深色 = 紫→锌渐变，浅色 = 浅紫→浅灰渐变
+   （深色系半透渐变在浅底上会压暗文字），双主题值走 --update-card-bg。 */
 .su-update-card {
-  background: linear-gradient(to right, rgba(88, 28, 135, 0.3), rgba(24, 24, 27, 0.5));
-}
-html[data-theme='light'] .su-update-card {
-  background: linear-gradient(to right, rgba(168, 85, 247, 0.14), rgba(244, 244, 245, 0.9));
+  background: var(--update-card-bg);
 }
 </style>

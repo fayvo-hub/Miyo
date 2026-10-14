@@ -1212,13 +1212,11 @@ onBeforeUnmount(() => {
   padding: 0 10px;
   border: none;
   outline: none;
-  background: #0a0a0a;
+  /* 代码面走 --bg-code：深浅双主题同源（原 #0a0a0a + 组件级浅色覆写） */
+  background: var(--bg-code);
   color: var(--text-1);
   font-family: var(--font-mono);
   font-size: 13px;
-}
-html[data-theme='light'] .path-input {
-  background: var(--bg-code);
 }
 
 .desc-area {
@@ -1275,15 +1273,13 @@ html[data-theme='light'] .path-input {
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: #0a0a0a;
+  /* 代码面走 --bg-code：深浅双主题同源（原 #0a0a0a + 组件级浅色覆写） */
+  background: var(--bg-code);
   color: var(--text-1);
   font-size: 12px;
   line-height: 1.6;
   resize: vertical;
   transition: border-color var(--dur) var(--ease);
-}
-html[data-theme='light'] .body-json {
-  background: var(--bg-code);
 }
 .body-json:focus {
   outline: none;
