@@ -657,7 +657,7 @@ function onSplitterDblClick(): void {
   position: fixed;
   inset: 0;
   z-index: 120;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--mask);
   backdrop-filter: blur(2px);
 }
 
@@ -672,7 +672,7 @@ function onSplitterDblClick(): void {
   flex-direction: column;
   background: var(--bg-2);
   border-left: 1px solid var(--border);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-drawer);
 }
 
 .drw-head {

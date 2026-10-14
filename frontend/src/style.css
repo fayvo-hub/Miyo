@@ -62,6 +62,14 @@
   --border-strong: #3a3a42;
   /* 编辑器/代码块专用边框（暗色半透白；浅色为半透黑保持可见性） */
   --border-editor: rgba(255, 255, 255, 0.1);
+  /* ---- 幽灵层级别名（历史遗留：TestCaseDrawer / EndpointEditor / SettingsDialog
+     等 4 组件 17 处引用，此前从未定义 → 属性 unset 透出遮罩，深色下靠
+     rgba(0,0,0,.55) 遮罩"碰巧像"面板，浅色下露出浑浊灰底与硬边线。
+     现收敛到语义 token：bg-1 = 井槽/行底（代码面），bg-2 = 壳层/浮层。） ---- */
+  --bg-1: var(--bg-code);
+  --bg-2: var(--bg-panel);
+  /* 抽屉投影：横向柔和阴影（浅色不能用纯黑浓影，会糊成脏边） */
+  --shadow-drawer: -12px 0 40px rgba(0, 0, 0, 0.4);
   /* 主面板浮层：white/8 极细边框 + 深色沉浸阴影（shadow-xl shadow-black/50） */
   --border-panel: rgba(255, 255, 255, 0.08);
   --shadow-panel:
@@ -260,6 +268,9 @@
   --shadow-sm: 0 1px 2px rgba(23, 28, 48, 0.12);
   --shadow: 0 8px 24px rgba(23, 28, 48, 0.12);
   --shadow-lg: 0 16px 48px rgba(17, 21, 38, 0.18);
+  /* 抽屉：低透明度冷灰柔影替代纯黑浓影（配合纯白抽屉体，边缘只留一道
+     slate-200 hairline，不再出现深色污边 + 亮线并存的割裂感） */
+  --shadow-drawer: -8px 0 32px rgba(15, 23, 48, 0.1);
   --focus-ring: rgba(95, 90, 212, 0.45);
 
   --danger-border: rgba(220, 38, 38, 0.3);

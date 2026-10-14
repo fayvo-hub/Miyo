@@ -145,10 +145,10 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100%;
   max-width: 96vw;
-  border-left: 1px solid var(--border-strong);
+  border-left: 1px solid var(--border);
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   background: var(--bg-elevated);
-  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-drawer);
   overflow: hidden;
 }
 
