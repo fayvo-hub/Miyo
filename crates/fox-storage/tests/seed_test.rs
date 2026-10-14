@@ -126,20 +126,86 @@ async fn seeds_full_fixture_set() {
         2,
         "gRPC 演示端点（unary + 服务端流）应存在"
     );
-    // 开放演示含 2 条测试用例（文章分页 / 发布周报）+ 1 条请求用例（周报样例）
+    // 开放演示含 3 条测试用例（文章分页 / 发布周报 / 不存在文章负向）+ 1 条请求用例
     let mut open_case_total = 0usize;
     for e in &open_endpoints {
         open_case_total += repo::list_test_cases(&db, e.id).await.unwrap().len();
     }
-    assert_eq!(open_case_total, 2);
+    assert_eq!(open_case_total, 3);
+    // 开放演示文档素材：文章列表挂响应示例（含字段注释）
+    let list_posts = open_endpoints
+        .iter()
+        .find(|e| e.path == "/posts" && e.method == fox_core::model::HttpMethod::GET)
+        .expect("文章列表接口存在");
+    assert!(!repo::list_response_examples(&db, list_posts.id)
+        .await
+        .unwrap()
+        .is_empty());
     let graphql = projects
         .iter()
         .find(|p| p.name == "小奏技术 · GraphQL 网关")
         .expect("GraphQL 项目存在");
-    assert_eq!(
-        repo::list_endpoints(&db, graphql.id).await.unwrap().len(),
-        2
-    );
+    let gql_eps = repo::list_endpoints(&db, graphql.id).await.unwrap();
+    assert_eq!(gql_eps.len(), 2);
+    // GraphQL：每接口响应示例（文档素材）+ 正向/负向 2 条用例 + 1 条请求用例
+    let mut gql_cases = 0usize;
+    let mut gql_reqs = 0usize;
+    for e in &gql_eps {
+        assert!(
+            !repo::list_response_examples(&db, e.id)
+                .await
+                .unwrap()
+                .is_empty(),
+            "GraphQL 接口应有响应示例"
+        );
+        gql_cases += repo::list_test_cases(&db, e.id).await.unwrap().len();
+        gql_reqs += repo::list_request_examples(&db, e.id).await.unwrap().len();
+    }
+    assert_eq!(gql_cases, 2, "国家详情：正向 + 负向");
+    assert_eq!(gql_reqs, 1, "带变量请求用例 1 条");
+
+    // 轻量项目：每个都铺齐 —— 2 接口（带请求参数）+ 每接口响应示例
+    //（文档素材）+ ≥2 测试用例 + ≥1 请求用例 + 开发 / 测试双环境
+    for name in [
+        "小奏技术 · 网关服务",
+        "小奏技术 · 监控告警",
+        "小奏技术 · 支付中心",
+        "小奏技术 · 营销活动",
+        "小奏技术 · 数据大屏",
+        "小奏技术 · 文档中心",
+    ] {
+        let p = projects
+            .iter()
+            .find(|proj| proj.name == name)
+            .unwrap_or_else(|| panic!("{name} 存在"));
+        let eps = repo::list_endpoints(&db, p.id).await.unwrap();
+        assert_eq!(eps.len(), 2, "{name} 2 个接口");
+        assert!(
+            eps.iter().any(|e| {
+                !e.request.params.is_empty()
+                    || !matches!(e.request.body, fox_core::model::BodySpec::None)
+            }),
+            "{name} 至少一个接口带请求参数或 Body"
+        );
+        let mut cases = 0usize;
+        let mut reqs = 0usize;
+        for e in &eps {
+            assert!(
+                !repo::list_response_examples(&db, e.id)
+                    .await
+                    .unwrap()
+                    .is_empty(),
+                "{name}/{} 应有响应示例（文档素材）",
+                e.name
+            );
+            cases += repo::list_test_cases(&db, e.id).await.unwrap().len();
+            reqs += repo::list_request_examples(&db, e.id).await.unwrap().len();
+        }
+        assert!(cases >= 2, "{name} ≥2 条测试用例");
+        assert!(reqs >= 1, "{name} ≥1 条请求用例");
+        let envs = repo::list_environments(&db, p.id).await.unwrap();
+        assert_eq!(envs.len(), 2, "{name} 开发 / 测试双环境");
+    }
 
     // 环境：每个项目各自的开发 / 测试环境（单一 Base URL + 变量）
     let envs = repo::list_environments(&db, users.id).await.unwrap();

@@ -11,6 +11,9 @@
 //! - 项目 2「小奏技术 · 开放演示」：公网真实 API（JSONPlaceholder），无需 Mock 即可直接发送；
 //! - 项目 3「小奏技术 · GraphQL 网关」：公共 GraphQL 服务，测试 GraphQL 工作台；
 //! - 项目 2 内含 gRPC 端点：公共反射演示服务（grpcb.in），测试 gRPC 调试；
+//! - 6 个轻量演示项目同样铺齐内容：带请求参数（query / 路径变量 / JSON Body）
+//!   的接口 + 响应示例（文档素材）+ 测试用例（正向 / 负向 / 边界值）+
+//!   请求用例 + 开发 / 测试双环境，每个项目打开都有完整内容可看；
 //! - 环境：每个项目各自的「开发环境 / 测试环境」（单一 Base URL + 变量）、
 //!   全局参数、激活项 settings。
 
@@ -64,84 +67,324 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
     }
 
     // ---- 轻量演示项目（每团队补几个，凑足分组展示的数据量） ----
-    // 只给 2-3 个真实公网端点，不铺 Mock / 测试用例，保持种子数据精简。
-    for (name, desc, team_id, endpoints) in [
+    // 每个项目铺齐内容：带请求参数（query / 路径变量 / JSON Body）的接口 →
+    // 响应示例（文档页素材）→ 开发 / 测试双环境；测试用例与请求用例在
+    // 下方统一挂载（light_endpoints 提供端点引用）。
+    let mut light_endpoints: HashMap<String, HashMap<String, Endpoint>> = HashMap::new();
+    for (name, desc, team_id, base_url, endpoints) in [
         (
             "小奏技术 · 网关服务",
             "API 网关配置演示：路由与限流接口（指向 JSONPlaceholder 占位）。",
             Some(team_platform.id),
+            "https://jsonplaceholder.typicode.com",
             vec![
-                ("GET", "/routes", "网关路由列表"),
-                ("POST", "/routes", "新增路由"),
+                (
+                    "GET",
+                    "/routes",
+                    "路由列表",
+                    "Query 参数 page / size 分页；返回网关路由配置数组",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![
+                            kvd("page", "1", "页码，从 1 开始"),
+                            kvd("size", "20", "每页条数，上限 100"),
+                        ],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"[{"id": 1, "path": "/api/users", "upstream": "user-service", "enabled": true, "rate_limit": 100}, {"id": 2, "path": "/api/orders", "upstream": "order-service", "enabled": true, "rate_limit": 50}]"#,
+                    ),
+                ),
+                (
+                    "POST",
+                    "/routes",
+                    "新增路由",
+                    "JSON Body：新增路由，path 需以 / 开头",
+                    EndpointStatus::Testing,
+                    json_body(
+                        r#"{"path": "/api/notify", "upstream": "notify-service", "enabled": true, "rate_limit": 30}"#,
+                    ),
+                    (
+                        "201 已创建",
+                        201,
+                        r#"{"id": 3, "path": "/api/notify", "upstream": "notify-service", "enabled": true, "rate_limit": 30}"#,
+                    ),
+                ),
             ],
         ),
         (
             "小奏技术 · 监控告警",
             "监控告警演示：告警规则 CRUD（指向 httpbin.org 公网调试服务）。",
             Some(team_platform.id),
+            "https://httpbin.org",
             vec![
-                ("GET", "/alerts", "告警规则列表"),
-                ("PUT", "/alerts/{id}", "更新告警规则"),
+                (
+                    "GET",
+                    "/alerts",
+                    "告警规则列表",
+                    "Query 参数 status / level 过滤告警",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![
+                            kvd("status", "all", "状态筛选：all / firing / resolved"),
+                            kvd("level", "warn", "级别：info / warn / critical"),
+                        ],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"[{"id": 1, "name": "CPU 使用率过高", "level": "critical", "status": "firing", "threshold": 90}, {"id": 2, "name": "磁盘水位告警", "level": "warn", "status": "resolved", "threshold": 85}]"#,
+                    ),
+                ),
+                (
+                    "PUT",
+                    "/alerts/{id}",
+                    "更新告警",
+                    "路径变量 {id} + JSON Body：调整告警阈值",
+                    EndpointStatus::Developing,
+                    RequestSpec {
+                        path_variables: vec![kvd("id", "1", "告警规则 ID")],
+                        body: BodySpec::Json {
+                            raw: r#"{"name": "CPU 使用率过高", "threshold": 95, "enabled": true}"#
+                                .into(),
+                        },
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"{"id": 1, "name": "CPU 使用率过高", "level": "critical", "status": "firing", "threshold": 95, "enabled": true}"#,
+                    ),
+                ),
             ],
         ),
         (
             "小奏技术 · 支付中心",
             "支付中心演示：下单 / 退款接口（指向 jsonplaceholder 占位）。",
             Some(team_business.id),
+            "https://jsonplaceholder.typicode.com",
             vec![
-                ("POST", "/orders", "创建支付订单"),
-                ("POST", "/refunds", "发起退款"),
+                (
+                    "POST",
+                    "/orders",
+                    "创建支付订单",
+                    "JSON Body：下单金额单位为元，currency 支持 CNY / USD",
+                    EndpointStatus::Testing,
+                    json_body(
+                        r#"{"order_no": "XZ20261014001", "amount": 199.0, "currency": "CNY", "item": "RustFox 专业版"}"#,
+                    ),
+                    (
+                        "201 已创建",
+                        201,
+                        r#"{"id": 10086, "order_no": "XZ20261014001", "amount": 199.0, "currency": "CNY", "status": "paid", "created_at": "2026-10-14T10:00:00Z"}"#,
+                    ),
+                ),
+                (
+                    "POST",
+                    "/refunds",
+                    "发起退款",
+                    "JSON Body：按订单号全额或部分退款，reason 必填",
+                    EndpointStatus::Developing,
+                    json_body(
+                        r#"{"order_no": "XZ20261014001", "amount": 199.0, "reason": "重复下单"}"#,
+                    ),
+                    (
+                        "200 成功",
+                        200,
+                        r#"{"refund_no": "RF20261014001", "order_no": "XZ20261014001", "amount": 199.0, "status": "processing"}"#,
+                    ),
+                ),
             ],
         ),
         (
             "小奏技术 · 营销活动",
             "营销活动演示：活动投放接口（指向 httpbin.org 公网调试服务）。",
             Some(team_business.id),
+            "https://httpbin.org",
             vec![
-                ("GET", "/campaigns", "活动列表"),
-                ("POST", "/campaigns", "创建活动"),
+                (
+                    "GET",
+                    "/campaigns",
+                    "活动列表",
+                    "Query 参数 status / channel 过滤投放活动",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![
+                            kvd("status", "active", "投放状态：active / paused / ended"),
+                            kvd("channel", "wechat", "投放渠道：wechat / weibo / douyin"),
+                        ],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"[{"id": 1, "name": "国庆大促", "status": "active", "channel": "wechat", "budget": 50000}, {"id": 2, "name": "会员日", "status": "paused", "channel": "weibo", "budget": 20000}]"#,
+                    ),
+                ),
+                (
+                    "POST",
+                    "/campaigns",
+                    "创建活动",
+                    "JSON Body：创建投放活动，budget 单位为元",
+                    EndpointStatus::Testing,
+                    json_body(
+                        r#"{"name": "双十一大促", "budget": 100000, "start_at": "2026-11-01T00:00:00Z", "channel": "wechat"}"#,
+                    ),
+                    (
+                        "201 已创建",
+                        201,
+                        r#"{"id": 11, "name": "双十一大促", "status": "draft", "channel": "wechat", "budget": 100000}"#,
+                    ),
+                ),
             ],
         ),
         (
             "小奏技术 · 数据大屏",
             "数据大屏演示：指标查询接口（指向 JSONPlaceholder 占位）。",
             None, // 默认团队
+            "https://jsonplaceholder.typicode.com",
             vec![
-                ("GET", "/metrics", "大屏指标聚合"),
-                ("GET", "/metrics/trend", "趋势数据"),
+                (
+                    "GET",
+                    "/metrics",
+                    "大屏指标聚合",
+                    "Query 参数 range / unit：时间范围与展示单位",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![
+                            kvd("range", "24h", "时间范围：1h / 24h / 7d"),
+                            kvd("unit", "percent", "展示单位：percent / count"),
+                        ],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"{"pv": 128734, "uv": 38210, "qps": 452, "error_rate": 0.003}"#,
+                    ),
+                ),
+                (
+                    "GET",
+                    "/metrics/trend",
+                    "趋势数据",
+                    "Query 参数 days：回看天数（1-30）",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![kvd("days", "7", "回看天数，1-30")],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"{"days": ["10-08", "10-09", "10-10"], "pv": [98210, 102344, 128734], "uv": [30102, 31875, 38210]}"#,
+                    ),
+                ),
             ],
         ),
         (
             "小奏技术 · 文档中心",
             "文档中心演示：文档发布接口（指向 httpbin.org 公网调试服务）。",
             None, // 默认团队
-            vec![("GET", "/docs", "文档列表"), ("POST", "/docs", "发布文档")],
+            "https://httpbin.org",
+            vec![
+                (
+                    "GET",
+                    "/docs",
+                    "文档列表",
+                    "Query 参数 keyword / status 检索文档",
+                    EndpointStatus::Released,
+                    RequestSpec {
+                        params: vec![
+                            kvd("keyword", "", "标题 / 标签搜索关键词，可为空"),
+                            kvd("status", "published", "状态：draft / published"),
+                        ],
+                        ..RequestSpec::default()
+                    },
+                    (
+                        "200 成功",
+                        200,
+                        r#"[{"id": 1, "title": "RustFox 接入指南", "status": "published", "updated_at": "2026-10-10T09:30:00Z"}]"#,
+                    ),
+                ),
+                (
+                    "POST",
+                    "/docs",
+                    "发布文档",
+                    "JSON Body：Markdown 正文，status 可为 draft / published",
+                    EndpointStatus::Testing,
+                    json_body(
+                        r##"{"title": "RustFox 发版说明", "content": "# 新版本\n\n- 浅色主题对比度优化", "status": "published"}"##,
+                    ),
+                    (
+                        "201 已创建",
+                        201,
+                        r#"{"id": 2, "title": "RustFox 发版说明", "status": "published", "author": "小奏技术"}"#,
+                    ),
+                ),
+            ],
         ),
     ] {
         let p = project(name, desc, team_id);
         repo::save_project(db, &p).await?;
-        for (i, (method, path, ep_desc)) in endpoints.into_iter().enumerate() {
+        let mut by_name: HashMap<String, Endpoint> = HashMap::new();
+        for (
+            i,
+            (method, path, ep_name, ep_desc, status, request, (resp_name, resp_status, resp_body)),
+        ) in endpoints.into_iter().enumerate()
+        {
             let method = match method {
                 "POST" => HttpMethod::POST,
                 "PUT" => HttpMethod::PUT,
                 _ => HttpMethod::GET,
             };
-            repo::save_endpoint(
+            let ep = endpoint(
+                &p, None, ep_name, method, path, ep_desc, status, i as i64, request,
+            );
+            repo::save_endpoint(db, &ep).await?;
+            repo::save_response_example(
                 db,
-                &endpoint(
+                &response_example(&ep, resp_name, resp_status, resp_body),
+            )
+            .await?;
+            by_name.insert(ep_name.to_string(), ep);
+        }
+        // 双环境：base_url 指向该项目端点所在的真实服务
+        for (env_name, tag) in [("开发环境", "dev"), ("测试环境", "stg")] {
+            repo::save_environment(
+                db,
+                &environment(
                     &p,
-                    None,
-                    ep_desc,
-                    method,
-                    path,
-                    ep_desc,
-                    EndpointStatus::Released,
-                    i as i64,
-                    RequestSpec::default(),
+                    env_name,
+                    base_url,
+                    vec![
+                        env_var(
+                            "token",
+                            &format!("xz-{tag}-token-123"),
+                            "登录接口返回的 Bearer Token 示例",
+                        ),
+                        env_var(
+                            "env_name",
+                            if tag == "dev" {
+                                "development"
+                            } else {
+                                "staging"
+                            },
+                            "当前环境标识",
+                        ),
+                        env_var(
+                            "trace_id",
+                            &format!("xz-trace-{tag}-001"),
+                            "链路追踪 ID 示例",
+                        ),
+                    ],
                 ),
             )
             .await?;
         }
+        light_endpoints.insert(name.to_string(), by_name);
     }
 
     // ---- 用户服务：文件夹 + 接口 + 响应示例 + Mock 规则 ----
@@ -161,7 +404,10 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
         EndpointStatus::Released,
         0,
         RequestSpec {
-            params: vec![kv("page", "1"), kv("limit", "10")],
+            params: vec![
+                kvd("page", "1", "页码，从 1 开始"),
+                kvd("limit", "10", "每页条数，1-100"),
+            ],
             ..RequestSpec::default()
         },
     );
@@ -175,7 +421,7 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
         EndpointStatus::Released,
         1,
         RequestSpec {
-            path_variables: vec![kv("id", "1")],
+            path_variables: vec![kvd("id", "1", "目标用户 ID")],
             ..RequestSpec::default()
         },
     );
@@ -211,7 +457,7 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
         EndpointStatus::Developing,
         4,
         RequestSpec {
-            path_variables: vec![kv("id", "1")],
+            path_variables: vec![kvd("id", "1", "目标用户 ID")],
             ..RequestSpec::default()
         },
     );
@@ -226,7 +472,10 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
         5,
         RequestSpec {
             body: BodySpec::UrlEncoded {
-                fields: vec![kv("username", "demo"), kv("password", "xiaozou123")],
+                fields: vec![
+                    kvd("username", "demo", "登录账号"),
+                    kvd("password", "xiaozou123", "登录密码"),
+                ],
             },
             ..RequestSpec::default()
         },
@@ -261,11 +510,17 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
 
     // 响应示例（文档页展示 + Mock 快速填充的素材）
     for example in [
-        response_example(
+        response_example_docs(
             &list_users,
             "200 成功",
             200,
             r#"[{"id": 1, "name": "奏小雪", "email": "xuexue@xiaozou.tech", "dept": "研发部"}, {"id": 2, "name": "奏小风", "email": "xiaofeng@xiaozou.tech", "dept": "产品部"}]"#,
+            &[
+                ("/0/id", "用户 ID"),
+                ("/0/name", "姓名"),
+                ("/0/email", "企业邮箱"),
+                ("/0/dept", "所属部门"),
+            ],
         ),
         response_example(
             &get_user,
@@ -405,7 +660,10 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
             "Query 参数 _limit / _page",
             EndpointStatus::Released,
             RequestSpec {
-                params: vec![kv("_limit", "5"), kv("_page", "1")],
+                params: vec![
+                    kvd("_limit", "5", "返回条数"),
+                    kvd("_page", "1", "页码，从 1 开始"),
+                ],
                 ..RequestSpec::default()
             },
         ),
@@ -558,6 +816,51 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
         .await?;
     }
 
+    // ---- 开放演示 / GraphQL：响应示例（文档页素材；含字段注释演示） ----
+    for example in [
+        response_example_docs(
+            open_endpoints.get("文章列表").expect("seed 文章列表端点"),
+            "200 成功",
+            200,
+            r#"[{"userId": 1, "id": 1, "title": "小奏技术周报 #42", "body": "本周动态：gRPC 调试上线"}, {"userId": 2, "id": 2, "title": "小奏技术月报", "body": "本月动态：浅色主题优化"}]"#,
+            &[
+                ("/0/userId", "作者用户 ID"),
+                ("/0/id", "文章 ID"),
+                ("/0/title", "文章标题"),
+                ("/0/body", "文章正文"),
+            ],
+        ),
+        response_example(
+            open_endpoints.get("发布文章").expect("seed 发布文章端点"),
+            "201 已创建",
+            201,
+            r#"{"userId": 1, "id": 101, "title": "小奏技术周报 #42", "body": "本周动态：gRPC 调试上线"}"#,
+        ),
+        response_example(
+            graphql_endpoints
+                .get("国家列表")
+                .expect("seed 国家列表端点"),
+            "200 成功",
+            200,
+            r#"{"data": {"countries": [{"code": "CN", "name": "China", "emoji": "🇨🇳", "capital": "Beijing"}, {"code": "US", "name": "United States", "emoji": "🇺🇸", "capital": "Washington"}]}}"#,
+        ),
+        response_example_docs(
+            graphql_endpoints
+                .get("国家详情（带变量）")
+                .expect("seed 国家详情端点"),
+            "200 成功",
+            200,
+            r#"{"data": {"country": {"code": "US", "name": "United States", "emoji": "🇺🇸", "capital": "Washington", "currency": "USD", "phone": "1"}}}"#,
+            &[
+                ("/data/country/code", "ISO 3166-1 国家代码"),
+                ("/data/country/currency", "货币代码"),
+                ("/data/country/phone", "国际电话区号"),
+            ],
+        ),
+    ] {
+        repo::save_response_example(db, &example).await?;
+    }
+
     // ---- 测试用例（Apifox 风格用例管理；分类为存库数据值，展示经 caseCategoryLabel 翻译） ----
     for case in [
         // 用户服务（启动 Mock 后可整组运行）
@@ -686,6 +989,32 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
             "graphql",
             r#"query { country(code: "CN") { name emoji capital } }"#,
         ),
+        // 开放演示负向（JSONPlaceholder 对不存在资源返回 404）
+        test_case(
+            open_endpoints.get("文章详情").expect("seed 文章详情端点"),
+            "负向-查询不存在的文章",
+            "负向",
+            HttpMethod::GET,
+            "/posts/999999",
+            vec![],
+            vec![],
+            "none",
+            "",
+        ),
+        // GraphQL 负向（ZZ 非有效国家代码，country 返回 null）
+        test_case(
+            graphql_endpoints
+                .get("国家详情（带变量）")
+                .expect("seed 国家详情端点"),
+            "负向-无效国家代码",
+            "负向",
+            HttpMethod::POST,
+            "/graphql",
+            vec![],
+            vec![],
+            "graphql",
+            r#"query { country(code: "ZZ") { name } }"#,
+        ),
     ] {
         repo::create_test_case(db, &case).await?;
     }
@@ -722,8 +1051,246 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
                 ..RequestSpec::default()
             },
         ),
+        request_example_snap(
+            graphql_endpoints
+                .get("国家详情（带变量）")
+                .expect("seed 国家详情端点"),
+            "小奏技术·查中国（带变量）",
+            RequestSpec {
+                body: BodySpec::GraphQL {
+                    spec: GraphQLSpec {
+                        query: "query Country($code: ID!) { country(code: $code) { code name emoji capital currency phone } }".into(),
+                        variables: r#"{"code": "CN"}"#.into(),
+                        operation_name: String::new(),
+                    },
+                },
+                ..RequestSpec::default()
+            },
+        ),
     ] {
         repo::create_request_example(db, &example).await?;
+    }
+
+    // ---- 轻量项目测试用例（每项目 2 条：正向 + 负向 / 边界值） ----
+    for (proj, ep_name, case_name, category, case_path, params, headers, body_type, body_content) in [
+        (
+            "小奏技术 · 网关服务",
+            "路由列表",
+            "正向-默认分页拉取路由",
+            "正向",
+            "/routes",
+            vec![kv("page", "1"), kv("size", "20")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 网关服务",
+            "新增路由",
+            "负向-缺少 path 字段",
+            "负向",
+            "/routes",
+            vec![],
+            vec![],
+            "json",
+            r#"{"upstream": "notify-service"}"#,
+        ),
+        (
+            "小奏技术 · 监控告警",
+            "告警规则列表",
+            "正向-只看 firing 告警",
+            "正向",
+            "/alerts",
+            vec![kv("status", "firing"), kv("level", "critical")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 监控告警",
+            "更新告警",
+            "负向-更新不存在的告警",
+            "负向",
+            "/alerts/999999",
+            vec![],
+            vec![],
+            "json",
+            r#"{"name": "幽灵告警", "threshold": 100}"#,
+        ),
+        (
+            "小奏技术 · 支付中心",
+            "创建支付订单",
+            "正向-创建 199 元订单",
+            "正向",
+            "/orders",
+            vec![],
+            vec![],
+            "json",
+            r#"{"order_no": "XZ20261014001", "amount": 199.0, "currency": "CNY", "item": "RustFox 专业版"}"#,
+        ),
+        (
+            "小奏技术 · 支付中心",
+            "创建支付订单",
+            "负向-金额为负数",
+            "负向",
+            "/orders",
+            vec![],
+            vec![],
+            "json",
+            r#"{"order_no": "XZ20261014002", "amount": -1.0, "currency": "CNY", "item": "RustFox 专业版"}"#,
+        ),
+        (
+            "小奏技术 · 营销活动",
+            "活动列表",
+            "正向-微信渠道投放中活动",
+            "正向",
+            "/campaigns",
+            vec![kv("status", "active"), kv("channel", "wechat")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 营销活动",
+            "创建活动",
+            "边界值-预算为 0 的草稿",
+            "边界值",
+            "/campaigns",
+            vec![],
+            vec![],
+            "json",
+            r#"{"name": "零预算预热", "budget": 0, "start_at": "2026-11-01T00:00:00Z", "channel": "weibo"}"#,
+        ),
+        (
+            "小奏技术 · 数据大屏",
+            "大屏指标聚合",
+            "正向-近 24 小时指标",
+            "正向",
+            "/metrics",
+            vec![kv("range", "24h"), kv("unit", "percent")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 数据大屏",
+            "趋势数据",
+            "边界值-回看 30 天上限",
+            "边界值",
+            "/metrics/trend",
+            vec![kv("days", "30")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 文档中心",
+            "文档列表",
+            "正向-检索已发布文档",
+            "正向",
+            "/docs",
+            vec![kv("keyword", "RustFox"), kv("status", "published")],
+            vec![],
+            "none",
+            "",
+        ),
+        (
+            "小奏技术 · 文档中心",
+            "发布文档",
+            "负向-标题为空",
+            "负向",
+            "/docs",
+            vec![],
+            vec![],
+            "json",
+            r#"{"title": "", "content": "正文", "status": "draft"}"#,
+        ),
+    ] {
+        let by_name = light_endpoints
+            .get(proj)
+            .unwrap_or_else(|| panic!("seed 轻量项目 {proj}"));
+        let ep = by_name
+            .get(ep_name)
+            .unwrap_or_else(|| panic!("seed 轻量端点 {proj} / {ep_name}"));
+        repo::create_test_case(
+            db,
+            &test_case(
+                ep,
+                case_name,
+                category,
+                ep.method,
+                case_path,
+                params,
+                headers,
+                body_type,
+                body_content,
+            ),
+        )
+        .await?;
+    }
+
+    // ---- 轻量项目请求用例（每项目 1 条，一键回填调试页） ----
+    for (proj, ep_name, ex_name, request) in [
+        (
+            "小奏技术 · 网关服务",
+            "路由列表",
+            "第一页 10 条",
+            RequestSpec {
+                params: vec![kv("page", "1"), kv("size", "10")],
+                ..RequestSpec::default()
+            },
+        ),
+        (
+            "小奏技术 · 监控告警",
+            "告警规则列表",
+            "只看 critical 告警",
+            RequestSpec {
+                params: vec![kv("status", "firing"), kv("level", "critical")],
+                ..RequestSpec::default()
+            },
+        ),
+        (
+            "小奏技术 · 支付中心",
+            "创建支付订单",
+            "99 元基础版订单",
+            json_body(
+                r#"{"order_no": "XZ20261014009", "amount": 99.0, "currency": "CNY", "item": "RustFox 基础版"}"#,
+            ),
+        ),
+        (
+            "小奏技术 · 营销活动",
+            "创建活动",
+            "微博渠道双十二活动",
+            json_body(
+                r#"{"name": "双十二返场", "budget": 50000, "start_at": "2026-12-12T00:00:00Z", "channel": "weibo"}"#,
+            ),
+        ),
+        (
+            "小奏技术 · 数据大屏",
+            "趋势数据",
+            "近 7 天趋势",
+            RequestSpec {
+                params: vec![kv("days", "7")],
+                ..RequestSpec::default()
+            },
+        ),
+        (
+            "小奏技术 · 文档中心",
+            "文档列表",
+            "搜索 RustFox 草稿",
+            RequestSpec {
+                params: vec![kv("keyword", "RustFox"), kv("status", "draft")],
+                ..RequestSpec::default()
+            },
+        ),
+    ] {
+        let by_name = light_endpoints
+            .get(proj)
+            .unwrap_or_else(|| panic!("seed 轻量项目 {proj}"));
+        let ep = by_name
+            .get(ep_name)
+            .unwrap_or_else(|| panic!("seed 轻量端点 {proj} / {ep_name}"));
+        repo::create_request_example(db, &request_example_snap(ep, ex_name, request)).await?;
     }
 
     // ---- 环境（项目维度：每个项目各自的开发 / 测试环境 + 单一 Base URL） ----
@@ -934,6 +1501,30 @@ fn response_example(
     }
 }
 
+/// 响应示例 + 字段注释（JSON Pointer → FieldDoc，设计页结构化编辑器 / 文档素材）。
+fn response_example_docs(
+    endpoint: &Endpoint,
+    name: &str,
+    status: u16,
+    body: &str,
+    docs: &[(&str, &str)],
+) -> fox_core::model::ResponseExample {
+    let mut example = response_example(endpoint, name, status, body);
+    example.docs = docs
+        .iter()
+        .map(|(pointer, desc)| {
+            (
+                (*pointer).to_string(),
+                fox_core::model::FieldDoc {
+                    description: (*desc).to_string(),
+                    required: true,
+                },
+            )
+        })
+        .collect();
+    example
+}
+
 #[allow(clippy::too_many_arguments)]
 fn mock_rule(
     project: &Project,
@@ -998,6 +1589,14 @@ fn env_var(key: &str, value: &str, description: &str) -> EnvironmentVariable {
 
 fn kv(key: &str, value: &str) -> KeyValue {
     KeyValue::new(key, value)
+}
+
+/// 带说明的键值：文档页参数 / 头部 / 表单字段表展示 description，种子请求参数一律带说明。
+fn kvd(key: &str, value: &str, description: &str) -> KeyValue {
+    KeyValue {
+        description: description.to_string(),
+        ..KeyValue::new(key, value)
+    }
 }
 
 fn json_body(raw: &str) -> RequestSpec {
