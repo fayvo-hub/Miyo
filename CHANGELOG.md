@@ -32,6 +32,15 @@ UI（浅色主题对比度重构）：
   底走 --bg-code，bg-2=壳层走 --bg-panel）
 - 抽屉投影 token 化：浅色用低透明冷灰柔影替代纯黑浓影（--shadow-drawer），
   边缘只留一道 slate-200 hairline；遮罩统一走 --mask 变量
+- 顶栏减负：GraphQL/实时/快捷键/团队同步收进「⋯」溢出菜单（新增
+  workspace.moreTools），右栏工具组由 6 键减为 3 键
+- 未发送阶段布局反转：请求卡吃掉剩余纵向高度（设置条钉卡片底缘），
+  响应空态由占 ~2/3 屏收为 240px 固定低条；空态可点击聚焦 URL 栏
+- 表头/内嵌带恢复层次：键值表头、环境快览头尾、环境管理侧栏与表、
+  设计面板行/胶囊/方法选择改走 --bg-code 井色（--bg-panel 改白后
+  这些内嵌带与承载面同色、仅剩分隔线）
+- req-settings 底色收敛到 --bg-code，移除组件级 html[data-theme] 覆写
+  与 color-mix(black N%) 脏灰
 
 性能：
 

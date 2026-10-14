@@ -187,6 +187,7 @@ export const en: Record<ZhKey, string> = {
   'workspace.cookies': 'Cookies',
   'workspace.docs': 'Docs',
   'workspace.tools': 'Workbench tools',
+  'workspace.moreTools': 'More tools',
   'workspace.graphql': 'GraphQL workbench',
   'workspace.realtime': 'Realtime debugging (WebSocket / SSE)',
   'workspace.shortcutsHint': 'Shortcuts (Ctrl+/)',

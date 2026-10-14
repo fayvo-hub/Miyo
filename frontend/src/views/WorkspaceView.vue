@@ -377,9 +377,27 @@ function onMockSelect(item: MenuItem): void {
   else if (item.key === 'rules') showMockRules.value = true
 }
 
+/** 顶栏溢出菜单：GraphQL/实时（视图切换）+ 快捷键 + 团队同步——低频工具收拢，右栏减负。 */
+const TOOLS_ITEMS = computed<MenuItem[]>(() => [
+  { key: 'tools-graphql', label: t('workspace.graphql'), icon: 'code', checked: route.path === '/graphql' },
+  { key: 'tools-realtime', label: t('workspace.realtime'), icon: 'zap', checked: route.path === '/realtime' },
+  { key: 'tools-shortcuts', label: t('workspace.shortcutsHint'), icon: 'keyboard', dividerBefore: true },
+  { key: 'tools-sync', label: t('sync.title'), icon: 'refresh' },
+])
+
+const toolsBtn = ref<HTMLButtonElement | null>(null)
+
+function openToolsMenu(): void {
+  if (toolsBtn.value) menuRef.value?.openAt(toolsBtn.value, TOOLS_ITEMS.value, 'right')
+}
+
 function onMenuSelect(item: MenuItem): void {
   if (item.key === 'new-project') openCreateProject()
   else if (item.key === 'import' || item.key === 'export') onDocsSelect(item)
+  else if (item.key === 'tools-graphql') router.push('/graphql')
+  else if (item.key === 'tools-realtime') router.push('/realtime')
+  else if (item.key === 'tools-shortcuts') showShortcuts.value = true
+  else if (item.key === 'tools-sync') showSync.value = true
   else onMockSelect(item)
 }
 
@@ -460,37 +478,19 @@ onBeforeUnmount(() => {
         </button>
         <EnvironmentBar />
         <div class="tb-tool-group" role="toolbar" :aria-label="t('workspace.tools')">
-          <IconButton
-            class="tb-tool"
-            :class="{ active: route.path === '/graphql' }"
-            name="code"
-            :size="15"
-            :title="t('workspace.graphql')"
-            @click="router.push('/graphql')"
-          />
-          <IconButton
-            class="tb-tool"
-            :class="{ active: route.path === '/realtime' }"
-            name="zap"
-            :size="15"
-            :title="t('workspace.realtime')"
-            @click="router.push('/realtime')"
-          />
-          <IconButton
-            class="tb-tool"
-            name="keyboard"
-            :size="15"
-            :title="t('workspace.shortcutsHint')"
-            @click="showShortcuts = true"
-          />
+          <!-- 溢出菜单：GraphQL/实时/快捷键/同步（低频工具收拢，右栏减负） -->
+          <button
+            ref="toolsBtn"
+            class="tb-tool tb-more"
+            type="button"
+            :title="t('workspace.moreTools')"
+            :aria-label="t('workspace.moreTools')"
+            aria-haspopup="menu"
+            @click="openToolsMenu"
+          >
+            <Icon name="more-horizontal" :size="15" :stroke-width="1.5" />
+          </button>
           <HeaderUpdateTag />
-          <IconButton
-            class="tb-tool"
-            name="refresh"
-            :size="15"
-            :title="t('sync.title')"
-            @click="showSync = true"
-          />
           <span class="rf-update-wrap">
             <IconButton
               class="tb-tool"
@@ -824,6 +824,18 @@ onBeforeUnmount(() => {
 .tb-tool-group .tb-tool.active {
   color: var(--accent);
   background: var(--accent-tint);
+}
+
+/* 溢出菜单触发器：原生 button，补齐 IconButton 的基础态（group 规则给宽高/悬停） */
+.tb-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
 }
 
 /* ---- Mock 状态圆点（按钮内指示） ---- */

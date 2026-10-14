@@ -184,6 +184,7 @@ export const zh = {
   'workspace.cookies': 'Cookie',
   'workspace.docs': '文档 (Docs)',
   'workspace.tools': '工作台工具',
+  'workspace.moreTools': '更多工具',
   'workspace.graphql': 'GraphQL 工作台',
   'workspace.realtime': '实时调试（WebSocket / SSE）',
   'workspace.shortcutsHint': '快捷键（Ctrl+/）',
