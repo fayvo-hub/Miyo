@@ -106,8 +106,12 @@ function measure(): void {
   const spaceBelow = window.innerHeight - rect.bottom - 8
   const up = spaceBelow < height && rect.top > height
   const minW = Math.max(rect.width, props.popMinWidth ?? 0)
+  // 右缘夹取：浮层贴近窗口右缘时整体左移不越出视口（留 8px）。
+  // 已挂载用实测宽；首测（v-if 挂载前）用声明宽估算，openPopup 的 nextTick 复测会校正。
+  const popW = popupEl.value?.offsetWidth ?? minW
+  const left = Math.max(8, Math.min(rect.left, window.innerWidth - popW - 8))
   pos.value = {
-    left: rect.left,
+    left,
     top: up ? rect.top - height - 4 : rect.bottom + 4,
     // auto 模式：宽度随内容（w-auto），不窄于触发器——长选项文案不再截断
     width: props.popAutoWidth ? 'auto' : minW,
@@ -370,6 +374,8 @@ defineExpose({ close })
 .cs-pop {
   position: fixed;
   z-index: 1000;
+  /* 病态超宽内容的兜底：任何情况下不越出视口两侧（与 measure() 的右缘夹取双保险） */
+  max-width: calc(100vw - 16px);
   background: var(--bg-elevated);
   /* 发丝边框（深色近 border-white/10，浅色跟随变量不隐形）+ 深部大阴影拉开暗部层级 */
   border: 1px solid color-mix(in srgb, var(--border-strong) 80%, transparent);
