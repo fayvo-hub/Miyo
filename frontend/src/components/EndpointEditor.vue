@@ -1354,12 +1354,12 @@ onUnmounted(() => {
         </div>
       </div>
     </template>
-    <div v-else class="response-hint">
-      <div class="response-hint-inner">
+    <button v-else class="response-hint" type="button" @click="urlInputEl?.focus()">
+      <span class="response-hint-inner">
         <Icon name="send" :size="20" />
-        <p>{{ t('editor.responseHint') }}</p>
-      </div>
-    </div>
+        <span>{{ t('editor.responseHint') }}</span>
+      </span>
+    </button>
     <div v-if="activeExamples.length" class="examples">
       <h3 class="section-title">{{ t('editor.examples', { n: activeExamples.length }) }}</h3>
       <div v-for="ex in activeExamples" :key="ex.id" class="example-row">
@@ -2067,10 +2067,15 @@ onUnmounted(() => {
   padding: 10px 12px;
 }
 
-/* 无响应阶段：请求卡贴合内容高度（编辑器 auto-height 160~480 随内容生长），
- * 不再让单行 JSON 撑满整个工作区；出现响应后转分割条分配的固定高度 */
+/* 无响应阶段：请求卡吃掉剩余纵向空间（内容顶对齐、Body 编辑器 auto-height
+ * 160~480 不变），响应空态收为固定低条——避免「请求区贴内容 + 空态占 2/3 屏」
+ * 的失衡；出现响应后仍转分割条分配的固定高度 */
 .config-box.grow {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+}
+/* 设置条钉在卡片底缘（有剩余高度时），与卡片圆角贴合 */
+.config-box.grow .req-settings {
+  margin-top: auto;
 }
 
 /* ---- 配置区底部：请求设置 Footer Bar（内缩圆角条、实线切割、暗一档底色） ---- */
@@ -2088,14 +2093,11 @@ onUnmounted(() => {
   padding: 6px 16px;
   border-top: 1px solid var(--border-panel);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  /* 黑色低透明底：深色明显压暗一档（≈ zinc-900/60），浅色呈浅灰条——两主题可见 */
-  background: color-mix(in srgb, black 22%, transparent);
+  /* 井槽底走 --bg-code（深 #121318 / 浅 slate-50），双主题同源，
+     原 color-mix(black N%) + 组件级浅色覆写已收敛到 token */
+  background: var(--bg-code);
   font-size: var(--fs-xs);
   color: var(--text-2);
-}
-/* 浅色主题降档：22% 黑底过重，6% 恰好成可见的浅灰 Footer */
-html[data-theme='light'] .req-settings {
-  background: color-mix(in srgb, black 6%, transparent);
 }
 
 /* 跟随重定向勾选框：appearance 自绘（14px 圆角框 + 对勾），与 inset 输入框同一描边语言 */
@@ -2171,8 +2173,15 @@ html[data-theme='light'] .rs-check input[type='checkbox'] {
  * 图标 + 文案整组绝对居中（flex items-center justify-center），不贴底不贴顶 ---- */
 .response-hint {
   margin: 0;
-  flex: 1;
+  /* 固定低条（可压缩至 120）：纵向空间让给 .config-box.grow 请求卡 */
+  flex: 0 1 240px;
   min-height: 120px;
+  /* button 化（点击聚焦 URL 栏）：清默认外观，保留既有表面样式 */
+  width: 100%;
+  padding: 0;
+  appearance: none;
+  font: inherit;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2180,6 +2189,15 @@ html[data-theme='light'] .rs-check input[type='checkbox'] {
   border-top: 1px solid var(--border-panel);
   border-radius: var(--radius-md);
   user-select: none;
+  cursor: pointer;
+}
+.response-hint:hover .response-hint-inner,
+.response-hint:focus-visible .response-hint-inner {
+  color: var(--text-2);
+}
+.response-hint:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 .response-hint-inner {
   display: flex;
@@ -2191,7 +2209,7 @@ html[data-theme='light'] .rs-check input[type='checkbox'] {
 .response-hint-inner svg {
   opacity: 0.75;
 }
-.response-hint-inner p {
+.response-hint-inner span {
   margin: 0;
   font-size: var(--fs-xs);
 }

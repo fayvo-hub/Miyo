@@ -267,4 +267,27 @@ describe('EndpointEditor：接口响应按 id 隔离', () => {
     errors.restore()
     expect(errors.errors).toEqual([])
   })
+
+  it('响应空态是 button：点击聚焦 URL 栏（无修复时为 div，点击无效）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+
+    store.openEndpoint(endpointA)
+    await nextTick()
+
+    const hint = wrapper.find('.response-hint')
+    expect(hint.exists()).toBe(true)
+    expect(hint.element.tagName).toBe('BUTTON')
+
+    const input = wrapper.find('.url-input')
+    expect(input.exists()).toBe(true)
+    const focusSpy = vi.spyOn(input.element as HTMLInputElement, 'focus')
+    await hint.trigger('click')
+    expect(focusSpy).toHaveBeenCalledTimes(1)
+
+    wrapper.unmount()
+    focusSpy.mockRestore()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
 })
