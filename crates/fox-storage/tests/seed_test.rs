@@ -11,9 +11,9 @@ async fn seeds_full_fixture_set() {
     let db = memory_pool().await.unwrap();
     seed_dev_data(&db).await.unwrap();
 
-    // 项目 9 个（3 个完整演示 + 6 个轻量补位），全部以「小奏技术」品牌命名
+    // 项目 10 个（3 个完整演示 + 6 个轻量补位 + 1 个边界场景），全部以「小奏技术」品牌命名
     let projects = repo::list_projects(&db).await.unwrap();
-    assert_eq!(projects.len(), 9);
+    assert_eq!(projects.len(), 10);
     assert!(
         projects.iter().all(|p| p.name.contains("小奏技术")),
         "所有种子项目名都应包含品牌「小奏技术」"
@@ -43,8 +43,8 @@ async fn seeds_full_fixture_set() {
             .iter()
             .filter(|p| p.team_id == Some(fox_core::model::DEFAULT_TEAM_ID))
             .count(),
-        3,
-        "默认团队 3 个项目"
+        4,
+        "默认团队 4 个项目（GraphQL 网关 + 边界场景）"
     );
 
     let users = projects
@@ -206,6 +206,57 @@ async fn seeds_full_fixture_set() {
         let envs = repo::list_environments(&db, p.id).await.unwrap();
         assert_eq!(envs.len(), 2, "{name} 开发 / 测试双环境");
     }
+
+    // 边界场景：5 个大数据量端点 —— Body 规模 / 大文档阈值 / 长表单 / 长请求头 / 大响应
+    let stress = projects
+        .iter()
+        .find(|p| p.name == "小奏技术 · 边界场景")
+        .expect("边界场景项目存在");
+    let stress_eps = repo::list_endpoints(&db, stress.id).await.unwrap();
+    assert_eq!(stress_eps.len(), 5, "边界场景 5 个接口");
+    let stress_ep = |name: &str| {
+        stress_eps
+            .iter()
+            .find(|e| e.name == name)
+            .unwrap_or_else(|| panic!("边界场景端点 {name} 存在"))
+    };
+    // 大 JSON Body ≈200 行；超大 Body ≥200K 字符（触发前端 LARGE_DOC_CHARS 降级）
+    for (name, min_bytes, min_lines) in [
+        ("批量导入用户（大 Body）", 3_000usize, 150usize),
+        ("重载报表（超大 Body）", 200_000, 2_000),
+    ] {
+        let raw = match &stress_ep(name).request.body {
+            fox_core::model::BodySpec::Json { raw } => raw.clone(),
+            other => panic!("{name} 应为 JSON Body，实际 {other:?}"),
+        };
+        assert!(raw.len() >= min_bytes, "{name} Body 应 ≥{min_bytes} 字节");
+        assert!(
+            raw.matches('\n').count() >= min_lines,
+            "{name} Body 应 ≥{min_lines} 行"
+        );
+    }
+    match &stress_ep("批量打标签（长表单）").request.body {
+        fox_core::model::BodySpec::UrlEncoded { fields } => {
+            assert_eq!(fields.len(), 20, "长表单 20 个字段");
+        }
+        other => panic!("长表单端点应为 urlencoded Body，实际 {other:?}"),
+    }
+    let echo = stress_ep("长请求头回显");
+    assert_eq!(echo.request.headers.len(), 30, "长请求头 30 条");
+    assert_eq!(echo.request.params.len(), 12, "长 Query 参数 12 条");
+    // 大响应示例 ≥1000 行（响应区滚动 / 树视图素材）
+    let export = stress_ep("导出用户（大响应）");
+    let export_examples = repo::list_response_examples(&db, export.id).await.unwrap();
+    assert!(!export_examples.is_empty(), "大响应端点应有响应示例");
+    assert!(
+        export_examples[0].body.matches('\n').count() >= 1_000,
+        "大响应示例应 ≥1000 行"
+    );
+    assert_eq!(
+        repo::list_environments(&db, stress.id).await.unwrap().len(),
+        2,
+        "边界场景 开发 / 测试双环境"
+    );
 
     // 环境：每个项目各自的开发 / 测试环境（单一 Base URL + 变量）
     let envs = repo::list_environments(&db, users.id).await.unwrap();

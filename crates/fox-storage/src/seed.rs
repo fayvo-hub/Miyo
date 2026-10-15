@@ -14,6 +14,9 @@
 //! - 6 个轻量演示项目同样铺齐内容：带请求参数（query / 路径变量 / JSON Body）
 //!   的接口 + 响应示例（文档素材）+ 测试用例（正向 / 负向 / 边界值）+
 //!   请求用例 + 开发 / 测试双环境，每个项目打开都有完整内容可看；
+//! - 「小奏技术 · 边界场景」：大数据量 / 极端输入的 UI 压测素材——大 JSON Body
+//!   （约 200 行）、超大 Body（>200KB 触发前端大文档降级）、长 urlencoded 表单、
+//!   大响应示例、长请求头 / Query 列表；
 //! - 环境：每个项目各自的「开发环境 / 测试环境」（单一 Base URL + 变量）、
 //!   全局参数、激活项 settings。
 
@@ -385,6 +388,223 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
             .await?;
         }
         light_endpoints.insert(name.to_string(), by_name);
+    }
+
+    // ---- 边界场景项目：大数据量 / 极端输入的 UI 压测素材 ----
+    // 每个端点对应一类压力场景：Body 编辑器滚动 / 行号对齐 / 拖拽缩放、
+    // 大文档降级提示、长表单行编辑、大响应渲染、长请求头 / 参数列表。
+    let stress = project(
+        "小奏技术 · 边界场景",
+        "边界场景演示：大数据量请求 / 响应的 UI 压测素材（Body 编辑器滚动与缩放、超大文档降级、\
+         长表单 / 长请求头列表、大响应渲染）。基址指向 httpbin.org，路径为演示路径，\
+         重点在编辑器与列表的极端输入表现，无需真实可达。",
+        None,
+    );
+    repo::save_project(db, &stress).await?;
+    let mut stress_endpoints: HashMap<String, Endpoint> = HashMap::new();
+    for (i, (name, method, path, desc, request, (resp_name, resp_status, resp_body))) in [
+        (
+            "批量导入用户（大 Body）",
+            HttpMethod::POST,
+            "/batch/users",
+            "JSON Body 约 200 行 / 15 个嵌套对象：验证 Body 编辑器滚动、行号对齐、拖拽缩放",
+            RequestSpec {
+                headers: vec![kvd("Content-Type", "application/json", "JSON 提交")],
+                body: BodySpec::Json {
+                    raw: big_batch_users_body(),
+                },
+                ..RequestSpec::default()
+            },
+            (
+                "200 批量受理",
+                200u16,
+                r#"{"accepted": 15, "rejected": 0, "batch_no": "XZ-BATCH-20261015"}"#.to_string(),
+            ),
+        ),
+        (
+            "重载报表（超大 Body）",
+            HttpMethod::POST,
+            "/report/heavy",
+            "JSON Body >200KB：触发前端大文档降级提示（isLargeDoc 只读态）",
+            RequestSpec {
+                headers: vec![kvd("Content-Type", "application/json", "JSON 提交")],
+                body: BodySpec::Json {
+                    raw: heavy_report_body(),
+                },
+                ..RequestSpec::default()
+            },
+            (
+                "200 已受理",
+                200,
+                r#"{"task_id": "task-20261015-001", "status": "queued"}"#.to_string(),
+            ),
+        ),
+        (
+            "批量打标签（长表单）",
+            HttpMethod::PUT,
+            "/users/{id}/labels",
+            "x-www-form-urlencoded 20 个字段：验证字段行编辑区滚动与增删行",
+            RequestSpec {
+                path_variables: vec![kvd("id", "1", "用户 ID")],
+                body: BodySpec::UrlEncoded {
+                    fields: (1..=20)
+                        .map(|i| {
+                            kvd(
+                                &format!("label_{i:02}"),
+                                &format!("标签{i:02}"),
+                                &format!("表单字段 {i}"),
+                            )
+                        })
+                        .collect(),
+                },
+                ..RequestSpec::default()
+            },
+            ("200 已更新", 200, r#"{"id": 1, "labels": 20}"#.to_string()),
+        ),
+        (
+            "导出用户（大响应）",
+            HttpMethod::GET,
+            "/users/export",
+            "响应示例约 1800 行大 JSON：验证响应区滚动 / 树视图展开",
+            RequestSpec {
+                params: vec![
+                    kvd("format", "json", "导出格式"),
+                    kvd("limit", "300", "导出行数"),
+                ],
+                ..RequestSpec::default()
+            },
+            ("200 大响应示例", 200, heavy_users_export_body()),
+        ),
+        (
+            "长请求头回显",
+            HttpMethod::GET,
+            "/echo/headers",
+            "30 个请求头 + 12 个 Query 参数：验证头部 / 参数表格滚动与全量勾选",
+            RequestSpec {
+                params: (1..=12)
+                    .map(|i| {
+                        kvd(
+                            &format!("trace_{i:02}"),
+                            &format!("t-{i:03}"),
+                            &format!("链路字段 {i}"),
+                        )
+                    })
+                    .collect(),
+                headers: (1..=30)
+                    .map(|i| {
+                        kvd(
+                            &format!("X-Demo-{i:02}"),
+                            &format!("value-{i:03}"),
+                            &format!("演示请求头 {i}"),
+                        )
+                    })
+                    .collect(),
+                ..RequestSpec::default()
+            },
+            (
+                "200 回显",
+                200,
+                r#"{"headers": 30, "params": 12}"#.to_string(),
+            ),
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let ep = endpoint(
+            &stress,
+            None,
+            name,
+            method,
+            path,
+            desc,
+            EndpointStatus::Released,
+            i as i64,
+            request,
+        );
+        repo::save_endpoint(db, &ep).await?;
+        repo::save_response_example(
+            db,
+            &response_example(&ep, resp_name, resp_status, &resp_body),
+        )
+        .await?;
+        stress_endpoints.insert(name.to_string(), ep);
+    }
+
+    // ---- 边界场景：测试用例 / 请求用例 / 双环境 ----
+    for (ep_name, case_name, category, body_content) in [
+        (
+            "批量导入用户（大 Body）",
+            "正向-单条导入（紧凑 Body）",
+            "正向",
+            r#"{"batch_no": "XZ-BATCH-SINGLE", "users": [{"username": "user001", "name": "演示用户 01"}]}"#,
+        ),
+        (
+            "重载报表（超大 Body）",
+            "负向-空指标列表",
+            "负向",
+            r#"{"title": "", "metrics": []}"#,
+        ),
+    ] {
+        let ep = stress_endpoints
+            .get(ep_name)
+            .unwrap_or_else(|| panic!("seed 边界场景端点 {ep_name}"));
+        repo::create_test_case(
+            db,
+            &test_case(
+                ep,
+                case_name,
+                category,
+                ep.method,
+                &ep.path,
+                vec![],
+                vec![],
+                "json",
+                body_content,
+            ),
+        )
+        .await?;
+    }
+    let batch_users = stress_endpoints
+        .get("批量导入用户（大 Body）")
+        .expect("seed 边界场景批量导入端点");
+    repo::create_request_example(
+        db,
+        &request_example_snap(
+            batch_users,
+            "紧凑批次（2 条）",
+            json_body(
+                r#"{"batch_no": "XZ-BATCH-002", "users": [{"username": "user001", "name": "演示用户 01"}, {"username": "user002", "name": "演示用户 02"}]}"#,
+            ),
+        ),
+    )
+    .await?;
+    for (env_name, tag) in [("开发环境", "dev"), ("测试环境", "stg")] {
+        repo::save_environment(
+            db,
+            &environment(
+                &stress,
+                env_name,
+                "https://httpbin.org",
+                vec![
+                    env_var(
+                        "token",
+                        &format!("xz-{tag}-token-123"),
+                        "登录接口返回的 Bearer Token 示例",
+                    ),
+                    env_var(
+                        "env_name",
+                        if tag == "dev" {
+                            "development"
+                        } else {
+                            "staging"
+                        },
+                        "当前环境标识",
+                    ),
+                ],
+            ),
+        )
+        .await?;
     }
 
     // ---- 用户服务：文件夹 + 接口 + 响应示例 + Mock 规则 ----
@@ -1421,6 +1641,58 @@ pub async fn seed_dev_data(db: &SqlitePool) -> Result<()> {
     .await?;
 
     Ok(())
+}
+
+/* ---------- 边界场景：大数据量 Body / 响应生成 ---------- */
+
+/// 大 JSON Body（约 200 行 / 15 个嵌套对象）：
+/// Body 编辑器滚动、行号对齐、拖拽缩放手柄的压测素材。
+fn big_batch_users_body() -> String {
+    const DEPTS: [&str; 5] = ["研发部", "设计部", "市场部", "销售部", "运维部"];
+    let rows: Vec<String> = (1..=15)
+        .map(|i| {
+            format!(
+                "    {{\n      \"username\": \"user{i:03}\",\n      \"name\": \"演示用户 {i:02}\",\n      \"email\": \"user{i:03}@xiaozou.tech\",\n      \"dept\": \"{}\",\n      \"roles\": [\"admin\", \"editor\"],\n      \"profile\": {{\n        \"city\": \"上海\",\n        \"age\": {},\n        \"active\": true\n      }},\n      \"remark\": \"边界场景演示数据第 {i} 条，用于验证编辑器滚动与行号对齐\"\n    }}",
+                DEPTS[i % DEPTS.len()],
+                22 + (i % 30),
+            )
+        })
+        .collect();
+    format!(
+        "{{\n  \"batch_no\": \"XZ-BATCH-20261015\",\n  \"operator\": \"奏小雪\",\n  \"users\": [\n{}\n  ]\n}}",
+        rows.join(",\n")
+    )
+}
+
+/// 超大 JSON Body（约 2000 行 / >200KB）：
+/// 超过前端 JsonEditor 的 LARGE_DOC_CHARS（200_000）阈值，触发大文档降级提示。
+fn heavy_report_body() -> String {
+    let rows: Vec<String> = (1..=2000)
+        .map(|i| {
+            format!(
+                "    {{ \"metric\": \"cpu.usage.node{i:04}\", \"value\": {}.{:02}, \"unit\": \"percent\", \"host\": \"node-{i:03}\", \"region\": \"cn-east-1\" }}",
+                i % 100,
+                i % 60,
+            )
+        })
+        .collect();
+    format!(
+        "{{\n  \"title\": \"全量指标快照（超大 Body 演示）\",\n  \"generated_at\": \"2026-10-15T08:00:00Z\",\n  \"metrics\": [\n{}\n  ]\n}}",
+        rows.join(",\n")
+    )
+}
+
+/// 大响应示例（约 1800 行 / ~130KB）：响应区滚动 / 树视图展开的压测素材。
+fn heavy_users_export_body() -> String {
+    let rows: Vec<String> = (1..=300)
+        .map(|i| {
+            format!(
+                "  {{\n    \"id\": {i},\n    \"name\": \"导出用户 {i:03}\",\n    \"email\": \"export{i:03}@xiaozou.tech\",\n    \"status\": \"{}\",\n    \"dept\": \"导出演示部\",\n    \"labels\": [\"export\", \"bulk\"]\n  }}",
+                if i % 7 == 0 { "disabled" } else { "active" },
+            )
+        })
+        .collect();
+    format!("[\n{}\n]", rows.join(",\n"))
 }
 
 /* ---------- 构造辅助 ---------- */
