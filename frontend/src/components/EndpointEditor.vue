@@ -412,7 +412,10 @@ const baseUrlOptions = computed(() => {
     : ''
   opts.push({ value: '', label: session || t('envbar.noEnv') })
   for (const env of store.environments) {
-    opts.push({ value: env.id, label: resolveEnvBaseUrl(env) || t('envbar.noEnv') })
+    // 环境未配 Base URL 时真实发送前缀回退会话 Base URL（同 store.urlDomain / 发送
+    // 拼接口径），左列必须显示实际发送目标。兜底「无环境」会与真正的无环境选项撞名：
+    // 未配 base 的环境逐行渲染成「无环境 | 环境名」，整列多个无环境（回归 bug）。
+    opts.push({ value: env.id, label: resolveEnvBaseUrl(env) || session || t('envbar.noEnv') })
   }
   opts.push({ value: BASE_URL_MANAGE, label: t('envbar.manage') })
   return opts

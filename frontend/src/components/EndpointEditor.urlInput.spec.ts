@@ -213,3 +213,74 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     expect(errors.errors).toEqual([])
   })
 })
+
+describe('地址栏前置 URL 下拉（环境选项标签）', () => {
+  /** 全量挂载（非 shallow）：CustomSelect 弹层要真实组件渲染，口径同 requestSettings spec。 */
+  async function mountEditorFull() {
+    const store = useWorkspaceStore()
+    useLocaleStore().setMode('zh')
+    store.project = {
+      id: 'proj-url-1',
+      name: 'P',
+      description: '',
+      variables: {},
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-01-01T00:00:00.000Z',
+    }
+    endpoint.path = '/' // 同文件前序用例会改写共享 fixture，先复位（相对路径才渲染前置 URL 下拉）
+    store.endpoints = [endpoint]
+    const wrapper = mount(EndpointEditor, {
+      global: { directives: { 'tooltip-overflow': {}, 'focus-end': {} } },
+    })
+    await nextTick()
+    store.openEndpoint(endpoint)
+    await nextTick()
+    await nextTick()
+    return { wrapper, store }
+  }
+
+  it('环境未配 Base URL：左列显示会话 Base URL 而非「无环境」（回归：整列多个无环境）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditorFull()
+    store.sessionBaseUrl = 'http://localhost'
+    const now = '2026-01-01T00:00:00.000Z'
+    const mkEnv = (id: string, name: string): Environment => ({
+      id,
+      project_id: 'proj-url-1',
+      name,
+      base_url: '',
+      variables: [],
+      created_at: now,
+      updated_at: now,
+    })
+    store.environments.push(mkEnv('env-dev', '开发环境'), mkEnv('env-test', '测试环境'))
+    store.activeEnvId = 'env-test'
+    await nextTick()
+
+    // 打开前置 URL 下拉（CustomSelect 弹层挂 body，查询口径同 EnvironmentBar spec）
+    await wrapper.find('.base-url-select .cs-trigger').trigger('click')
+    await nextTick()
+    await nextTick()
+    const pop = document.querySelector('.base-url-pop')
+    expect(pop).toBeTruthy()
+
+    const urls = Array.from(pop!.querySelectorAll('.base-url-opt-url')).map((el) =>
+      el.textContent?.trim(),
+    )
+    const names = Array.from(pop!.querySelectorAll('.base-url-opt-name')).map((el) =>
+      el.textContent?.trim(),
+    )
+    // 左列 = 各选项真实发送前缀：无环境与未配 base 的环境都回退会话 Base URL
+    // （store.urlDomain / 发送拼接同口径），不再逐行兜底成「无环境」撞名。
+    expect(urls).toEqual(['http://localhost', 'http://localhost', 'http://localhost'])
+    // 右列 = 选项语义名：无环境 / 各环境名。
+    expect(names).toEqual(['无环境', '开发环境', '测试环境'])
+    // 末项「管理环境…」在场（单列，不参与左/右双列）。
+    expect(pop!.querySelector('.base-url-manage')?.textContent?.trim()).toBe('管理环境…')
+
+    wrapper.unmount()
+    document.querySelector('.base-url-pop')?.remove()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+})
