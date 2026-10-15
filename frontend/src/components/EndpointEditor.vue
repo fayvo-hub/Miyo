@@ -865,8 +865,12 @@ const REQUEST_DEFAULT = 200
 const MAX_OFFSET = 100
 
 const editorEl = ref<HTMLElement | null>(null)
+/** 请求卡（config-box）DOM：未发送期拖分割条时取其实际盒高做拖拽基准。 */
+const configBoxEl = ref<HTMLElement | null>(null)
 const requestBodyHeight = ref(REQUEST_DEFAULT)
 const splitterDragging = ref(false)
+/** 未发送期手动拖过分割条：请求卡从「贴内容 grow」切为分割条分配的固定高。 */
+const requestManual = ref(false)
 const requestBodyCollapsed = computed(() => requestBodyHeight.value <= REQUEST_MIN)
 
 /** 正在发送或已有结果时展示响应区（发送中显示请求中占位，见模板）。 */
@@ -883,8 +887,18 @@ let splitStartY = 0
 let splitStartHeight = 0
 let splitDragging = false
 
+/** 未发送期从 grow 态切入固定高时量一次：非请求卡 chrome（header/padding/gap）
+ * 与占位条 min-height。拖拽上限据此钳制，否则请求卡拖太深会让 .editor 自身
+ * 出滚动条（header 被卷走、占位条被裁）。 */
+let growChrome = -1
+let hintMinH = 0
+
 function requestMaxHeight(): number {
-  return Math.max((editorEl.value?.clientHeight ?? 600) - MAX_OFFSET, REQUEST_MIN + 40)
+  const edH = editorEl.value?.clientHeight ?? 600
+  if (!hasResponse.value && growChrome >= 0) {
+    return Math.max(edH - growChrome - hintMinH, REQUEST_MIN + 40)
+  }
+  return Math.max(edH - MAX_OFFSET, REQUEST_MIN + 40)
 }
 
 /** 首次出现响应区时初始化分割：请求区约 35%、响应区 65%（优先放大响应展示空间），
@@ -901,6 +915,26 @@ watch(hasResponse, (has) => {
   )
 })
 
+/** 进入手动分割模式（未发送期）：请求卡当前是 grow 贴内容布局，实际盒高 ≠
+ * requestBodyHeight 的存值——先以实际盒高对齐基准再切固定高，否则首次拖动会
+ * 从旧值（200）跳变。已发送（hasResponse）本就是固定高，直接返回现值。 */
+function enterManualSplit(): number {
+  if (hasResponse.value) return requestBodyHeight.value
+  const ed = editorEl.value
+  const cb = configBoxEl.value
+  const hint = ed?.querySelector<HTMLElement>('.response-hint')
+  // grow 态 flex 收敛必不溢出：此刻量 chrome = 总高 − 请求卡 − 占位条
+  if (!requestManual.value && ed && cb && hint) {
+    growChrome = ed.scrollHeight - cb.getBoundingClientRect().height - hint.getBoundingClientRect().height
+    hintMinH = parseFloat(getComputedStyle(hint).minHeight) || hint.offsetHeight
+  }
+  // border-box：用 getBoundingClientRect（含边框）与 height 样式同口径
+  const actual = cb?.getBoundingClientRect().height ?? requestBodyHeight.value
+  requestManual.value = true
+  requestBodyHeight.value = Math.min(Math.max(Math.round(actual), REQUEST_MIN), requestMaxHeight())
+  return requestBodyHeight.value
+}
+
 /** 分割条 mousedown：开始拖拽，动态调整请求区高度（响应区 flex:1 自动补位）。 */
 function onSplitterDown(event: MouseEvent): void {
   if (event.button !== 0) return
@@ -908,7 +942,7 @@ function onSplitterDown(event: MouseEvent): void {
   splitDragging = true
   splitterDragging.value = true
   splitStartY = event.clientY
-  splitStartHeight = requestBodyHeight.value
+  splitStartHeight = enterManualSplit()
   document.body.style.userSelect = 'none'
   document.addEventListener('mousemove', onSplitterMove)
   document.addEventListener('mouseup', onSplitterUp)
@@ -931,22 +965,25 @@ function onSplitterUp(): void {
 
 /** 双击分割条 / 点击微调按钮：请求区收缩到最小高度，再点恢复默认高度。 */
 function toggleRequestBody(): void {
+  // 未发送期先以请求卡实际盒高对齐基准（存值可能过期），collapsed 判定才准确
+  enterManualSplit()
   requestBodyHeight.value = requestBodyCollapsed.value ? REQUEST_DEFAULT : REQUEST_MIN
 }
 
 /** 键盘调高（分割条可 Tab 聚焦）：↑ ↓ 每次 10px，Shift 40px，PgUp/PgDn 更大步长，Home/End 到上下限。 */
 function onSplitterKeydown(event: KeyboardEvent): void {
+  const handled = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End']
+  if (!handled.includes(event.key)) return
+  event.preventDefault()
   const max = requestMaxHeight()
   const step = event.shiftKey ? 40 : 10
-  let next = requestBodyHeight.value
+  let next = enterManualSplit()
   if (event.key === 'ArrowUp') next -= step
   else if (event.key === 'ArrowDown') next += step
   else if (event.key === 'PageUp') next -= step * 4
   else if (event.key === 'PageDown') next += step * 4
   else if (event.key === 'Home') next = REQUEST_MIN
   else if (event.key === 'End') next = max
-  else return
-  event.preventDefault()
   requestBodyHeight.value = Math.min(Math.max(next, REQUEST_MIN), max)
 }
 
@@ -1249,9 +1286,10 @@ onUnmounted(() => {
     </div>
 
     <div
+      ref="configBoxEl"
       class="config-box"
-      :class="{ collapsed: requestBodyCollapsed, grow: !hasResponse }"
-      :style="hasResponse ? { height: `${requestBodyHeight}px` } : undefined"
+      :class="{ collapsed: requestBodyCollapsed, grow: !hasResponse && !requestManual }"
+      :style="hasResponse || requestManual ? { height: `${requestBodyHeight}px` } : undefined"
     >
       <Tabs v-model="activeTab" :tabs="configTabs" size="sm" />
       <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
@@ -1296,24 +1334,26 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <template v-if="hasResponse">
-      <!-- 隐形拖拽热区：视觉（边界细线/拖拽图标）已移交响应面板，仅保留拖拽/双击/键盘能力 -->
-      <div
-        class="rp-splitter"
-        :class="{ dragging: splitterDragging }"
-        role="separator"
-        tabindex="0"
-        aria-orientation="horizontal"
-        :aria-label="t('editor.splitterHint')"
-        :aria-valuenow="Math.round(requestBodyHeight)"
-        :aria-valuemin="REQUEST_MIN"
-        :aria-valuemax="Math.round(requestMaxHeight())"
-        :title="t('editor.splitterHint')"
-        @mousedown="onSplitterDown"
-        @dblclick="toggleRequestBody"
-        @keydown="onSplitterKeydown"
-      ></div>
+    <!-- 物理分割条 = 唯一拖拽热区：请求面板底边与下方响应区/占位区的绝对分界
+         （::after 上下外扩命中热区）。未发送期同样可拖：enterManualSplit 切
+         固定高，编辑器 availH 经 ResizeObserver 跟随——看到底线即可拖。 -->
+    <div
+      class="rp-splitter"
+      :class="{ dragging: splitterDragging }"
+      role="separator"
+      tabindex="0"
+      aria-orientation="horizontal"
+      :aria-label="t('editor.splitterHint')"
+      :aria-valuenow="Math.round(requestBodyHeight)"
+      :aria-valuemin="REQUEST_MIN"
+      :aria-valuemax="Math.round(requestMaxHeight())"
+      :title="t('editor.splitterHint')"
+      @mousedown="onSplitterDown"
+      @dblclick="toggleRequestBody"
+      @keydown="onSplitterKeydown"
+    ></div>
 
+    <template v-if="hasResponse">
       <div class="response-zone">
         <!-- Apifox 式请求中占位：转圈 + 实时计时 + 骨架 shimmer，一眼可知「这次发出去了」。 -->
         <div v-if="sending && !response && !sendError" class="req-loading" role="status" aria-live="polite">
@@ -1354,7 +1394,15 @@ onUnmounted(() => {
         </div>
       </div>
     </template>
-    <button v-else class="response-hint" type="button" @click="urlInputEl?.focus()">
+    <!-- 未发送期占位低条：手动拖过分割条（请求卡固定高）时改为吸收剩余空间，
+         保持「请求卡底边分割条 = 视觉分界线」且低条始终贴到工作区底部 -->
+    <button
+      v-else
+      class="response-hint"
+      :class="{ 'flex-fill': requestManual }"
+      type="button"
+      @click="urlInputEl?.focus()"
+    >
       <span class="response-hint-inner">
         <Icon name="send" :size="20" />
         <span>{{ t('editor.responseHint') }}</span>
@@ -2067,9 +2115,9 @@ onUnmounted(() => {
   padding: 10px 12px;
 }
 
-/* 无响应阶段：请求卡吃掉剩余纵向空间（内容顶对齐、Body 编辑器 auto-height
- * 160~480 不变），响应空态收为固定低条——避免「请求区贴内容 + 空态占 2/3 屏」
- * 的失衡；出现响应后仍转分割条分配的固定高度 */
+/* 无响应阶段：请求卡吃掉剩余纵向空间（内容顶对齐、Body 编辑器贴内容自适应、
+ * 高度上限 = 面板可用高度 availH，分割条拖动即时跟随），响应空态收为固定低条——
+ * 避免「请求区贴内容 + 空态占 2/3 屏」的失衡；出现响应后仍转分割条分配的固定高度 */
 .config-box.grow {
   flex: 1 1 auto;
 }
@@ -2085,9 +2133,12 @@ onUnmounted(() => {
   gap: 16px;
   flex-wrap: wrap;
   /* 高度受限（响应出现后 config-box 固定高）时不被 flex 压缩；
-   * relative 提升绘制层级，避免被面板内 position:relative 的编辑器溢出内容盖住 */
+   * sticky 固定 Footer：config-box 内容超高滚动时钉在卡片底缘，不随内容滚走
+   * （sticky 同为定位元素，保留原 relative 的绘制层级，避免被编辑器溢出内容盖住） */
   flex-shrink: 0;
-  position: relative;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   /* 贴卡片左右内容宽（ml 一档由卡片内距承担），底部与卡片边缘齐平 */
   margin: 8px 0 -10px;
   padding: 6px 16px;
@@ -2192,6 +2243,10 @@ onUnmounted(() => {
 .response-hint:hover .response-hint-inner,
 .response-hint:focus-visible .response-hint-inner {
   color: var(--text-2);
+}
+/* 未发送期手动分割后：请求卡固定高，占位低条 flex:1 吸收剩余空间补位到底 */
+.response-hint.flex-fill {
+  flex: 1 1 auto;
 }
 .response-hint:focus-visible {
   outline: 2px solid var(--accent);

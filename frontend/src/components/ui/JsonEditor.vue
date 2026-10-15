@@ -7,7 +7,7 @@
  *   编辑区内没有任何绝对定位浮层遮挡代码。
  * - 深色底色 #121318，聚焦时 1px 紫色光晕（原 3px 重描边移除）。
  */
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
 import { copyText } from '../../utils/clipboard'
@@ -56,6 +56,8 @@ const locale = useLocaleStore()
 const t = locale.t
 const taRef = ref<HTMLTextAreaElement | null>(null)
 const preRef = ref<HTMLElement | null>(null)
+const wrapRef = ref<HTMLElement | null>(null)
+const editorRef = ref<HTMLElement | null>(null)
 const scrollTop = ref(0)
 
 /**
@@ -92,6 +94,9 @@ watch(
 )
 onUnmounted(() => {
   if (shownTimer) clearTimeout(shownTimer)
+  wrapRef.value?.removeEventListener('scroll', clampWrapScroll)
+  availObserver?.disconnect()
+  availObserver = null
 })
 
 /** 空内容渲染一个空格，保证 pre 与 textarea 高度一致（滚动同步前提）。 */
@@ -154,7 +159,8 @@ watch(
     const [start, end] = offsets
     taRef.value.setSelectionRange(start, end)
     const linesBefore = props.modelValue.slice(0, start).split('\n').length - 1
-    const lineHeight = 19.4
+    // 正文行盒 = --fs-sm × 1.55（与 .hl-pre/.hl-ta 行高同源，见样式区）
+    const lineHeight = 13 * 1.55
     const targetScroll = Math.max(0, linesBefore * lineHeight - 40)
     taRef.value.scrollTop = targetScroll
     if (preRef.value) {
@@ -167,16 +173,26 @@ watch(
 const lineCount = computed(() => (isLargeDoc.value ? 0 : shownText.value.split('\n').length))
 
 /* 自适应高度：行盒 = --fs-sm(13px) × line-height 1.55，另加 wrap 上下 padding 20 与边框 2。
- * 由行数推算而非回读 scrollHeight（ta height:100% 会把旧高度读回来卡住），增删行双向即时跟随 */
+ * 由行数推算而非回读 scrollHeight（ta height:100% 会把旧高度读回来卡住），增删行双向即时跟随。
+ * 上限 = 面板可用高度（availH，由请求/响应分割条拖动、窗口缩放经 ResizeObserver 重测）：
+ * 内容高过可用高度就填满面板并转框内滚动——否则内容被面板 overflow:hidden 裁掉且
+ * 任何地方都没有滚动条、滚轮无反应；内容低于可用高度则贴内容生长（minHeight 兜底）。
+ * avail 尚未测得（首帧）时退回 maxHeight，防首帧无界。 */
+/** 面板可用高度（.json-editor 盒高 − 工具栏 − 间距，px）；0 = 尚未测得（暂以 maxHeight 夹取）。 */
+const availH = ref(0)
 const wrapHeight = computed<number | null>(() => {
   if (!props.autoHeight) return null
-  if (isLargeDoc.value) return props.maxHeight
+  if (isLargeDoc.value) return availH.value > 0 ? availH.value : props.maxHeight
   const content = Math.ceil(lineCount.value * 13 * 1.55) + 22
-  return Math.min(Math.max(content, props.minHeight), props.maxHeight)
+  const h = Math.max(content, props.minHeight)
+  return availH.value > 0 ? Math.min(h, availH.value) : Math.min(h, props.maxHeight)
 })
 
 const wrapStyle = computed(() => ({
-  minHeight: `${props.minHeight}px`,
+  /* CSS min-height 优先级高于 height：面板被拖到 availH < 地板值时，height 会被
+   * min-height 顶回去 → wrap 高出面板可用区、panel overflow:hidden 裁出无滚动条
+   * 死区（实测 avail152 被 160 地板顶成 160，底裁 8px）。地板必须钳到 availH。 */
+  minHeight: `${availH.value > 0 ? Math.min(props.minHeight, availH.value) : props.minHeight}px`,
   ...(wrapHeight.value ? { height: `${wrapHeight.value}px` } : {}),
 }))
 
@@ -234,6 +250,116 @@ function syncScroll(e: Event): void {
   }
 }
 
+/**
+ * 面板可用高度（wrap 高度上限），两条路径：
+ * - 填充/分割模式（autoHeight=false）：.json-editor 盒高由 flex 分派（与 wrap
+ *   内容无关，无回环），减去自身工具栏与 4px gap 即 wrap 可用最大高度。
+ * - 自适应模式（autoHeight=true，未发送期）：从 host 向上找**最内层** overflow
+ *   被约束的祖先（BodyPanel .panel overflow:hidden，即真正裁剪 host 的盒子），
+ *   量它的视口：avail = sc.clientH − (host.top − sc.top) − 工具栏 − 4。
+ *   该祖先必须是有界盒（config-box 内 flex:1，高度由外层分派、与 wrap 内容无关）
+ *   → wrap 恰好填满它就是不动点；panel 盒高变化必由外层（config-box / 分割条 /
+ *   窗口）驱动 → .json-editor 的 ResizeObserver 必然跟进重测，链路自洽。
+ *   禁止改回「向上找活动滚动器（sh>c）再量」：外层（如 .config-box）溢出时会量到
+ *   外层视口——没算 host 下方 footer/占位条的高度，高估几十 px；而 wrap 因此收缩
+ *   并不改 .json-editor 盒高（flex:1 自顶向下），RO 不再触发，avail 永久卡在瞬态
+ *   高值 → 面板底部裁出无滚动条死区（headless 实测卡 263，真值 214）。
+ *   找不到有界祖先（页面级滚动）不设上限，交给 maxHeight。
+ */
+function measureAvail(): void {
+  const host = editorRef.value
+  if (!host) return
+  const toolbar = host.querySelector<HTMLElement>(':scope > .je-toolbar')
+  const tbar = toolbar?.offsetHeight ?? 0
+  if (props.autoHeight) {
+    let sc: HTMLElement | null = null
+    let cur: HTMLElement | null = host.parentElement
+    while (cur) {
+      const oy = getComputedStyle(cur).overflowY
+      if (oy === 'auto' || oy === 'scroll' || oy === 'hidden' || oy === 'clip') {
+        sc = cur
+        break
+      }
+      cur = cur.parentElement
+    }
+    if (!sc) {
+      availH.value = 0
+      return
+    }
+    const topInView = host.getBoundingClientRect().top - sc.getBoundingClientRect().top
+    availH.value = Math.max(0, Math.round(sc.clientHeight - topInView - tbar - 4))
+    return
+  }
+  availH.value = Math.max(0, host.clientHeight - tbar - 4)
+}
+
+/**
+ * 面板可用高度重测（availObserver）：请求卡高度变化（分割条拖动 / 窗口缩放 /
+ * 模式切换）时下一帧重测 availH，wrap 上限即时跟随——无「拖拽 → 观测 → 回写」
+ * 环，也就没有 ResizeObserver loop 告警。
+ */
+let availObserver: ResizeObserver | null = null
+let roFramePending = false
+/**
+ * ResizeObserver 回调统一挪到下一帧再测：回调里写响应式状态会让 Vue 在同一
+ * 渲染机会内改 DOM，内核补投递新一轮观察时报「ResizeObserver loop completed
+ * with undelivered notifications」（WKWebView 会把它当窗口错误弹到
+ * ErrorBoundary）。rAF 在样式/布局前收尾本轮，新观察下一帧干净投递。
+ */
+function nextFrame(cb: () => void): void {
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(cb)
+  else setTimeout(cb, 16)
+}
+function scheduleRoSync(): void {
+  if (roFramePending) return
+  roFramePending = true
+  let done = false
+  const run = (): void => {
+    if (done) return
+    done = true
+    roFramePending = false
+    measureAvail()
+  }
+  nextFrame(run)
+  // rAF 被节流的环境（后台/隐藏 webview、headless）里 rAF 回调可能长期不投递，
+  // roFramePending 会永久卡住 → avail 从此不再更新（实测过挂载后一次都没再测）。
+  // setTimeout 不会被彻底停摆，超时强制补测一帧；rAF 正常时 done 守卫直接短路。
+  setTimeout(run, 300)
+}
+
+/** 老内核兜底：wrap 被链式滚动后整体（行号槽 + 高亮层 + textarea）左移/上移错乱。 */
+function clampWrapScroll(): void {
+  const wrap = wrapRef.value
+  if (!wrap) return
+  wrap.scrollLeft = 0
+  wrap.scrollTop = 0
+}
+
+onMounted(() => {
+  measureAvail()
+  // 兜底：老内核不支持 overflow: clip 时 wrap 仍是滚动容器，横向滚轮会链式
+  // 滚到 wrap 上（行号槽 + 正文整体左移错乱），强制归零。
+  wrapRef.value?.addEventListener('scroll', clampWrapScroll, { passive: true })
+  if (typeof ResizeObserver === 'undefined') return
+  // 面板可用高度：容器盒高变化（窗口缩放 / 分割条拖动 / 模式切换）时重测。
+  if (editorRef.value) {
+    availObserver = new ResizeObserver(scheduleRoSync)
+    availObserver.observe(editorRef.value)
+    // 工具栏自身高度（字体 swap、状态文案增减）会吃掉 avail，但不改
+    // .json-editor 盒高 → 主观察者看不见，必须单独观察，否则 avail 永久偏大、
+    // 面板底裁出无滚动条死区。
+    const toolbar = editorRef.value.querySelector<HTMLElement>(':scope > .je-toolbar')
+    if (toolbar) availObserver.observe(toolbar)
+  }
+  // 字体加载晚于首帧测量时（WebFont swap）工具栏高度会变，上面的观察者会跟进；
+  // 这里再补一枪覆盖「字体就绪但盒子没动」的窄缝。
+  try {
+    document.fonts?.ready.then(() => scheduleRoSync())
+  } catch {
+    /* 老内核无 FontFaceSet，忽略 */
+  }
+})
+
 // 内容变化（格式化 / 粘贴 / 回退 / 外部保存）后重新对齐滚动与 DOM 同步，避免高亮层与行号错位。
 watch(
   () => props.modelValue,
@@ -287,7 +413,7 @@ async function copyJson(): Promise<void> {
 </script>
 
 <template>
-  <div class="json-editor">
+  <div ref="editorRef" class="json-editor">
     <!-- 顶部工具栏：状态 Tag + 快捷操作（替代原悬浮层，不遮挡代码） -->
     <div class="je-toolbar">
       <span
@@ -341,7 +467,7 @@ async function copyJson(): Promise<void> {
       </div>
     </div>
 
-    <div class="hl-wrap" :class="{ 'auto-height': autoHeight }" :style="wrapStyle">
+    <div ref="wrapRef" class="hl-wrap" :class="{ 'auto-height': autoHeight }" :style="wrapStyle">
       <div v-if="!isLargeDoc" class="hl-gutter" aria-hidden="true">
         <div
           class="hl-gutter-inner"
@@ -387,7 +513,11 @@ async function copyJson(): Promise<void> {
   border: 1px solid var(--border-editor);
   border-radius: var(--radius);
   background: var(--bg-code);
+  /* clip：wrap 不再是滚动容器——overflow:hidden 仍可被滚轮链式滚动，横向长
+   * 内容滑到底后继续滑会把行号槽 + 正文整体左移错乱；老内核不识别 clip 时
+   * 退回 hidden，另有 JS 归零兜底（clampWrapScroll）。 */
   overflow: hidden;
+  overflow: clip;
   flex: 1;
   min-height: 0;
   transition:
@@ -395,12 +525,10 @@ async function copyJson(): Promise<void> {
     box-shadow var(--dur) var(--ease);
 }
 
-/* 自适应高度模式：贴内容生长，不参与 flex 抢高；textarea 手柄禁用（高度由内容驱动） */
+/* 自适应高度模式：贴内容生长（上限 availH），不参与 flex 抢高。
+ * 高度调整入口在请求面板物理底边的 rp-splitter（EndpointEditor），编辑器只跟随。 */
 .hl-wrap.auto-height {
   flex: 0 0 auto;
-}
-.hl-wrap.auto-height .hl-ta {
-  resize: none;
 }
 
 /* 1px 紫色聚焦光晕（替代原 3px 重描边） */
@@ -437,7 +565,9 @@ async function copyJson(): Promise<void> {
   height: 100%;
   display: block;
   box-sizing: border-box;
-  resize: vertical;
+  /* resize 关闭：高度归 wrap 单向驱动（wrap 又由面板可用高度 availH 驱动，
+   * 即请求/响应分割条拖动），原生角标各内核表现不一（WebKit 不绘制） */
+  resize: none;
   border: none;
   outline: none;
   background: transparent;
@@ -496,13 +626,16 @@ async function copyJson(): Promise<void> {
 }
 
 /* 行号栏：与响应区共用 --code-gutter-* 几何（宽度/间隙单源），
- * 无独立底色与分隔线——数字直接落在代码底色上，与响应树/行视图一致 */
+ * 底色取 --bg-code——与代码底色同色，静止时视觉仍是「数字落在代码底色上」，
+ * 但必须不透明：pre/ta 满宽铺底，横向滚动时正文会滑到行号槽底下，
+ * 透明则数字与正文交叠错乱 */
 .hl-gutter {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: var(--code-gutter-w);
+  background: var(--bg-code);
   overflow: hidden;
   user-select: none;
   pointer-events: none;
@@ -515,7 +648,11 @@ async function copyJson(): Promise<void> {
 .hl-gutter-line {
   font-family: var(--font-mono);
   font-size: var(--fs-xxs);
-  line-height: 1.55;
+  /* 行号行盒必须与正文行盒同高（--fs-sm 13px × 1.55 = 20.15px）：字面可比正文
+   * 小一档，但行高由正文推导——否则行号槽逐行上漂（17.05 vs 20.15），滚动时
+   * 行号与内容错位、行号先于内容走完 */
+  height: calc(var(--fs-sm) * 1.55);
+  line-height: calc(var(--fs-sm) * 1.55);
   color: var(--tok-gutter, #5c6370);
   text-align: right;
   padding-right: var(--code-gutter-gap);
