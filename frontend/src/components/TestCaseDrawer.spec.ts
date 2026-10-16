@@ -5,9 +5,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { nextTick } from 'vue'
 import TestCaseDrawer from './TestCaseDrawer.vue'
 import CodeExportMenu from './CodeExportMenu.vue'
-import CustomSelect from './ui/CustomSelect.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import type { Environment, TestCase } from '../types/foxApi'
@@ -167,7 +167,7 @@ describe('TestCaseDrawer', () => {
     })
   })
 
-  it('顶部用例基本信息右侧提供环境选择器，切换写回激活环境', () => {
+  it('顶部用例基本信息右侧提供环境选择器，切换写回激活环境', async () => {
     const env: Environment = {
       id: 'e1',
       project_id: 'p1',
@@ -182,17 +182,43 @@ describe('TestCaseDrawer', () => {
     store.activeEnvId = 'e1'
     const setEnv = vi.spyOn(store, 'setEnvironment').mockResolvedValue(undefined)
     const { wrapper } = mountDrawer()
-    const envSelect = wrapper
-      .findAllComponents(CustomSelect)
-      .find((c) => c.classes().includes('drw-env-select'))
-    expect(envSelect).toBeTruthy()
-    // 顶部选择器展示当前激活环境名
-    expect(envSelect!.text()).toContain('开发环境')
+
+    // 与顶栏同一个共享选择器（EnvironmentSelector，solo 外观）：收起态 = 状态点 + 环境名
+    const trigger = document.querySelector<HTMLElement>('.drw-sec-head .drw-env-select .cs-trigger')
+    expect(trigger).toBeTruthy()
+    expect(trigger!.querySelector('.edot')).toBeTruthy()
+    expect(trigger!.textContent).toContain('开发环境')
+    // manage=false：不渲染环境管理弹窗（遮罩盖得住 Modal，且不拉管理大 chunk）
+    expect(wrapper.findComponent({ name: 'EnvironmentManager' }).exists()).toBe(false)
+
+    trigger!.click()
+    await nextTick()
+    const pop = document.querySelector('.cs-pop.env-pop')!
+    expect(pop).toBeTruthy()
+    // 格式与顶栏一致：无环境 + 各环境（名称行）
+    const rows = Array.from(pop.querySelectorAll<HTMLElement>('.cs-pop-list .cs-opt'))
+    expect(rows.map((r) => r.querySelector('.env-opt-name')?.textContent?.trim())).toEqual([
+      '无环境',
+      '开发环境',
+    ])
+    // 当前选中项高亮 + 行尾 ✓
+    expect(pop.querySelector('.cs-opt.sel .env-opt-name')?.textContent?.trim()).toBe('开发环境')
+    expect(pop.querySelector('.cs-opt.sel .cs-opt-check svg')).toBeTruthy()
+    // 抽屉遮罩(120) 高于 Modal(100)：抽屉内不给环境管理入口（底栏不渲染）
+    expect(pop.querySelector('.es-pop-footer')).toBeNull()
+
     // 切到「无环境」→ 与顶栏同源写回（setEnvironment(null)）
-    envSelect!.vm.$emit('update:model-value', '')
+    rows[0].click()
+    await nextTick()
     expect(setEnv).toHaveBeenCalledWith(null)
-    // 切到指定环境 → 写回环境 id
-    envSelect!.vm.$emit('update:model-value', 'e1')
+
+    // 再切回指定环境 → 写回环境 id
+    trigger!.click()
+    await nextTick()
+    Array.from(
+      document.querySelectorAll<HTMLElement>('.cs-pop.env-pop .cs-pop-list .cs-opt'),
+    )[1].click()
+    await nextTick()
     expect(setEnv).toHaveBeenCalledWith('e1')
   })
 

@@ -1,5 +1,6 @@
 /**
- * EnvironmentBar 下拉菜单回归：
+ * EnvironmentBar 下拉菜单回归（选择器本体为共享组件 EnvironmentSelector，
+ * EnvironmentBar 以 group 外观内嵌；本文件同时锁定该共享组件的结构与交互）：
  * - 列表项必须是「左区 [状态点 | 上下双行文字列]」结构——名称与 Base URL 各占一行，
  *   URL 永不与名称横向挤压截断（历史 bug：URL 单行横排被严重截断）；
  * - 面板结构顺序：搜索 → 分隔线 → 列表 → 分隔线 → 底部操作栏；
@@ -100,7 +101,7 @@ describe('EnvironmentBar 下拉菜单', () => {
     expect(kids[1]).toContain('cs-pop-list')
     expect(kids[2]).toContain('cs-pop-footer')
     // 搜索框存在且有占位符
-    const input = pop.querySelector<HTMLInputElement>('.eb-search-input')
+    const input = pop.querySelector<HTMLInputElement>('.es-search-input')
     expect(input).toBeTruthy()
     expect(input!.placeholder).toBe('搜索环境名称或地址…')
     wrapper.unmount()
@@ -159,10 +160,28 @@ describe('EnvironmentBar 下拉菜单', () => {
     const wrapper = mountBar()
     const pop = await openPop(wrapper)
 
-    const btns = Array.from(pop.querySelectorAll('.cs-pop-footer .env-foot-btn'))
+    const btns = Array.from(pop.querySelectorAll('.cs-pop-footer .es-foot-btn'))
     expect(btns).toHaveLength(2)
     expect(btns[0].textContent).toContain('新建环境')
     expect(btns[1].textContent).toContain('管理环境')
+    wrapper.unmount()
+  })
+
+  it('底栏「新建环境」打开环境管理弹窗（弹窗由选择器自持，管理大 chunk 不常驻）', async () => {
+    const wrapper = mountBar()
+    const pop = await openPop(wrapper)
+
+    Array.from(pop.querySelectorAll<HTMLButtonElement>('.es-foot-btn'))[0].click()
+    await nextTick()
+
+    // 管理弹窗是 stub（异步组件按需渲染），props 以属性形式落到 stub 上
+    const mgr = wrapper.findComponent({ name: 'EnvironmentManager' })
+    expect(mgr.exists()).toBe(true)
+    const attrs = mgr.attributes()
+    expect(attrs.open).toBe('true')
+    expect(attrs['create-new']).toBe('true')
+    // 打开管理弹窗前先收起下拉
+    expect(document.querySelector('.cs-pop')).toBeNull()
     wrapper.unmount()
   })
 
@@ -172,7 +191,7 @@ describe('EnvironmentBar 下拉菜单', () => {
 
     // 测试环境行的第一个操作按钮 = 复制
     const testRow = pop.querySelectorAll('.cs-pop-list .cs-opt')[2]
-    const copyBtn = testRow.querySelector<HTMLButtonElement>('.env-act')!
+    const copyBtn = testRow.querySelector<HTMLButtonElement>('.es-act')!
     expect(copyBtn.getAttribute('title')).toBe('复制 Base URL')
     copyBtn.click()
     await nextTick()
@@ -184,7 +203,7 @@ describe('EnvironmentBar 下拉菜单', () => {
   it('搜索过滤：按名称与 Base URL 匹配，无环境项在过滤时剔除', async () => {
     const wrapper = mountBar()
     const pop = await openPop(wrapper)
-    const input = pop.querySelector<HTMLInputElement>('.eb-search-input')!
+    const input = pop.querySelector<HTMLInputElement>('.es-search-input')!
 
     input.value = '测试'
     input.dispatchEvent(new Event('input'))
@@ -204,7 +223,7 @@ describe('EnvironmentBar 下拉菜单', () => {
     input.dispatchEvent(new Event('input'))
     await nextTick()
     expect(pop.querySelectorAll('.cs-pop-list .cs-opt')).toHaveLength(0)
-    expect(pop.querySelector('.eb-search-empty')?.textContent).toContain('无匹配环境')
+    expect(pop.querySelector('.es-search-empty')?.textContent).toContain('无匹配环境')
     wrapper.unmount()
   })
 
