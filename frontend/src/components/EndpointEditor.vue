@@ -525,6 +525,19 @@ function pickPathToken(text: string): string {
 }
 
 /**
+ * 光标处替换当前选区插入：与敲键同一类原生编辑事务，进撤销栈（Cmd+Z 可回退）。
+ * 关键：WebKit 的 smart paste 空格只在**原生粘贴**路径生成，insertText 不受影响。
+ */
+function insertAtByExecCommand(el: HTMLInputElement, start: number, end: number, text: string): boolean {
+  try {
+    el.setSelectionRange(start, end)
+    return document.execCommand('insertText', false, text)
+  } catch {
+    return false
+  }
+}
+
+/**
  * 整条替换：选中全字段后走原生插入 —— 与直接敲键同一类编辑事务，
  * 替换本身也进撤销栈（Cmd+Z 能回到替换前的内容）。
  */
@@ -537,15 +550,20 @@ function replaceByExecCommand(el: HTMLInputElement, text: string): boolean {
   }
 }
 
-/** 兜底整条替换（execCommand 不可用的环境）；程序化写值不进撤销栈，仅保证结果正确。 */
-function setFieldValue(el: HTMLInputElement, text: string): void {
+/** 兜底程序化写值（execCommand 不可用的环境）；程序化写值不进撤销栈，仅保证结果正确。 */
+function setFieldValueAt(el: HTMLInputElement, text: string, caret: number): void {
   el.value = text
   try {
-    el.setSelectionRange(text.length, text.length)
+    el.setSelectionRange(caret, caret)
   } catch {
     /* 非文本输入（类型限制）：跳过光标定位 */
   }
   el.dispatchEvent(new Event('input', { bubbles: true }))
+}
+
+/** 兜底整条替换 = 写值 + 光标到末尾。 */
+function setFieldValue(el: HTMLInputElement, text: string): void {
+  setFieldValueAt(el, text, text.length)
 }
 
 /** 归一化 shell 续行 + 去终端提示符，与 CurlImportDialog 保持一致。 */
@@ -587,15 +605,20 @@ async function importCurlText(raw: string): Promise<void> {
  *   地址」，而照抄整段会落成 `/routes routes`（单行 input 会把换行折成空格）；
  * - 完整 URL（http/https/ws/wss 起始）→ 拦截，整条替换并立即拆分
  *   origin / path / query→params（粘一个完整地址即「这就是请求地址」，保持旧粘贴体验）；
- * - 其余「干净」普通文本 → 不干预，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）；
- *   唯一的例外是字段自身带**不可见首尾空白**（旧版本粘出来的残留，看着就是 `/routes`）：
- *   先把它排掉再插，否则会插成 `/routes routes` —— 这正是「从地址栏复制再粘回来多一个空格」
- *   的成因（字段里的空白被一起复制走）。替换同样走 `execCommand('insertText')` 原生编辑事务
- *   （实证：insertText 记入撤销栈、`undo` 可回退；而程序化写 `el.value` 会清空撤销栈）。
- *
- * 回归 bug 三枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
+ * - 其余「干净」普通文本 → **仍 `preventDefault`，不再放行原生粘贴**（根治「从地址栏复制
+ *   再粘回来多一个空格」）：WebKit（Tauri 的 WKWebView 同源）对单行 input 的原生粘贴
+ *   带 smart copy/paste——插入点邻接文字（`/routes` 后粘 `routes`）时，粘贴机制写值时
+ *   自补一个分隔空格 → `/routes routes`。这个空格由粘贴过程生成，不在 clipboardData
+ *   里，且是否补与剪贴板来源相关（从地址栏复制再粘回来必现），拦截内容不如拦截行为：
+ *   改由自己插（尊重选区/光标）。插入仍走 `execCommand('insertText')` 原生编辑事务
+ *   （实证：insertText 记入撤销栈、`undo` 可回退；而程序化写 `el.value` 会清空撤销栈）；
+ *   插入点与字段首尾若带**不可见空白**（旧版本粘出来的残留，看着就是 `/routes`），
+ *   先把它排掉再插，否则残留会续命成 `/routes routes`。
+ * 回归 bug 四枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
  * 无视光标/选区整条替换（已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉）；② 程序化赋值清空原生
- * 撤销栈，Cmd+Z 回退不了；③ 文档片段 / 字段残留空白照抄落值（`/routes routes`）。
+ * 撤销栈，Cmd+Z 回退不了；③ 文档片段 / 字段残留空白照抄落值（`/routes routes`）；④
+ * 放行原生粘贴时 WKWebView smart paste 在插入点邻接文字自补分隔空格（同 `/routes routes`，
+ * 见上）。
  */
 function onUrlPaste(event: ClipboardEvent): void {
   const raw = event.clipboardData?.getData('text') ?? ''
@@ -610,7 +633,10 @@ function onUrlPaste(event: ClipboardEvent): void {
   // 含空白 = 整段复制的文档片段，只取路径那一段；纯裸路径（无空白）原样保留
   const fragmented = /\s/.test(raw)
   const text = fragmented ? pickPathToken(raw) : raw
-  if (!text) return
+  if (!text) {
+    event.preventDefault() // 纯空白（如「复制尾部空格」）：地址栏不该收空白，直接丢弃
+    return
+  }
 
   if (/^(?:https?|wss?):\/\//i.test(text)) {
     event.preventDefault()
@@ -619,33 +645,32 @@ function onUrlPaste(event: ClipboardEvent): void {
   }
 
   const el = event.target as HTMLInputElement
+  const start = el.selectionStart ?? el.value.length
+  const end = el.selectionEnd ?? start
+  event.preventDefault()
+  el.focus()
 
   if (fragmented) {
-    event.preventDefault()
-    el.focus()
     if (!replaceByExecCommand(el, text)) setFieldValue(el, text)
     return
   }
 
-  const start = el.selectionStart ?? el.value.length
-  const end = el.selectionEnd ?? start
-  // 排掉「紧邻插入点」与字段首尾的空白：这类残留肉眼不可见（看着就是 `/routes`），
-  // 却被一起复制带走，再粘回来就成 `/routes routes`。字段中段的空白（用户自己敲的）不动。
+  // 光标处插入（尊重选区）。先排掉「紧邻插入点」与字段首尾的空白：这类残留肉眼
+  // 不可见（看着就是 `/routes`），随插入落值会变成 `/routes routes`。字段中段
+  // 的空白（用户自己敲的）不动。
   const head = el.value.slice(0, start).replace(/^\s+|\s+$/g, '')
   const tail = el.value.slice(end).replace(/^\s+|\s+$/g, '')
-  // 字段干净（没排掉任何字符）：完全不干预，交给浏览器原生粘贴
-  if (head.length === start && tail.length === el.value.length - end) return
-
   const next = `${head}${text}${tail}`
-  event.preventDefault()
-  el.focus()
-  if (!replaceByExecCommand(el, next)) setFieldValue(el, next)
   const caret = Math.min(next.length, head.length + text.length)
-  try {
-    el.setSelectionRange(caret, caret)
-  } catch {
-    /* 非文本输入（类型限制）：跳过光标定位 */
+
+  if (head.length === start && tail.length === el.value.length - end) {
+    // 字段干净（没排掉任何字符）：只替换选区本身，同敲键事务，撤销栈完好
+    if (!insertAtByExecCommand(el, start, end, text)) setFieldValueAt(el, next, caret)
+    return
   }
+
+  // 有残留：先排掉再插，走整条重写事务（单个撤销事务，可整体回退）
+  if (!replaceByExecCommand(el, next)) setFieldValueAt(el, next, caret)
 }
 
 /** 路径输入框 placeholder：gRPC 提示地址格式；HTTP 提示 Base URL 拼接。 */

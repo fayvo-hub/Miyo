@@ -206,22 +206,46 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     expect(errors.errors).toEqual([])
   })
 
-  it('粘贴干净路径文本：完全不干预（交原生插入，保光标与原生撤销栈）', async () => {
+  it('粘贴干净路径文本：拦截原生粘贴，改走 insertText 插入（根治 WKWebView smart paste 补空格）', async () => {
     const errors = collectErrors()
     const { wrapper, store } = await mountEditor()
     const input = wrapper.find('.url-input')
     store.activeEndpoint!.path = '/aa/bb/'
     await nextTick()
+    const el = input.element as HTMLInputElement
+    el.setSelectionRange(el.value.length, el.value.length)
 
     const ev = new Event('paste', { bubbles: true, cancelable: true })
     Object.defineProperty(ev, 'clipboardData', { value: { getData: () => '/cc' } })
     input.element.dispatchEvent(ev)
     await nextTick()
 
-    // 回归 bug：旧实现对普通文本也 preventDefault + applyUrlInput(text, true) 整条替换，
-    // 已有 `/aa/bb/` 被 `/cc` 顶掉；且程序化写 value 清空原生撤销栈（Cmd+Z 失效）。
-    expect(ev.defaultPrevented).toBe(false)
-    expect(store.activeEndpoint!.path).toBe('/aa/bb/')
+    // 回归 bug：放行原生粘贴时 WKWebView smart paste 会在插入点邻接文字补分隔空格
+    // （`/aa/bb/` + 粘 `/cc` → `/aa/bb/ /cc`），且补的空格不在 clipboardData 里
+    // 拦不到——只能拦截行为，改走同屏 insertText（原生事务，撤销栈完好）。
+    expect(ev.defaultPrevented).toBe(true)
+    expect(el.value).toBe('/aa/bb//cc')
+    expect(store.activeEndpoint!.path).toBe('/aa/bb//cc')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('纯空白粘贴：丢弃（地址栏不该收空白）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = '/aa'
+    await nextTick()
+
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => '   ' } })
+    input.element.dispatchEvent(ev)
+    await nextTick()
+
+    expect(ev.defaultPrevented).toBe(true)
+    expect(store.activeEndpoint!.path).toBe('/aa')
 
     wrapper.unmount()
     errors.restore()
