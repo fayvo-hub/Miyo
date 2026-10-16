@@ -103,7 +103,18 @@ async function onModalSubmit(payload: { name: string; category: TestCaseCategory
 const menuEl = ref<InstanceType<typeof Menu> | null>(null)
 const menuTarget = ref<TestCase | null>(null)
 
+/**
+ * 行选中态：点击行体高亮，用于在「全部」视图里定位当前正在看/操作的用例。
+ * 只存 id（用例被删/切接口后自然失效）；切换接口（draft.id 变化）时清空。
+ */
+const selectedId = ref<string | null>(null)
+
+function selectRow(c: TestCase): void {
+  selectedId.value = c.id
+}
+
 function openRowMenu(event: MouseEvent, c: TestCase): void {
+  selectRow(c)
   menuTarget.value = c
   const items: MenuItem[] = [
     { key: 'run', label: t('cases.menuRun'), icon: 'play' },
@@ -292,6 +303,7 @@ watch(
   () => {
     filter.value = '全部'
     keyword.value = ''
+    selectedId.value = null
   },
 )
 </script>
@@ -387,6 +399,8 @@ watch(
         v-for="(c, i) in filtered"
         :key="c.id"
         class="tcp-row tcp-body-row"
+        :class="{ 'is-selected': selectedId === c.id }"
+        @click="selectRow(c)"
       >
         <span class="tcp-col-idx">{{ i + 1 }}</span>
         <button class="tcp-col-name tcp-name-btn" type="button" :title="t('cases.rowTitle', { name: c.name })" @click="openDrawer(c)">
@@ -612,15 +626,32 @@ watch(
   background: var(--bg-2);
   font-size: 11.5px;
   color: var(--text-3);
+  /* 表头不随内容滚动折断：固定列宽与数据行同源，避免「名称」被挤掉 */
+  white-space: nowrap;
 }
 
 .tcp-body-row {
-  height: 38px;
+  min-height: 38px;
   border-top: 1px solid var(--border);
   transition: background var(--dur) var(--ease);
 }
 .tcp-body-row:hover {
   background: var(--bg-hover);
+}
+
+/* 选中行：accent 淡底 + 左侧色条 + 加粗，浅色下也能一眼分辨（不再只有 hover） */
+.tcp-body-row.is-selected {
+  position: relative;
+  background: var(--accent-tint);
+}
+.tcp-body-row.is-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
 }
 
 .tcp-col-idx {
@@ -632,14 +663,20 @@ watch(
 }
 
 .tcp-col-name {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 auto;
+  /* 名称列是唯一弹性列：给下限，否则窄容器下会被固定列挤成 0 宽（文本竖排/重叠） */
+  min-width: 120px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .tcp-name-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: none;
   padding: 0;
@@ -667,6 +704,7 @@ watch(
 }
 
 .tcp-name-text {
+  min-width: 0;
   font-size: 12.5px;
   color: var(--text-1);
   white-space: nowrap;
@@ -676,7 +714,8 @@ watch(
 
 .tcp-col-cat {
   width: 96px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 64px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -692,7 +731,8 @@ watch(
 
 .tcp-col-status {
   width: 148px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 96px;
   font-size: 12px;
   font-family: var(--font-mono);
 }

@@ -113,6 +113,21 @@ describe('TestCasesPanel', () => {
     expect(filterTexts).toContain('边界值 1')
   })
 
+  it('点击行体 → 该行进入选中态（浅色下可辨的 is-selected）', async () => {
+    const wrapper = mountPanel(draft())
+    const rows = wrapper.findAll('.tcp-body-row')
+    expect(rows.every((r) => !r.classes().includes('is-selected'))).toBe(true)
+
+    await rows[1].trigger('click')
+    expect(rows[1].classes()).toContain('is-selected')
+    // 单选语义：选中第 2 行后第 1 行不再选中
+    expect(rows[0].classes()).not.toContain('is-selected')
+
+    await rows[0].trigger('click')
+    expect(rows[0].classes()).toContain('is-selected')
+    expect(rows[1].classes()).not.toContain('is-selected')
+  })
+
   it('工具栏展示当前激活环境（全部运行的环境上下文徽章）', () => {
     store.environments = [{ id: 'e1', name: '开发环境', base_url: 'http://127.0.0.1:4010' }]
     store.activeEnvId = 'e1'
