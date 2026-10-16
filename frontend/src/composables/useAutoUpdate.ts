@@ -64,6 +64,16 @@ export function pendingUpdateVersion(): string | null {
   return pendingAutoUpdate?.version ?? null
 }
 
+/** 待安装更新的版本说明（仅展示，不取走暂存；顶部悬停预览用）。 */
+export function pendingUpdateNotes(): string {
+  return pendingAutoUpdate?.body ?? ''
+}
+
+/** 待安装更新的发布日期（RFC 3339；服务器未提供时为 null，悬停预览用）。 */
+export function pendingUpdateDate(): string | null {
+  return pendingAutoUpdate?.date ?? null
+}
+
 /** 打开关于弹窗的请求信号（设置更新行 → App 监听后打开）。 */
 const openAboutSignalState = ref(0)
 export const openAboutSignal: Readonly<Ref<number>> = readonly(openAboutSignalState)

@@ -2,7 +2,7 @@
 /**
  * ReleaseNotesModal：独立版本更新详情弹窗（顶部更新 Tag / 设置更新卡片的统一落地页）。
  * - Header：🚀 发现新版本 vX（加粗等宽，样式在文末非 scoped 段覆写 Modal 容器/标题）；
- * - Body：Markdown 更新日志（markdownLite 转义渲染，主题化井底包裹框固定高度可滚动，紫点列表）；
+ * - Body：Markdown 更新日志（ReleaseNotesBody：markdownLite 转义渲染，主题化井底包裹框可滚动）；
  * - Footer：稍后再说（rf-btn 次要按钮）+ 立即下载并重启（rf-btn-primary 主按钮），下载中就地展示进度条；
  * - 打开时接管共享暂存的 Update；未安装关闭（Esc / 遮罩 / ✕ / 稍后再说）放回暂存，
  *   顶部 Tag 复亮；下载/安装中禁止关闭，成功后自动关闭并延迟重启。
@@ -12,8 +12,8 @@ import type { Update } from '@tauri-apps/plugin-updater'
 import { restorePendingUpdate, takePendingUpdate } from '../composables/useAutoUpdate'
 import { useUpdateDownload } from '../composables/useUpdateDownload'
 import { useLocaleStore } from '../stores/locale'
-import { renderMarkdownLite } from '../utils/markdownLite'
 import Modal from './ui/Modal.vue'
+import ReleaseNotesBody from './ReleaseNotesBody.vue'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [open: boolean] }>()
@@ -29,7 +29,6 @@ const notes = ref('')
 let held: Update | null = null
 
 const title = computed(() => `🚀 ${t('app.updateFound', { v: version.value })}`)
-const notesHtml = computed(() => renderMarkdownLite(notes.value))
 
 watch(
   () => props.open,
@@ -91,12 +90,8 @@ function guardClose(): boolean {
     :guard-close="guardClose"
     @update:open="emit('update:open', $event)"
   >
-    <!-- 固定高度 + 滚动；井底配色走主题变量（--bg-code 等），深/浅均可读；
-         space-y-2 行距由 .rn-notes 内部兄弟间距承接（内容经 v-html 包了一层） -->
-    <div class="my-4 rn-notes-box space-y-2">
-      <div v-if="notesHtml" class="rn-notes" v-html="notesHtml"></div>
-      <p v-else class="rn-notes-empty">{{ t('release.noNotes') }}</p>
-    </div>
+    <!-- 固定高度 + 可滚动由 ReleaseNotesBody 承接；margin 留在本层（与 Modal 头部/底部对齐） -->
+    <ReleaseNotesBody class="my-4" :notes="notes" />
 
     <template #footer>
       <div class="rn-foot">
@@ -132,103 +127,6 @@ function guardClose(): boolean {
 </template>
 
 <style scoped>
-/* 日志包裹框：井底配色走主题变量（--bg-code 深 #19191d / 浅 #f8fafc），
-   描边与文字走主题令牌，不再写死深色字面量类（浅色下原黑底框突兀） */
-.rn-notes-box {
-  max-height: 160px;
-  overflow-y: auto;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-code);
-  color: var(--text-2);
-  font-size: var(--fs-xs);
-}
-
-/* 空态（无更新说明） */
-.rn-notes-empty {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--text-3);
-}
-
-/* 段落/列表纵向行距（等价 space-y-2：非首子元素 8px 上边距，多行日志逐条呼吸） */
-.rn-notes > :deep(* + *) {
-  margin-top: 8px;
-}
-
-/* 无序列表：半透明紫点 marker（色随 --accent，字号/行高继承包裹框） */
-.rn-notes :deep(ul > li::marker) {
-  color: color-mix(in srgb, var(--accent) 55%, transparent);
-}
-
-/* 井底容器内的排版：文字令牌随主题（--text-*），深浅井底均可读 */
-.rn-notes :deep(h3),
-.rn-notes :deep(h4),
-.rn-notes :deep(h5),
-.rn-notes :deep(h6) {
-  margin: 10px 0 4px;
-  color: var(--text-1);
-  font-size: 13px;
-  font-weight: 600;
-}
-.rn-notes :deep(h3:first-child),
-.rn-notes :deep(h4:first-child),
-.rn-notes :deep(h5:first-child),
-.rn-notes :deep(h6:first-child) {
-  margin-top: 0;
-}
-.rn-notes :deep(p) {
-  margin: 0 0 6px;
-}
-.rn-notes :deep(p:last-child) {
-  margin-bottom: 0;
-}
-.rn-notes :deep(ul),
-.rn-notes :deep(ol) {
-  margin: 0 0 6px;
-  padding-left: 18px;
-}
-.rn-notes :deep(li) {
-  margin: 2px 0;
-}
-.rn-notes :deep(strong) {
-  color: var(--text-1);
-}
-.rn-notes :deep(code) {
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--text-1) 8%, transparent);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-}
-.rn-notes :deep(pre) {
-  margin: 0 0 6px;
-  padding: 8px;
-  overflow-x: auto;
-  border-radius: 6px;
-  background: var(--bg-elevated);
-}
-.rn-notes :deep(pre code) {
-  padding: 0;
-  background: none;
-}
-.rn-notes :deep(a) {
-  color: var(--accent);
-  text-decoration: underline;
-}
-.rn-notes :deep(hr) {
-  margin: 8px 0;
-  border: none;
-  border-top: 1px solid var(--border);
-}
-.rn-notes :deep(blockquote) {
-  margin: 0 0 6px;
-  padding-left: 8px;
-  border-left: 2px solid var(--border-strong);
-  color: var(--text-3);
-}
-
 /* Footer：进度 / 错误 + 按钮行 */
 .rn-foot {
   display: flex;
