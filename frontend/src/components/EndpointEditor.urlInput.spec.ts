@@ -228,6 +228,54 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     expect(errors.errors).toEqual([])
   })
 
+  it('字段自身带不可见尾空格时粘贴：先排掉残留再插（回归：从地址栏复制再粘回来多一个空格）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    // 旧版本粘出来的残留：值末尾一个空格，界面上看着就是 `/routes`
+    store.activeEndpoint!.path = '/routes '
+    await nextTick()
+
+    const el = input.element as HTMLInputElement
+    el.setSelectionRange(el.value.length, el.value.length)
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'routes' } })
+    el.dispatchEvent(ev)
+    await nextTick()
+
+    // 关键：结果里不能出现 `/routes routes`（空白只能是字段残留，粘贴时排掉）
+    expect(ev.defaultPrevented).toBe(true)
+    expect(el.value).toBe('/routesroutes')
+    expect(store.activeEndpoint!.path).toBe('/routesroutes')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('粘贴「完整地址 + 空格 + 路径」：拼回一条 URL，不丢主机（回归：前缀带不可见空白）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = ''
+    await nextTick()
+
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', {
+      value: { getData: () => 'http://p.example.com:8093 /routes' },
+    })
+    input.element.dispatchEvent(ev)
+    await nextTick()
+
+    expect(ev.defaultPrevented).toBe(true)
+    expect(store.activeEndpoint!.path).toBe('/routes')
+    expect(store.sessionBaseUrl).toBe('http://p.example.com:8093')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
   it('粘贴「路径 + 名称」文档片段：只取路径段（回归：/routes routes）', async () => {
     const errors = collectErrors()
     const { wrapper, store } = await mountEditor()

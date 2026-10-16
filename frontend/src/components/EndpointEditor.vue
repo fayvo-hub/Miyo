@@ -503,17 +503,25 @@ const curlPasting = ref(false)
  *
  * 从接口文档 / 聊天 / 终端整段复制时，剪贴板往往不是裸路径，而是「路径 + 名称」「方法 + 路径」
  * 这类带空白的片段（`POST /routes`、`/routes routes`、`api /api/v1/x`）；单行 input 又会把
- * 剪贴板里的换行折成空格。全部照抄就落成 `/routes routes` 这种脏值。
+ * 剪贴板里的换行折成空格（实测：`insertText("a\nb")` → `a b`）。全部照抄就落成 `/routes routes`。
  *
- * 取词规则：优先取含 `/` 的那一段（路径必含 `/`，标签不会），都没有 `/` 时取第一段
- * （`routes routes` → `routes`）。换行 / 制表符先折成空格再切词。
+ * 取词规则：
+ * 1. 首段是「只剩 origin 的完整地址」（前缀里带了不可见空白被截断，`http://h:1 /routes`）→
+ *    与后面的路径段拼回一条完整 URL，别把主机丢掉；
+ * 2. 否则取含 `/` 的那一段（路径必含 `/`，标签不会）；
+ * 3. 都没有 `/` 时取首段（`routes routes` → `routes`）。
  */
 function pickPathToken(text: string): string {
   const tokens = text
     .replace(/[\r\n\t]+/g, ' ')
     .split(/\s+/)
     .filter(Boolean)
-  return tokens.find((token) => token.includes('/')) ?? tokens[0] ?? ''
+  const head = tokens[0] ?? ''
+  if (/^(?:https?|wss?):\/\/[^/]+$/i.test(head)) {
+    const path = tokens.slice(1).find((token) => token.startsWith('/'))
+    if (path) return `${head}${path}`
+  }
+  return tokens.find((token) => token.includes('/')) ?? head
 }
 
 /**
@@ -576,16 +584,18 @@ async function importCurlText(raw: string): Promise<void> {
  * - cURL 命令 → 拦截，走导入流程；
  * - 含空白的普通文本（从文档/聊天整段复制：`POST /routes`、`/routes routes`、末尾带换行）
  *   → 取其中像路径的那一段（`pickPathToken`）并**整条替换**：这类片段本身就是「一段完整
- *   地址」，而照抄整段会落成 `/routes routes`（换行在单行 input 里被折成空格）；
+ *   地址」，而照抄整段会落成 `/routes routes`（单行 input 会把换行折成空格）；
  * - 完整 URL（http/https/ws/wss 起始）→ 拦截，整条替换并立即拆分
  *   origin / path / query→params（粘一个完整地址即「这就是请求地址」，保持旧粘贴体验）；
- * - 其余「干净」普通文本 → 不干预，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）。
- *   替换同样走 `execCommand('insertText')` 原生编辑事务（实证：insertText 记入撤销栈、
- *   `undo` 可回退；而程序化写 `el.value` 会清空撤销栈 → Cmd+Z 失效）。
+ * - 其余「干净」普通文本 → 不干预，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）；
+ *   唯一的例外是字段自身带**不可见首尾空白**（旧版本粘出来的残留，看着就是 `/routes`）：
+ *   先把它排掉再插，否则会插成 `/routes routes` —— 这正是「从地址栏复制再粘回来多一个空格」
+ *   的成因（字段里的空白被一起复制走）。替换同样走 `execCommand('insertText')` 原生编辑事务
+ *   （实证：insertText 记入撤销栈、`undo` 可回退；而程序化写 `el.value` 会清空撤销栈）。
  *
  * 回归 bug 三枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
  * 无视光标/选区整条替换（已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉）；② 程序化赋值清空原生
- * 撤销栈，Cmd+Z 回退不了；③ 文档片段整段落值（`/routes routes`，含换行折成的空格）。
+ * 撤销栈，Cmd+Z 回退不了；③ 文档片段 / 字段残留空白照抄落值（`/routes routes`）。
  */
 function onUrlPaste(event: ClipboardEvent): void {
   const raw = event.clipboardData?.getData('text') ?? ''
@@ -608,13 +618,34 @@ function onUrlPaste(event: ClipboardEvent): void {
     return
   }
 
-  // 干净文本：完全不干预，交给浏览器原生粘贴
-  if (!fragmented) return
-
   const el = event.target as HTMLInputElement
+
+  if (fragmented) {
+    event.preventDefault()
+    el.focus()
+    if (!replaceByExecCommand(el, text)) setFieldValue(el, text)
+    return
+  }
+
+  const start = el.selectionStart ?? el.value.length
+  const end = el.selectionEnd ?? start
+  // 排掉「紧邻插入点」与字段首尾的空白：这类残留肉眼不可见（看着就是 `/routes`），
+  // 却被一起复制带走，再粘回来就成 `/routes routes`。字段中段的空白（用户自己敲的）不动。
+  const head = el.value.slice(0, start).replace(/^\s+|\s+$/g, '')
+  const tail = el.value.slice(end).replace(/^\s+|\s+$/g, '')
+  // 字段干净（没排掉任何字符）：完全不干预，交给浏览器原生粘贴
+  if (head.length === start && tail.length === el.value.length - end) return
+
+  const next = `${head}${text}${tail}`
   event.preventDefault()
   el.focus()
-  if (!replaceByExecCommand(el, text)) setFieldValue(el, text)
+  if (!replaceByExecCommand(el, next)) setFieldValue(el, next)
+  const caret = Math.min(next.length, head.length + text.length)
+  try {
+    el.setSelectionRange(caret, caret)
+  } catch {
+    /* 非文本输入（类型限制）：跳过光标定位 */
+  }
 }
 
 /** 路径输入框 placeholder：gRPC 提示地址格式；HTTP 提示 Base URL 拼接。 */
@@ -650,9 +681,11 @@ function applyUrlInput(value: string, normalize: boolean): void {
   if (!v) return
 
   // 1) 完整 URL：query 并入参数；按展示前缀决定拆分方式。
-  const abs = v.match(/^(?:https?|wss?):\/\/[^/]+/)
+  //    主机不含空白（`[^/\s]+`），余下部分先 trim —— 手工输入或旧版本残留的空白不该
+  //    被固化进会话前缀（`http://h:1 `）或拼成 `/ /x` 这种路径。
+  const abs = v.match(/^(?:https?|wss?):\/\/[^/\s]+/)
   if (abs) {
-    let rest = v.slice(abs[0].length) || '/'
+    let rest = v.slice(abs[0].length).trim() || '/'
     const qIdx = rest.indexOf('?')
     if (qIdx !== -1) {
       const qs = rest.slice(qIdx + 1)
