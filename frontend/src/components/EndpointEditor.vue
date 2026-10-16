@@ -499,32 +499,41 @@ function onUrlAcPick(index: number): void {
 const curlPasting = ref(false)
 
 /**
- * 粘贴残留空白清理：剪贴板里的换行/制表符在单行 input 里会被浏览器折成空格——
- * 从文档/聊天复制一行路径，最常见的表现就是「尾部多一个空格」。换行绝不可能是
- * 单行路径的一部分，故直接丢弃（而非折成空格）；两侧空白（含复制带来的 NBSP）再去掉。
- * 内部普通空格保留：`?q=a b` 这类原文不改写，避免静默吞字符。
+ * 从「文档片段」里取出路径那一段。
+ *
+ * 从接口文档 / 聊天 / 终端整段复制时，剪贴板往往不是裸路径，而是「路径 + 名称」「方法 + 路径」
+ * 这类带空白的片段（`POST /routes`、`/routes routes`、`api /api/v1/x`）；单行 input 又会把
+ * 剪贴板里的换行折成空格。全部照抄就落成 `/routes routes` 这种脏值。
+ *
+ * 取词规则：优先取含 `/` 的那一段（路径必含 `/`，标签不会），都没有 `/` 时取第一段
+ * （`routes routes` → `routes`）。换行 / 制表符先折成空格再切词。
  */
-function cleanPastedText(text: string): string {
-  return text.replace(/[\r\n\t]+/g, '').trim()
+function pickPathToken(text: string): string {
+  const tokens = text
+    .replace(/[\r\n\t]+/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+  return tokens.find((token) => token.includes('/')) ?? tokens[0] ?? ''
 }
 
-/** 走原生编辑事务插入（记入撤销栈 → Cmd+Z 可回退）；环境不支持时返回 false。 */
-function insertByExecCommand(text: string): boolean {
+/**
+ * 整条替换：选中全字段后走原生插入 —— 与直接敲键同一类编辑事务，
+ * 替换本身也进撤销栈（Cmd+Z 能回到替换前的内容）。
+ */
+function replaceByExecCommand(el: HTMLInputElement, text: string): boolean {
   try {
+    el.setSelectionRange(0, el.value.length)
     return document.execCommand('insertText', false, text)
   } catch {
     return false
   }
 }
 
-/** 兜底插入：按选区拼接并复位光标（execCommand 不可用的环境；不进原生撤销栈）。 */
-function insertAtCaret(el: HTMLInputElement, text: string): void {
-  const start = el.selectionStart ?? el.value.length
-  const end = el.selectionEnd ?? start
-  el.value = `${el.value.slice(0, start)}${text}${el.value.slice(end)}`
-  const caret = start + text.length
+/** 兜底整条替换（execCommand 不可用的环境）；程序化写值不进撤销栈，仅保证结果正确。 */
+function setFieldValue(el: HTMLInputElement, text: string): void {
+  el.value = text
   try {
-    el.setSelectionRange(caret, caret)
+    el.setSelectionRange(text.length, text.length)
   } catch {
     /* 非文本输入（类型限制）：跳过光标定位 */
   }
@@ -563,18 +572,20 @@ async function importCurlText(raw: string): Promise<void> {
 }
 
 /**
- * 地址栏粘贴分三路：
+ * 地址栏粘贴分四路：
  * - cURL 命令 → 拦截，走导入流程；
+ * - 含空白的普通文本（从文档/聊天整段复制：`POST /routes`、`/routes routes`、末尾带换行）
+ *   → 取其中像路径的那一段（`pickPathToken`）并**整条替换**：这类片段本身就是「一段完整
+ *   地址」，而照抄整段会落成 `/routes routes`（换行在单行 input 里被折成空格）；
  * - 完整 URL（http/https/ws/wss 起始）→ 拦截，整条替换并立即拆分
  *   origin / path / query→params（粘一个完整地址即「这就是请求地址」，保持旧粘贴体验）；
- * - 其余普通文本 → 不整条替换，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）。
- *   仅当文本带「复制残留空白」（尾部空格 / 换行折成的空格）时接管这一段，并用
- *   `execCommand('insertText')` 原生事务插入：位置与撤销栈都与手打一致（实证：insertText
- *   记入撤销栈、`undo` 可回退；而程序化写 `el.value` 会清空撤销栈 → Cmd+Z 失效）。
+ * - 其余「干净」普通文本 → 不干预，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）。
+ *   替换同样走 `execCommand('insertText')` 原生编辑事务（实证：insertText 记入撤销栈、
+ *   `undo` 可回退；而程序化写 `el.value` 会清空撤销栈 → Cmd+Z 失效）。
  *
- * 回归 bug 两枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
+ * 回归 bug 三枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
  * 无视光标/选区整条替换（已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉）；② 程序化赋值清空原生
- * 撤销栈，Cmd+Z 回退不了。另：粘贴一度把剪贴板尾部的换行原样落进输入框（显示成空格）。
+ * 撤销栈，Cmd+Z 回退不了；③ 文档片段整段落值（`/routes routes`，含换行折成的空格）。
  */
 function onUrlPaste(event: ClipboardEvent): void {
   const raw = event.clipboardData?.getData('text') ?? ''
@@ -586,21 +597,24 @@ function onUrlPaste(event: ClipboardEvent): void {
     return
   }
 
-  const url = raw.trim()
-  if (/^(?:https?|wss?):\/\//i.test(url)) {
+  // 含空白 = 整段复制的文档片段，只取路径那一段；纯裸路径（无空白）原样保留
+  const fragmented = /\s/.test(raw)
+  const text = fragmented ? pickPathToken(raw) : raw
+  if (!text) return
+
+  if (/^(?:https?|wss?):\/\//i.test(text)) {
     event.preventDefault()
-    applyUrlInput(url, true)
+    applyUrlInput(text, true)
     return
   }
 
-  const clean = cleanPastedText(raw)
   // 干净文本：完全不干预，交给浏览器原生粘贴
-  if (!clean || clean === raw) return
+  if (!fragmented) return
 
   const el = event.target as HTMLInputElement
   event.preventDefault()
   el.focus()
-  if (!insertByExecCommand(clean)) insertAtCaret(el, clean)
+  if (!replaceByExecCommand(el, text)) setFieldValue(el, text)
 }
 
 /** 路径输入框 placeholder：gRPC 提示地址格式；HTTP 提示 Base URL 拼接。 */

@@ -228,14 +228,60 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     expect(errors.errors).toEqual([])
   })
 
-  it('粘贴带换行的路径：落进输入框不带多余空格（回归：尾部多一个空格）', async () => {
+  it('粘贴「路径 + 名称」文档片段：只取路径段（回归：/routes routes）', async () => {
     const errors = collectErrors()
     const { wrapper, store } = await mountEditor()
     const input = wrapper.find('.url-input')
     store.activeEndpoint!.path = ''
     await nextTick()
 
-    // 剪贴板常见形态：从文档/聊天复制一行路径，末尾带换行（单行 input 里会被折成空格）
+    // 接口文档整段复制：路径 + 名称（换行还会被单行 input 折成空格 → `/routes routes`）
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'routes routes' } })
+    input.element.dispatchEvent(ev)
+    await nextTick()
+
+    expect(ev.defaultPrevented).toBe(true)
+    expect((input.element as HTMLInputElement).value).toBe('routes')
+    // 失焦定稿补斜杠，落到用户期望的 `/routes`
+    input.element.dispatchEvent(new Event('blur'))
+    await nextTick()
+    expect(store.activeEndpoint!.path).toBe('/routes')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('粘贴「方法 + 路径」文档片段：取含 / 的那一段（回归：POST /routes）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = '/aa/bb/'
+    await nextTick()
+
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'POST /routes' } })
+    input.element.dispatchEvent(ev)
+    await nextTick()
+
+    expect(ev.defaultPrevented).toBe(true)
+    expect((input.element as HTMLInputElement).value).toBe('/routes')
+    expect(store.activeEndpoint!.path).toBe('/routes')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('粘贴带换行/尾部空白的路径：整条替换，不留多余空白', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = '/aa/bb/'
+    await nextTick()
+
+    // 从文档复制一行路径，末尾带换行（单行 input 里会折成空格）
     const ev = new Event('paste', { bubbles: true, cancelable: true })
     Object.defineProperty(ev, 'clipboardData', {
       value: { getData: () => '/api/v1/pay/payInOrder/createOrder\n' },
@@ -243,32 +289,9 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     input.element.dispatchEvent(ev)
     await nextTick()
 
-    // 换行/制表符直接丢弃 + 两侧空白去掉（内部普通空格保留），插入走原生编辑事务
     expect(ev.defaultPrevented).toBe(true)
     expect((input.element as HTMLInputElement).value).toBe('/api/v1/pay/payInOrder/createOrder')
     expect(store.activeEndpoint!.path).toBe('/api/v1/pay/payInOrder/createOrder')
-
-    wrapper.unmount()
-    errors.restore()
-    expect(errors.errors).toEqual([])
-  })
-
-  it('粘贴带残留空白的文本：按光标位置插入，不清空已有路径', async () => {
-    const errors = collectErrors()
-    const { wrapper, store } = await mountEditor()
-    const input = wrapper.find('.url-input')
-    store.activeEndpoint!.path = '/aa/bb/'
-    await nextTick()
-
-    const el = input.element as HTMLInputElement
-    el.setSelectionRange(4, 4) // /aa/|bb/
-    const ev = new Event('paste', { bubbles: true, cancelable: true })
-    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'cc\n' } })
-    el.dispatchEvent(ev)
-    await nextTick()
-
-    expect(el.value).toBe('/aa/ccbb/')
-    expect(store.activeEndpoint!.path).toBe('/aa/ccbb/')
 
     wrapper.unmount()
     errors.restore()
