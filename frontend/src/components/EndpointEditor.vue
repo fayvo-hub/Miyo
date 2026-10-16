@@ -529,7 +529,18 @@ async function importCurlText(raw: string): Promise<void> {
   }
 }
 
-/** 地址栏粘贴：cURL 命令自动识别并解析；其余整段一次性归一化（URL 立即拆分、相对路径补斜杠）。 */
+/**
+ * 地址栏粘贴分三路：
+ * - cURL 命令 → 拦截，走导入流程；
+ * - 完整 URL（http/https/ws/wss 起始）→ 拦截，整条替换并立即拆分
+ *   origin / path / query→params（粘一个完整地址即「这就是请求地址」，保持旧粘贴体验）；
+ * - 其余普通文本 → **不拦截**，交浏览器原生粘贴：光标处插入、尊重选区，且不程序化
+ *   写 value，原生撤销栈完好（Cmd+Z 能回退）。
+ *
+ * 回归 bug：旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
+ * 无视光标/选区整条替换 —— 已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉；且程序化赋值会
+ * 清空该输入框的原生撤销栈，Cmd+Z 失效（地址栏回退不了）。
+ */
 function onUrlPaste(event: ClipboardEvent): void {
   const text = event.clipboardData?.getData('text') ?? ''
   if (!text || !draft.value || curlPasting.value) return
@@ -538,8 +549,10 @@ function onUrlPaste(event: ClipboardEvent): void {
     void importCurlText(text)
     return
   }
+  const trimmed = text.trim()
+  if (!/^(?:https?|wss?):\/\//i.test(trimmed)) return
   event.preventDefault()
-  applyUrlInput(text, true)
+  applyUrlInput(trimmed, true)
 }
 
 /** 路径输入框 placeholder：gRPC 提示地址格式；HTTP 提示 Base URL 拼接。 */
