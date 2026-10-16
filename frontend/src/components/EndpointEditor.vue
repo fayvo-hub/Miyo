@@ -498,6 +498,39 @@ function onUrlAcPick(index: number): void {
 /** 地址栏 cURL 粘贴解析中（防重复触发）。 */
 const curlPasting = ref(false)
 
+/**
+ * 粘贴残留空白清理：剪贴板里的换行/制表符在单行 input 里会被浏览器折成空格——
+ * 从文档/聊天复制一行路径，最常见的表现就是「尾部多一个空格」。换行绝不可能是
+ * 单行路径的一部分，故直接丢弃（而非折成空格）；两侧空白（含复制带来的 NBSP）再去掉。
+ * 内部普通空格保留：`?q=a b` 这类原文不改写，避免静默吞字符。
+ */
+function cleanPastedText(text: string): string {
+  return text.replace(/[\r\n\t]+/g, '').trim()
+}
+
+/** 走原生编辑事务插入（记入撤销栈 → Cmd+Z 可回退）；环境不支持时返回 false。 */
+function insertByExecCommand(text: string): boolean {
+  try {
+    return document.execCommand('insertText', false, text)
+  } catch {
+    return false
+  }
+}
+
+/** 兜底插入：按选区拼接并复位光标（execCommand 不可用的环境；不进原生撤销栈）。 */
+function insertAtCaret(el: HTMLInputElement, text: string): void {
+  const start = el.selectionStart ?? el.value.length
+  const end = el.selectionEnd ?? start
+  el.value = `${el.value.slice(0, start)}${text}${el.value.slice(end)}`
+  const caret = start + text.length
+  try {
+    el.setSelectionRange(caret, caret)
+  } catch {
+    /* 非文本输入（类型限制）：跳过光标定位 */
+  }
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+}
+
 /** 归一化 shell 续行 + 去终端提示符，与 CurlImportDialog 保持一致。 */
 function normalizeCurlCommand(raw: string): string {
   return raw
@@ -534,25 +567,40 @@ async function importCurlText(raw: string): Promise<void> {
  * - cURL 命令 → 拦截，走导入流程；
  * - 完整 URL（http/https/ws/wss 起始）→ 拦截，整条替换并立即拆分
  *   origin / path / query→params（粘一个完整地址即「这就是请求地址」，保持旧粘贴体验）；
- * - 其余普通文本 → **不拦截**，交浏览器原生粘贴：光标处插入、尊重选区，且不程序化
- *   写 value，原生撤销栈完好（Cmd+Z 能回退）。
+ * - 其余普通文本 → 不整条替换，交浏览器原生粘贴（光标处插入 / 尊重选区，撤销栈完好）。
+ *   仅当文本带「复制残留空白」（尾部空格 / 换行折成的空格）时接管这一段，并用
+ *   `execCommand('insertText')` 原生事务插入：位置与撤销栈都与手打一致（实证：insertText
+ *   记入撤销栈、`undo` 可回退；而程序化写 `el.value` 会清空撤销栈 → Cmd+Z 失效）。
  *
- * 回归 bug：旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
- * 无视光标/选区整条替换 —— 已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉；且程序化赋值会
- * 清空该输入框的原生撤销栈，Cmd+Z 失效（地址栏回退不了）。
+ * 回归 bug 两枚：① 旧实现对普通文本也 `preventDefault` + `applyUrlInput(text, true)`，
+ * 无视光标/选区整条替换（已有 `/aa/bb/` 时粘 `/cc` 前缀被顶掉）；② 程序化赋值清空原生
+ * 撤销栈，Cmd+Z 回退不了。另：粘贴一度把剪贴板尾部的换行原样落进输入框（显示成空格）。
  */
 function onUrlPaste(event: ClipboardEvent): void {
-  const text = event.clipboardData?.getData('text') ?? ''
-  if (!text || !draft.value || curlPasting.value) return
-  if (isCurlCommand(text)) {
+  const raw = event.clipboardData?.getData('text') ?? ''
+  if (!raw || !draft.value || curlPasting.value) return
+
+  if (isCurlCommand(raw)) {
     event.preventDefault()
-    void importCurlText(text)
+    void importCurlText(raw)
     return
   }
-  const trimmed = text.trim()
-  if (!/^(?:https?|wss?):\/\//i.test(trimmed)) return
+
+  const url = raw.trim()
+  if (/^(?:https?|wss?):\/\//i.test(url)) {
+    event.preventDefault()
+    applyUrlInput(url, true)
+    return
+  }
+
+  const clean = cleanPastedText(raw)
+  // 干净文本：完全不干预，交给浏览器原生粘贴
+  if (!clean || clean === raw) return
+
+  const el = event.target as HTMLInputElement
   event.preventDefault()
-  applyUrlInput(trimmed, true)
+  el.focus()
+  if (!insertByExecCommand(clean)) insertAtCaret(el, clean)
 }
 
 /** 路径输入框 placeholder：gRPC 提示地址格式；HTTP 提示 Base URL 拼接。 */

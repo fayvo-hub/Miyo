@@ -206,7 +206,7 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     expect(errors.errors).toEqual([])
   })
 
-  it('粘贴普通路径文本：不整条替换（交原生插入，保光标与原生撤销栈）', async () => {
+  it('粘贴干净路径文本：完全不干预（交原生插入，保光标与原生撤销栈）', async () => {
     const errors = collectErrors()
     const { wrapper, store } = await mountEditor()
     const input = wrapper.find('.url-input')
@@ -222,6 +222,53 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     // 已有 `/aa/bb/` 被 `/cc` 顶掉；且程序化写 value 清空原生撤销栈（Cmd+Z 失效）。
     expect(ev.defaultPrevented).toBe(false)
     expect(store.activeEndpoint!.path).toBe('/aa/bb/')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('粘贴带换行的路径：落进输入框不带多余空格（回归：尾部多一个空格）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = ''
+    await nextTick()
+
+    // 剪贴板常见形态：从文档/聊天复制一行路径，末尾带换行（单行 input 里会被折成空格）
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', {
+      value: { getData: () => '/api/v1/pay/payInOrder/createOrder\n' },
+    })
+    input.element.dispatchEvent(ev)
+    await nextTick()
+
+    // 换行/制表符直接丢弃 + 两侧空白去掉（内部普通空格保留），插入走原生编辑事务
+    expect(ev.defaultPrevented).toBe(true)
+    expect((input.element as HTMLInputElement).value).toBe('/api/v1/pay/payInOrder/createOrder')
+    expect(store.activeEndpoint!.path).toBe('/api/v1/pay/payInOrder/createOrder')
+
+    wrapper.unmount()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('粘贴带残留空白的文本：按光标位置插入，不清空已有路径', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditor()
+    const input = wrapper.find('.url-input')
+    store.activeEndpoint!.path = '/aa/bb/'
+    await nextTick()
+
+    const el = input.element as HTMLInputElement
+    el.setSelectionRange(4, 4) // /aa/|bb/
+    const ev = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(ev, 'clipboardData', { value: { getData: () => 'cc\n' } })
+    el.dispatchEvent(ev)
+    await nextTick()
+
+    expect(el.value).toBe('/aa/ccbb/')
+    expect(store.activeEndpoint!.path).toBe('/aa/ccbb/')
 
     wrapper.unmount()
     errors.restore()
