@@ -346,6 +346,10 @@ export const zh = {
   'editor.exampleNamePh': '例如：成功响应',
   'editor.baseUrlHint':
     '当接口路径不是以 http:// 或 https:// 起始时，系统将自动添加所选环境的前置 URL；否则将忽略前置 URL。',
+  'editor.baseUrlGroupSession': '不使用环境 · 会话前缀',
+  'editor.baseUrlUnset': '未配置',
+  'editor.baseUrlReset': '重置为默认前缀',
+  'editor.baseUrlResetDone': '会话前缀已重置',
   'editor.copyBaseUrl': '复制 Base URL',
   'editor.baseCopied': 'Base URL 已复制',
   'editor.badgeEnv': '环境：{env}',

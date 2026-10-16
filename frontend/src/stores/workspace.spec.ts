@@ -357,11 +357,12 @@ describe('cURL 导入：环境前缀优先时不覆写环境，path 存完整 UR
     return env
   }
 
-  it('激活环境导入 curl（弹窗路径 openCurlDraft）：path 为完整 URL，环境 base_url 原样', async () => {
+  it('激活环境导入 curl（弹窗路径 openCurlDraft）：path 为完整 URL，环境 base_url 与会话前缀都不写', async () => {
     const store = useWorkspaceStore()
     await store.init()
     const env = activateEnvWithBase(store)
     expect(store.urlDomain).toBe('{{base_url}}')
+    const sessionBefore = store.sessionBaseUrl
 
     store.openCurlDraft(parsed, null)
     const id = store.activeTabId!
@@ -374,7 +375,9 @@ describe('cURL 导入：环境前缀优先时不覆写环境，path 存完整 UR
     // 共享环境不被导入污染；展示前缀仍是环境变量
     expect(env.base_url).toBe('https://env.example.com')
     expect(store.urlDomain).toBe('{{base_url}}')
-    expect(store.sessionBaseUrl).toBe('https://httpbin.org')
+    // 会话前缀同样不写：被环境前缀遮蔽的写入对用户不可见，事后切「无环境」会冒出
+    // 从没设过的域名（实测困惑），故只在展示前缀就是会话前缀时才预填
+    expect(store.sessionBaseUrl).toBe(sessionBefore)
   })
 
   it('无环境 base 导入 curl：path 相对，会话 Base URL 预填 origin', async () => {
@@ -389,18 +392,20 @@ describe('cURL 导入：环境前缀优先时不覆写环境，path 存完整 UR
     expect(store.urlDomain).toBe('https://httpbin.org')
   })
 
-  it('地址栏粘贴回填已有草稿（环境激活）：同规则，path 为完整 URL、环境不被写', async () => {
+  it('地址栏粘贴回填已有草稿（环境激活）：同规则，path 为完整 URL、环境与会话前缀都不写', async () => {
     const store = useWorkspaceStore()
     await store.init()
     const env = activateEnvWithBase(store)
     store.openNewEndpoint(null)
     const id = store.activeTabId!
+    const sessionBefore = store.sessionBaseUrl
 
     store.applyCurlToDraft(id, parsed)
 
     expect(store.draftOf(id)!.path).toBe('https://httpbin.org/post')
     expect(store.draftOf(id)!.method).toBe('POST')
     expect(env.base_url).toBe('https://env.example.com')
+    expect(store.sessionBaseUrl).toBe(sessionBefore)
   })
 })
 

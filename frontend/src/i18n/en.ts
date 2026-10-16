@@ -350,6 +350,10 @@ export const en: Record<ZhKey, string> = {
   'editor.exampleNamePh': 'e.g. Success response',
   'editor.baseUrlHint':
     'When the request path does not start with http:// or https://, the selected base URL is prepended automatically; otherwise it is ignored.',
+  'editor.baseUrlGroupSession': 'No environment · session prefix',
+  'editor.baseUrlUnset': 'Not set',
+  'editor.baseUrlReset': 'Reset to default prefix',
+  'editor.baseUrlResetDone': 'Session prefix reset',
   'editor.copyBaseUrl': 'Copy Base URL',
   'editor.baseCopied': 'Base URL copied',
   'editor.badgeEnv': 'Environment: {env}',

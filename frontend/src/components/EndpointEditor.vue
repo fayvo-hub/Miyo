@@ -10,7 +10,7 @@
  * - Ctrl+S 保存 / Ctrl+Enter 发送；响应区展示状态码、耗时与正文（JSON 自动美化）。
  */
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
-import { useWorkspaceStore } from '../stores/workspace'
+import { useWorkspaceStore, DEFAULT_SESSION_BASE_URL } from '../stores/workspace'
 import { useToast } from '../composables/useToast'
 import { useFoxApi } from '../composables/useFoxApi'
 import { useLocaleStore } from '../stores/locale'
@@ -388,6 +388,8 @@ const showMockRules = ref(false)
 
 /** 地址栏 Base URL 下拉（Apifox 式：前置 URL 选择器）。 */
 const BASE_URL_MANAGE = '__manage__'
+/** 下拉里的「不使用环境」分组标题（不可选、不参与键盘导航；与「管理环境…」同为零值哨兵）。 */
+const BASE_URL_SESSION_HEADER = '__session__'
 const baseUrlMenuOpen = ref(false)
 
 const sessionBaseVars = computed(() => ({
@@ -406,10 +408,13 @@ function resolveEnvBaseUrl(env: Environment): string {
 
 /** 下拉选项：`''`=无环境（会话 Base URL），各环境=解析后前置 URL，末项=管理环境。 */
 const baseUrlOptions = computed(() => {
-  const opts: { value: string; label: string }[] = []
+  const opts: { value: string; label: string; header?: boolean }[] = []
   const session = store.sessionBaseUrl
     ? resolveVariables(store.sessionBaseUrl, sessionBaseVars.value)
     : ''
+  // 「无环境」不是环境，是会话前缀：单列一组并给标题，避免与环境行同构排列被读成
+  // 「有个叫无环境的环境指向这个 IP」（实证困惑：导入 cURL 的 origin 预填在这里）。
+  opts.push({ value: BASE_URL_SESSION_HEADER, label: t('editor.baseUrlGroupSession'), header: true })
   opts.push({ value: '', label: session || t('envbar.noEnv') })
   for (const env of store.environments) {
     // 环境未配 Base URL 时真实发送前缀回退会话 Base URL（同 store.urlDomain / 发送
@@ -420,6 +425,21 @@ const baseUrlOptions = computed(() => {
   opts.push({ value: BASE_URL_MANAGE, label: t('envbar.manage') })
   return opts
 })
+
+/** 会话前缀是否已偏离内置默认（偏离才给「无环境」行重置入口）。 */
+const sessionBaseIsCustom = computed(() => store.sessionBaseUrl !== DEFAULT_SESSION_BASE_URL)
+
+/** 环境是否未配 Base URL：其下拉行左列是回退的会话前缀，给「未配置」微标记去掉歧义。 */
+function envBaseUrlUnset(id: string): boolean {
+  const env = store.environments.find((e) => e.id === id)
+  return !!env && !envBaseUrl(env)
+}
+
+/** 「无环境」行重置：会话前缀回内置默认（不动当前环境选择）。 */
+function onResetSessionBaseUrl(): void {
+  store.resetSessionBaseUrl()
+  toast.success(t('editor.baseUrlResetDone'))
+}
 
 /** 下拉行右侧标签：环境名 / 无环境。 */
 function baseUrlSideLabel(value: string): string {
@@ -567,7 +587,9 @@ function applyUrlInput(value: string, normalize: boolean): void {
       }
     }
     const envPrefixed = store.urlDomain.startsWith('{{')
-    store.sessionBaseUrl = abs[0]
+    // 环境前缀生效时 origin 整条进 path（发送直达导入主机），不写会话前缀：
+    // 该写入会被环境前缀遮蔽，事后切「无环境」冒出没设过的域名（全仓同规则）
+    if (!envPrefixed) store.sessionBaseUrl = abs[0]
     const rel = rest.startsWith('/') ? rest : `/${rest}`
     d.path = envPrefixed ? `${abs[0]}${rel}` : rel
     return
@@ -1194,8 +1216,24 @@ onUnmounted(() => {
                 </span>
                 <template v-else>
                   <span class="base-url-opt-url">{{ option.label }}</span>
+                  <span v-if="envBaseUrlUnset(String(option.value))" class="base-url-opt-hint">
+                    {{ t('editor.baseUrlUnset') }}
+                  </span>
                   <span class="base-url-opt-name">{{ baseUrlSideLabel(String(option.value)) }}</span>
                 </template>
+              </template>
+              <!-- 会话前缀偏离默认时，「无环境」行给重置入口（否则该值只增不减，被读成 bug） -->
+              <template #actions="{ option }">
+                <button
+                  v-if="option.value === '' && sessionBaseIsCustom"
+                  type="button"
+                  class="base-url-reset"
+                  :title="t('editor.baseUrlReset')"
+                  :aria-label="t('editor.baseUrlReset')"
+                  @click.stop="onResetSessionBaseUrl"
+                >
+                  <Icon name="refresh" :size="12" />
+                </button>
               </template>
             </CustomSelect>
           </Tooltip>
@@ -1811,6 +1849,43 @@ onUnmounted(() => {
   font-size: 12px;
   font-family: var(--font-ui);
   color: var(--text-3);
+}
+/* 环境未配 Base URL：该行左列是回退的会话前缀（非该环境自身配置），给微标记去歧义 */
+.base-url-opt-hint {
+  flex: 0 0 auto;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  font-size: 10.5px;
+  line-height: 15px;
+}
+/* 「无环境」行的会话前缀重置入口：仅在值偏离内置默认时渲染 */
+.base-url-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+.base-url-reset:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+/* 分组标题与本弹层选项文本列对齐（.cs-opt 内距 6px 8px，默认 12px 会错位） */
+:global(.cs-pop.base-url-pop .cs-opt-header) {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 :global(.cs-pop.base-url-pop .cs-opt:hover .base-url-manage),
 :global(.cs-pop.base-url-pop .cs-opt.hl .base-url-manage) {

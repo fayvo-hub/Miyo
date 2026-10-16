@@ -57,6 +57,12 @@ import type {
  */
 export const FALLBACK_GLOBAL_TIMEOUT_MS = 300_000
 
+/**
+ * 无环境（会话）前缀的内置默认值。地址栏前置 URL 下拉的「无环境」行与
+ * 「重置为默认前缀」入口同口径：展示、重置、恢复都取这一个常量。
+ */
+export const DEFAULT_SESSION_BASE_URL = 'http://localhost'
+
 /** 新建接口的默认请求规格（与 fox-core 模型字段一致）。 */
 export function defaultRequestSpec(): Endpoint['request'] {
   return {
@@ -116,12 +122,14 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   const globalParams = ref<GlobalParam[]>([])
 
   /**
-   * 无环境前缀的 Base URL（地址栏域名真源之一）：cURL 导入 / 地址栏粘贴的
-   * origin 写这里，按项目持久化到 localStorage——否则重启后回落 localhost，
-   * 用户导入的自定义前缀域名丢失。选中环境且环境声明了 Base URL 时，
-   * 展示优先级让位给 `{{base_url}}`（见 `urlDomain`）。
+   * 无环境前缀的 Base URL（地址栏域名真源之一）：地址栏粘贴的 origin 写这里，
+   * 按项目持久化到 localStorage——否则重启后回落 localhost，用户导入的自定义
+   * 前缀域名丢失。选中环境且环境声明了 Base URL 时，展示前缀让位给
+   * `{{base_url}}`（见 `urlDomain`），此时**不写**：写入会被环境前缀遮蔽、对
+   * 用户不可见，事后切到「无环境」才冒出来，读起来像 bug（`openCurlDraft` /
+   * `applyCurlToDraft` / `restoreFromHistory` / 地址栏整条 URL 提交同此规则）。
    */
-  const sessionBaseUrl = ref('http://localhost')
+  const sessionBaseUrl = ref(DEFAULT_SESSION_BASE_URL)
   /** 前缀持久化键前缀（按项目隔离，风格与 `rustfox.open-projects` 一致）。 */
   const BASE_URL_KEY_PREFIX = 'rustfox.base-url.'
 
@@ -163,7 +171,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     } catch {
       saved = null
     }
-    sessionBaseUrl.value = saved ?? 'http://localhost'
+    sessionBaseUrl.value = saved ?? DEFAULT_SESSION_BASE_URL
+  }
+
+  /** 会话前缀恢复内置默认（「无环境」行的重置入口；watch 负责按项目持久化回写）。 */
+  function resetSessionBaseUrl(): void {
+    sessionBaseUrl.value = DEFAULT_SESSION_BASE_URL
   }
 
   // 前缀变更即按项目持久化（cURL 导入 / 地址栏粘贴 / 历史恢复 / 项目切换回写）。
@@ -1716,9 +1729,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
   /**
    * cURL 导入：打开为默认标题「未命名接口」的草稿（不落库），保存时生成 id。
-   * 会话 Base URL 预填为 URL origin；展示前缀为环境变量时（环境优先级更高，
-   * 会话值不可见），origin+path 整条存入 path——发送走 `isAbsolutePath` 分支
-   * 直达导入主机，且不覆写共享环境的 base_url。
+   * 展示前缀为环境变量时（环境优先级更高，会话值不可见）origin+path 整条存入
+   * path——发送走 `isAbsolutePath` 分支直达导入主机，且**不写任何前缀**：既不覆写
+   * 共享环境的 base_url，也不预填会话 Base URL（写入被环境前缀遮蔽时对用户不可见，
+   * 事后切到「无环境」会冒出一个从没设过的域名，实证困惑）。只有展示前缀就是
+   * 会话 Base URL 时才预填 origin。
    */
   function openCurlDraft(parsed: CurlParsed, folderId: string | null): void {
     const { path, params, origin } = splitUrl(parsed.url)
@@ -1747,7 +1762,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       created_at: now,
       updated_at: now,
     }
-    sessionBaseUrl.value = origin
+    if (!envPrefixed) sessionBaseUrl.value = origin
     drafts.value.set(blank.id, blank)
     if (!openTabs.value.includes(blank.id)) openTabs.value.push(blank.id)
     activeTabId.value = blank.id
@@ -1756,8 +1771,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   /**
    * 地址栏粘贴 cURL：把解析结果回填到已有草稿（原地覆盖 method / path /
    * params / headers / auth / body）。origin 同 openCurlDraft 规则：展示前缀为
-   * 环境变量时 origin+path 整条存入 path（绝不覆写共享环境 base_url），
-   * 否则 origin 写入会话 Base URL、path 保持相对。
+   * 环境变量时 origin+path 整条存入 path（绝不覆写共享环境 base_url，也不预填
+   * 会话 Base URL），否则 origin 写入会话 Base URL、path 保持相对。
    */
   function applyCurlToDraft(draftId: string, parsed: CurlParsed): void {
     const d = drafts.value.get(draftId)
@@ -1770,7 +1785,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     d.request.headers = parsed.headers
     d.request.auth = parsed.auth
     d.request.body = parsed.body ?? { mode: 'none' }
-    sessionBaseUrl.value = origin
+    if (!envPrefixed) sessionBaseUrl.value = origin
   }
 
   // ---------- 请求历史（侧栏「请求历史」页签；发送成功后由编辑器触发刷新） ----------
@@ -1952,7 +1967,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
     draft.method = (summary.method ?? h.method) as HttpMethod
     draft.path = restoredPath
-    if (origin) sessionBaseUrl.value = origin
+    // 同 openCurlDraft：展示前缀为环境变量时 origin 已整条进 path，不预填会话前缀
+    if (origin && !envPrefixed) sessionBaseUrl.value = origin
     const spec = summary.spec
     draft.request.params = spec?.params?.length ? spec.params : params
     if (spec?.headers) draft.request.headers = spec.headers
@@ -1970,6 +1986,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     globalVariables,
     globalParams,
     sessionBaseUrl,
+    resetSessionBaseUrl,
     urlDomain,
     grpcStreams,
     grpcStreamOf,

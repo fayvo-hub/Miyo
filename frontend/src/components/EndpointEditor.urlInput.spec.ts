@@ -74,6 +74,20 @@ function activateEnvWithBase(store: ReturnType<typeof useWorkspaceStore>): Envir
   return env
 }
 
+/** 构造环境（baseUrl 留空 = 未配前置 URL，下拉行左列回退会话前缀）。 */
+function makeEnv(id: string, name: string, baseUrl = ''): Environment {
+  const now = '2026-01-01T00:00:00.000Z'
+  return {
+    id,
+    project_id: 'proj-url-1',
+    name,
+    base_url: baseUrl,
+    variables: [],
+    created_at: now,
+    updated_at: now,
+  }
+}
+
 describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -110,6 +124,7 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     const errors = collectErrors()
     const { wrapper, store } = await mountEditor()
     const env = activateEnvWithBase(store)
+    const sessionBefore = store.sessionBaseUrl
     const input = wrapper.find('.url-input')
 
     // 逐键中间态：路径原样，不被加 `/`、不被提前拆 origin。
@@ -131,6 +146,8 @@ describe('EndpointEditor：地址栏逐键不改写，提交才归一化', () =>
     // 共享环境的 base_url 不被导入污染。
     expect(env.base_url).toBe('https://env.example.com')
     expect(store.activeEnvId).toBe('env-1')
+    // 会话前缀同样不写（环境前缀生效时写入被遮蔽，事后切「无环境」会冒出陌生域名）
+    expect(store.sessionBaseUrl).toBe(sessionBefore)
 
     wrapper.unmount()
     errors.restore()
@@ -277,6 +294,66 @@ describe('地址栏前置 URL 下拉（环境选项标签）', () => {
     expect(names).toEqual(['无环境', '开发环境', '测试环境'])
     // 末项「管理环境…」在场（单列，不参与左/右双列）。
     expect(pop!.querySelector('.base-url-manage')?.textContent?.trim()).toBe('管理环境…')
+
+    wrapper.unmount()
+    document.querySelector('.base-url-pop')?.remove()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('「无环境」独立成组：标题在场、未配 base 的环境标「未配置」、默认值不给重置入口', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditorFull()
+    store.sessionBaseUrl = 'http://localhost'
+    store.environments = [makeEnv('env-dev', '开发环境'), makeEnv('env-test', '测试环境', 'https://t.example.com')]
+    await nextTick()
+
+    await wrapper.find('.base-url-select .cs-trigger').trigger('click')
+    await nextTick()
+    await nextTick()
+    const pop = document.querySelector('.base-url-pop')
+    expect(pop).toBeTruthy()
+
+    // 会话前缀单列一组：不再与环境行排成同构列表（否则被读成「无环境环境指向某 IP」）
+    expect(pop!.querySelector('.cs-opt-header')?.textContent?.trim()).toBe('不使用环境 · 会话前缀')
+    // 未配 base 的环境行给微标记（左列是回退的会话前缀，非该环境自身配置）；配了的没有
+    const hints = Array.from(pop!.querySelectorAll('.base-url-opt-hint')).map((el) =>
+      el.textContent?.trim(),
+    )
+    expect(hints).toEqual(['未配置'])
+    // 会话前缀仍是内置默认：不该出现重置入口
+    expect(pop!.querySelector('.base-url-reset')).toBeNull()
+
+    wrapper.unmount()
+    document.querySelector('.base-url-pop')?.remove()
+    errors.restore()
+    expect(errors.errors).toEqual([])
+  })
+
+  it('会话前缀偏离默认：给重置入口，点击回内置默认且不切环境（可逆，不再只增不减）', async () => {
+    const errors = collectErrors()
+    const { wrapper, store } = await mountEditorFull()
+    store.environments = [makeEnv('env-dev', '开发环境', 'https://dev.example.com')]
+    store.activeEnvId = 'env-dev'
+    // 复现报告场景：导入/粘贴过的 origin 预填在会话前缀里，切到「无环境」才看得见
+    store.sessionBaseUrl = 'http://172.31.50.103:8092'
+    await nextTick()
+
+    await wrapper.find('.base-url-select .cs-trigger').trigger('click')
+    await nextTick()
+    await nextTick()
+    const pop = document.querySelector('.base-url-pop')!
+    const btn = pop.querySelector('.base-url-reset') as HTMLElement | null
+    expect(btn).toBeTruthy()
+    expect(btn!.getAttribute('title')).toBe('重置为默认前缀')
+
+    btn!.click()
+    await nextTick()
+    expect(store.sessionBaseUrl).toBe('http://localhost')
+    // 重置只动会话前缀，不切换环境（点的是行尾按钮，不是选中该行）
+    expect(store.activeEnvId).toBe('env-dev')
+    // 同口径持久化（watch 按项目回写，重启不再回落到该 origin）
+    expect(localStorage.getItem('rustfox.base-url.proj-url-1')).toBe('http://localhost')
 
     wrapper.unmount()
     document.querySelector('.base-url-pop')?.remove()
