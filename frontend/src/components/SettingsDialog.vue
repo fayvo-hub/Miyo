@@ -885,17 +885,17 @@ const projectSummary = computed(() => {
 <template>
   <Modal :open="true" :title="t('settings.title')" width="880px" dialog-class="sd-dialog" @close="emit('close')">
     <div class="flex h-[min(520px,70vh)]">
-      <!-- 左：极简 List 导航 -->
-      <aside class="flex w-52 shrink-0 flex-col gap-1 border-r border-zinc-200/80 p-2 pr-4 dark:border-white/[0.06]">
+      <!-- 左：极简 List 导航（.m-body 已贴边，内距由本栏自持；分隔线与标题栏 hairline 同源） -->
+      <aside class="flex w-52 shrink-0 flex-col gap-1 border-r border-line p-3">
         <button
           v-for="tab in tabs"
           :key="tab.id"
           type="button"
-          class="relative flex h-9 w-full items-center gap-2.5 rounded-lg border-none px-3 text-left text-sm transition-all duration-150"
+          class="relative flex h-9 w-full items-center gap-2.5 rounded-xl border-none px-3 text-left text-sm transition-all duration-150"
           :class="
             activeTab === tab.id
-              ? 'bg-purple-500/10 font-medium text-purple-600 dark:text-purple-300'
-              : 'bg-transparent text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-zinc-200'
+              ? 'bg-purple-50 font-semibold text-purple-700 dark:bg-purple-500/15 dark:text-purple-300'
+              : 'bg-transparent text-zinc-600 hover:bg-slate-100/80 hover:text-slate-700 dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-zinc-200'
           "
           @click="activeTab = tab.id"
         >
@@ -907,12 +907,17 @@ const projectSummary = computed(() => {
           <Icon
             :name="tab.icon"
             :size="15"
-            :class="activeTab === tab.id ? 'text-purple-600 dark:text-purple-400' : 'text-zinc-500 dark:text-zinc-400'"
+            :class="activeTab === tab.id ? 'text-purple-700 dark:text-purple-300' : 'text-zinc-500 dark:text-zinc-400'"
           />
           <span class="flex-1 truncate">{{ tab.label }}</span>
           <span
             v-if="tab.id === 'sequences' && sequencesCount"
-            class="rounded-full bg-zinc-200/70 px-1.5 py-px text-xxs leading-4 text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-400"
+            class="rounded-full px-1.5 py-px text-xxs leading-4"
+            :class="
+              activeTab === 'sequences'
+                ? 'bg-purple-500/15 text-purple-700 dark:bg-purple-400/20 dark:text-purple-200'
+                : 'bg-zinc-200/70 text-zinc-600 dark:bg-white/[0.08] dark:text-zinc-400'
+            "
           >
             {{ sequencesCount }}
           </span>
@@ -1444,8 +1449,8 @@ const projectSummary = computed(() => {
             <!-- 数据与备份 -->
             <section v-if="activeTab === 'data'">
               <header>
-                <h2 class="text-base font-medium text-zinc-900 dark:text-zinc-100">{{ t('settings.data') }}</h2>
-                <p class="mt-1 mb-5 text-xs text-zinc-600 dark:text-zinc-500">{{ t('settings.dataDesc') }}</p>
+                <h2 class="text-base font-bold text-ink1">{{ t('settings.data') }}</h2>
+                <p class="my-2.5 text-xs leading-relaxed text-ink3">{{ t('settings.dataDesc') }}</p>
               </header>
 
               <div class="rounded-xl border border-zinc-200/70 bg-zinc-50/80 p-5 dark:border-white/[0.06] dark:bg-zinc-900/40">
@@ -1487,16 +1492,30 @@ const projectSummary = computed(() => {
                 </div>
               </div>
 
-              <div class="mt-4 rounded-xl border border-zinc-200/70 bg-zinc-50/80 p-5 dark:border-white/[0.06] dark:bg-zinc-900/40">
-                <div class="flex items-center justify-between gap-4">
-                  <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ t('settings.dataDir') }}</div>
-                  <div class="flex shrink-0 items-center gap-2">
-                    <button class="rf-btn rf-btn-sm" type="button" @click="pickDataDir">
-                      <Icon name="folder" :size="13" />
+              <div class="rounded-xl border border-zinc-200/70 bg-zinc-50/80 p-5 dark:border-white/[0.06] dark:bg-zinc-900/40">
+                <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ t('settings.dataDir') }}</div>
+                <!-- 路径井与次级按钮组同行等高（--h-md = 32px）：路径超长单行截断，完整值走 title + 复制按钮 -->
+                <div class="datadir-row">
+                  <div class="datadir-path" :title="dataDir || undefined">
+                    <span class="datadir-path-text">{{ dataDir || '…' }}</span>
+                    <button
+                      class="datadir-copy-btn"
+                      :class="{ copied: copiedDataDir }"
+                      type="button"
+                      :title="copiedDataDir ? t('settings.dataDirCopied') : t('settings.dataDirCopy')"
+                      :aria-label="copiedDataDir ? t('settings.dataDirCopied') : t('settings.dataDirCopy')"
+                      :disabled="!dataDir"
+                      @click="copyDataDir"
+                    >
+                      <Icon :name="copiedDataDir ? 'check' : 'copy'" :size="13" />
+                    </button>
+                  </div>
+                  <div class="datadir-actions">
+                    <button class="rf-btn" type="button" @click="pickDataDir">
                       {{ t('settings.dataDirChange') }}
                     </button>
                     <button
-                      class="rf-btn rf-btn-sm"
+                      class="rf-btn"
                       type="button"
                       :disabled="isDefaultDir"
                       @click="resetDataDirToDefault"
@@ -1504,7 +1523,7 @@ const projectSummary = computed(() => {
                       {{ t('settings.dataDirReset') }}
                     </button>
                     <button
-                      class="rf-btn rf-btn-sm"
+                      class="rf-btn"
                       type="button"
                       :disabled="!dataDir"
                       @click="revealDataDir"
@@ -1513,21 +1532,7 @@ const projectSummary = computed(() => {
                     </button>
                   </div>
                 </div>
-                <div class="datadir-path">
-                  <span class="datadir-path-text">{{ dataDir || '…' }}</span>
-                  <button
-                    class="datadir-copy-btn"
-                    :class="{ copied: copiedDataDir }"
-                    type="button"
-                    :title="copiedDataDir ? t('settings.dataDirCopied') : t('settings.dataDirCopy')"
-                    :aria-label="copiedDataDir ? t('settings.dataDirCopied') : t('settings.dataDirCopy')"
-                    :disabled="!dataDir"
-                    @click="copyDataDir"
-                  >
-                    <Icon :name="copiedDataDir ? 'check' : 'copy'" :size="13" />
-                  </button>
-                </div>
-                <p class="mt-2 text-xs text-zinc-600 dark:text-zinc-400">{{ t('settings.dataDirDesc') }}</p>
+                <p class="mt-2 text-xxs leading-relaxed text-ink3">{{ t('settings.dataDirDesc') }}</p>
                 <p v-if="needRestart" class="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
                   {{ t('settings.dataDirRestartNow') }}
                   <button class="rf-btn rf-btn-sm ml-2" type="button" @click="restartNow">
@@ -1724,27 +1729,45 @@ const projectSummary = computed(() => {
   box-shadow: 0 0 0 3px var(--success-tint);
 }
 
-/* 数据目录路径：全宽展示（自动换行不断尾），文本可选中；复制走右侧显式按钮 */
-.datadir-path {
+/* 数据目录：路径井 + 次级按钮组同行。两者等高（--h-md = 32px，与面板内
+   「导出备份」等按钮同档），路径单行截断（完整值另给 title / 复制按钮），
+   颜色全走主题变量——字面 slate-100/200/700 在深色下失真。 */
+.datadir-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.datadir-path {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  width: 100%;
-  margin-top: 10px;
-  padding: 8px 6px 8px 10px;
+  height: var(--h-md);
+  padding: 0 3px 0 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-1);
   font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--text-1);
+  font-size: var(--fs-xs);
+  line-height: 1;
+  color: var(--text-2);
   cursor: text;
+}
+.datadir-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .datadir-path-text {
   flex: 1;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   user-select: text;
 }
 .datadir-copy-btn {
@@ -1859,6 +1882,18 @@ const projectSummary = computed(() => {
   --border-strong: var(--dialog-border-strong);
   --radius-lg: 16px;
   --shadow-lg: var(--dialog-shadow);
+}
+
+/* 弹窗骨架：主体贴边（侧栏分隔线与选中底直达面板边缘，不再被 m-body 内距
+   切出一圈留白），标题栏加 hairline 与内容分层。
+   ⚠ 选择器必须带 .m-dialog 提权：单写 .sd-dialog .m-body 与 Modal 自身的
+   `.m-body[data-v-*]` 同特异度（0,2,0），胜负取决于打包后的样式表顺序（仓内实证坑）。 */
+.m-dialog.sd-dialog .m-head {
+  padding: 13px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.m-dialog.sd-dialog .m-body {
+  padding: 0;
 }
 
 /* 通用设置「发现新版本」高亮卡片：深色 = 紫→锌渐变，浅色 = 浅紫→浅灰渐变
