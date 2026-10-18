@@ -519,6 +519,7 @@ function onSplitterDblClick(): void {
                     <CustomSelect
                       :model-value="bodyType"
                       :options="bodyOptions"
+                      pop-auto-width
                       @update:model-value="bodyType = String($event)"
                     />
                     <button
