@@ -267,5 +267,19 @@ describe('BodyPanel：raw JSON 编辑与格式化', () => {
     // 回归：编辑器若回到 auto-height 贴内容，请求卡 grow/下拉出的多余高度
     // 会在卡片中部留出大片空白（用户实测）
     expect(wrap.classes()).not.toContain('auto-height')
+    expect(wrapper.findComponent({ name: 'JsonEditor' }).props('autoHeight')).toBe(false)
+  })
+
+  it('GraphQL：variables 次级编辑器保留贴内容（auto-height）', async () => {
+    const d = makeDraft()
+    d.request.body = {
+      mode: 'graphql',
+      spec: { query: 'query { hero }', variables: '{"id":"42"}', operation_name: '' },
+    }
+    const wrapper = mountPanel(reactive(d))
+    const jsonEditors = wrapper.findAllComponents({ name: 'JsonEditor' })
+    expect(jsonEditors).toHaveLength(1)
+    // 主 query textarea（flex:1）吸收剩余高度，variables 只贴内容生长
+    expect(jsonEditors[0]!.props('autoHeight')).toBe(true)
   })
 })
