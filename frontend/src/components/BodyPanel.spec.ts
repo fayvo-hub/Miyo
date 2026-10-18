@@ -258,4 +258,14 @@ describe('BodyPanel：raw JSON 编辑与格式化', () => {
     await ta.trigger('blur')
     expect(rawOf(draft)).toBe('hi  ')
   })
+
+  it('JSON 编辑器填满分配高度（不贴内容生长）：hl-wrap 不带 auto-height', async () => {
+    const draft = jsonDraft('{\n  "a": 1\n}')
+    const wrapper = mountPanel(draft)
+    const wrap = wrapper.find('.hl-wrap')
+    expect(wrap.exists()).toBe(true)
+    // 回归：编辑器若回到 auto-height 贴内容，请求卡 grow/下拉出的多余高度
+    // 会在卡片中部留出大片空白（用户实测）
+    expect(wrap.classes()).not.toContain('auto-height')
+  })
 })

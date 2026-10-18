@@ -27,7 +27,7 @@ const props = withDefaults(
     query?: string
     /** 当前选中的匹配索引（0-based）。 */
     activeMatch?: number
-    /** 自适应内容高度（贴内容生长，min~max 夹取）；false = 填充分配高度（响应期分割契约）。 */
+    /** 自适应内容高度（贴内容生长，min~max 夹取）；false（默认）= 填满外层分派的高度。 */
     autoHeight?: boolean
     /** autoHeight 模式的高度上限（px），超出转编辑器内部滚动。 */
     maxHeight?: number
@@ -254,7 +254,7 @@ function syncScroll(e: Event): void {
  * 面板可用高度（wrap 高度上限），两条路径：
  * - 填充/分割模式（autoHeight=false）：.json-editor 盒高由 flex 分派（与 wrap
  *   内容无关，无回环），减去自身工具栏与 4px gap 即 wrap 可用最大高度。
- * - 自适应模式（autoHeight=true，未发送期）：从 host 向上找**最内层** overflow
+ * - 自适应模式（autoHeight=true，无外层高度分派时）：从 host 向上找**最内层** overflow
  *   被约束的祖先（BodyPanel .panel overflow:hidden，即真正裁剪 host 的盒子），
  *   量它的视口：avail = sc.clientH − (host.top − sc.top) − 工具栏 − 4。
  *   该祖先必须是有界盒（config-box 内 flex:1，高度由外层分派、与 wrap 内容无关）

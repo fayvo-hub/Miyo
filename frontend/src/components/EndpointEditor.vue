@@ -1484,7 +1484,7 @@ onUnmounted(() => {
       <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
       <AuthPanel v-else-if="activeTab === 'auth'" :draft="draft" />
       <HeadersPanel v-else-if="activeTab === 'headers'" :draft="draft" />
-      <BodyPanel v-else-if="activeTab === 'body'" :draft="draft" :fill="hasResponse" />
+      <BodyPanel v-else-if="activeTab === 'body'" :draft="draft" />
       <GrpcPanel v-else-if="activeTab === 'grpc'" :draft="draft" />
       <PathVariablesPanel v-else-if="activeTab === 'path'" :draft="draft" />
       <RequestExamplesPanel v-else-if="activeTab === 'examples'" :draft="draft" />
@@ -2341,8 +2341,8 @@ onUnmounted(() => {
   padding: 10px 12px;
 }
 
-/* 无响应阶段：请求卡吃掉剩余纵向空间（内容顶对齐、Body 编辑器贴内容自适应、
- * 高度上限 = 面板可用高度 availH，分割条拖动即时跟随），响应空态收为固定低条——
+/* 无响应阶段：请求卡吃掉剩余纵向空间（Body 编辑器填满卡片，
+ * 分割条拖动即时跟随），响应空态收为固定低条——
  * 避免「请求区贴内容 + 空态占 2/3 屏」的失衡；出现响应后仍转分割条分配的固定高度 */
 .config-box.grow {
   flex: 1 1 auto;

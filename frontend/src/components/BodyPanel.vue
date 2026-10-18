@@ -6,6 +6,11 @@
  *   编辑器并联动 Content-Type 请求头（映射逻辑见 utils/bodyMode.ts）；
  * - binary 为本地文件路径，发送时后端读取原始字节作为请求体；
  * - urlencoded/multipart 为字段行编辑，graphql 为 query/variables 编辑器。
+ * 高度契约：编辑器恒填满本面板分配的高度（面板 flex:1，卡片高度由请求卡
+ * grow / 分割条 / 响应期分派），高度入口只有请求卡底边分割条——编辑器**不**再
+ * 贴内容生长：卡片吃满剩余空间而编辑器只到内容高时，卡片中部会留出一片空白
+ * （用户实测「下拉后中间很大空白」）。例外：graphql 的 variables 是次级编辑器，
+ * 保持 auto-height 贴内容，由主 query textarea（flex:1）吸收剩余高度。
  * bodyAny 用 any 放宽联合类型访问（模板 v-model 直写 raw / spec.*）。
  */
 import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -24,14 +29,9 @@ import { deepClone } from '../utils/clone'
 import type { BodyTab, RawSubtype } from '../utils/bodyMode'
 import type { BodySpec, Endpoint, GraphQLSpec, KeyValue, MultipartField, RequestSpec } from '../types/foxApi'
 
-const props = withDefaults(
-  defineProps<{
-    draft: Endpoint | null
-    /** true = 响应期：编辑器填充分割条分配的高度；false = 未发送期：编辑器贴内容自适应（min~max）。 */
-    fill?: boolean
-  }>(),
-  { fill: false },
-)
+const props = defineProps<{
+  draft: Endpoint | null
+}>()
 
 const locale = useLocaleStore()
 const t = locale.t
@@ -478,7 +478,6 @@ const binPath = useDebouncedField(
       placeholder='{ "key": "value" }'
       :min-height="160"
       :max-height="480"
-      :auto-height="!fill"
       :show-status="false"
       :query="findOpen ? searchQuery : ''"
       :active-match="activeMatch"
@@ -513,7 +512,7 @@ const binPath = useDebouncedField(
         placeholder='{ "id": "42" }'
         :min-height="80"
         :max-height="320"
-        :auto-height="!fill"
+        :auto-height="true"
         :query="findOpen ? searchQuery : ''"
         :active-match="activeMatch"
       />
