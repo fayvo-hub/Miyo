@@ -1051,6 +1051,21 @@ let splitDragging = false
 let growChrome = -1
 let hintMinH = 0
 
+/** 切接口时手动分割态归零（需在 growChrome 声明之后注册，非 immediate 即可）：
+ * 新接口无响应应回到 grow 贴内容布局——上一接口拖出的固定高/折叠态若残留，
+ * 会把新接口的请求卡锁在小盒里，min-height:0 的 Body 面板被挤成 0 高、
+ * 请求设置行（sticky）叠画在溢出的编辑器上（headless 实测：残留态 panel=0、
+ * 编辑区 0 高、与设置行重叠 224px；归零后回到 panel=312 / 编辑区 276）。
+ * requestBodyHeight 一并回到默认，避免 collapsed 判定带着上一接口的残值。 */
+watch(
+  () => draft.value?.id,
+  () => {
+    requestManual.value = false
+    requestBodyHeight.value = REQUEST_DEFAULT
+    growChrome = -1
+  },
+)
+
 function requestMaxHeight(): number {
   const edH = editorEl.value?.clientHeight ?? 600
   if (!hasResponse.value && growChrome >= 0) {
