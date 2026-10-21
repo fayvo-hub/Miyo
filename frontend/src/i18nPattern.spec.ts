@@ -76,8 +76,8 @@ const TEXT_NODE = />\s*([^<>{}]+?)\s*</g
 /** placeholder 中的示例内容：路径 / JSON / URL / curl / GraphQL 查询片段。 */
 const PLACEHOLDER_EXAMPLE = /^(\/|\{|https?:\/\/|wss?:\/\/|socks5?:\/\/|curl\s|query\s|mutation\s)/
 
-/** 文本节点中的示例内容：路径与各类 URL。 */
-const TEXT_EXAMPLE = /^(\/|https?:\/\/|wss?:\/\/|socks5?:\/\/)/
+/** 文本节点中的示例内容：路径、各类 URL 与文件名（如 SKILL.md）。 */
+const TEXT_EXAMPLE = /^(\/|https?:\/\/|wss?:\/\/|socks5?:\/\/|[A-Za-z0-9_-]+\.[A-Za-z0-9]+$)/
 
 /** 含 2 个以上拉丁字母才算“英文短语”（跳过纯数字 / 符号 / 单字母）。 */
 const HAS_ENGLISH = /[A-Za-z]{2,}/
