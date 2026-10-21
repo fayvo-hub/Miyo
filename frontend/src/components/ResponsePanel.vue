@@ -28,6 +28,9 @@ const props = defineProps<{
   /** 正文被 IPC 预览截断（`body_omitted`）时的全文加载器：由宿主注入，
    * 不存在时复制退化为预览（测试/无 request_id 场景）。 */
   loadFullBody?: () => Promise<string | null>
+  /** 该接口已保存的响应示例数量。>0 时才注册「示例」页签——
+   * 由宿主持有数据，本组件只负责展示位置（内容走 #examples 插槽）。 */
+  examplesCount?: number
 }>()
 
 const emit = defineEmits<{ saveExample: []; dragStart: [event: MouseEvent] }>()
@@ -37,7 +40,7 @@ const locale = useLocaleStore()
 const t = locale.t
 
 // ---------- 状态 ----------
-const activeTab = ref<'body' | 'headers' | 'cookies'>('body')
+const activeTab = ref<'body' | 'headers' | 'cookies' | 'examples'>('body')
 type ViewMode = 'pretty' | 'raw' | 'preview'
 const viewMode = ref<ViewMode>('pretty')
 
@@ -241,6 +244,11 @@ const responseTabs = computed<TabItem[]>(() => [
   { key: 'body', label: t('response.tabBody') },
   { key: 'headers', label: t('response.tabHeaders'), count: headerRows.value.length },
   { key: 'cookies', label: t('response.tabCookies'), count: cookies.value.length },
+  // 「响应示例」是本接口的历史响应存档：有才显示，避免空页签占位。
+  // 内容由宿主经 #examples 插槽注入，本组件不持有其数据。
+  ...(props.examplesCount && props.examplesCount > 0
+    ? [{ key: 'examples', label: t('response.tabExamples'), count: props.examplesCount }]
+    : []),
 ])
 
 // ---------- 操作 ----------
@@ -661,7 +669,7 @@ onUnmounted(() => {
       <p v-if="!headerRows.length" class="rp-empty">{{ t('response.noHeaders') }}</p>
     </div>
 
-    <div v-show="!collapsed" v-else class="rp-scroll">
+    <div v-show="!collapsed" v-else-if="activeTab === 'cookies'" class="rp-scroll">
       <div v-for="(c, i) in cookies" :key="i" class="rp-cookie">
         <div class="rp-cookie-top">
           <span class="rp-cookie-name">{{ c.name }}</span>
@@ -679,6 +687,11 @@ onUnmounted(() => {
         </div>
       </div>
       <p v-if="!cookies.length" class="rp-empty">{{ t('response.noCookies') }}</p>
+    </div>
+
+    <!-- 响应示例：内容由宿主持有（#examples 插槽），本组件只提供页签与滚动容器 -->
+    <div v-show="!collapsed" v-else-if="activeTab === 'examples'" class="rp-scroll">
+      <slot name="examples" />
     </div>
   </div>
 </template>
@@ -926,9 +939,18 @@ onUnmounted(() => {
   width: var(--code-gutter-w);
   padding-right: var(--code-gutter-gap);
   text-align: right;
+  /* user-select:none 只挡住「从行号起选」这一种路径；从正文往左拖、或
+   * 三击/全选时，浏览器仍会把跨过的行号一起涂蓝（正文与行号同处一个
+   * 选择流，不同于 CodeMirror 把 gutter 放在独立 DOM 层）。
+   * 故再抹掉行号自身的选区着色，使复制观感与请求编辑器一致。 */
   user-select: none;
   color: var(--tok-gutter);
   font-size: var(--fs-xxs);
+}
+.rp-line-gutter::selection {
+  /* 行号被扫过时不显示高亮：选区视觉上只在正文上 */
+  background-color: transparent;
+  color: var(--tok-gutter);
 }
 
 .rp-line-text {

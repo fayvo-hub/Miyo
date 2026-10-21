@@ -360,9 +360,18 @@ defineExpose({ expandAll, collapseAll, matchCount })
   width: var(--code-gutter-w);
   padding-right: var(--code-gutter-gap);
   text-align: right;
+  /* user-select:none 只挡住「从行号起选」这一种路径；从正文往左拖、或
+   * 三击/全选时，浏览器仍会把跨过的行号一起涂蓝（正文与行号同处一个
+   * 选择流，不同于 CodeMirror 把 gutter 放在独立 DOM 层）。
+   * 故再抹掉行号自身的选区着色，使复制观感与请求编辑器一致。 */
   user-select: none;
   color: var(--tok-gutter);
   font-size: var(--fs-xxs);
+}
+.jt-gutter::selection {
+  /* 行号被扫过时不显示高亮：选区视觉上只在正文上 */
+  background-color: transparent;
+  color: var(--tok-gutter);
 }
 
 /* 折叠列：箭头专列，所有行等宽保留（空行占位），代码左缘不随有无箭头跳动 */
