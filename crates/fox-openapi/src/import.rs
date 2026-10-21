@@ -6,7 +6,9 @@ use std::str::FromStr;
 use fox_core::model::{BodySpec, HttpMethod, KeyValue, RequestSpec};
 use fox_core::AppError;
 use indexmap::IndexMap;
-use openapiv3::{MediaType, OpenAPI, Parameter, ReferenceOr, RequestBody};
+use openapiv3::{
+    MediaType, OpenAPI, Parameter, ReferenceOr, RequestBody, Schema, SchemaKind, Type,
+};
 use serde::Serialize;
 
 /// 导入冲突策略。
@@ -382,26 +384,163 @@ fn kv_from_data(data: &openapiv3::ParameterData) -> KeyValue {
 fn body_from_request_body(rb: &RequestBody) -> BodySpec {
     for (content_type, media) in &rb.content {
         if content_type.contains("json") {
-            let raw = media
-                .example
-                .as_ref()
-                .map(value_to_string)
-                .unwrap_or_else(|| "{}".into());
+            // 显式 example 优先；缺失时由 schema 合成占位体。
+            // 只给 schema（无 example）是 OpenAPI 3.0 最常见的写法，
+            // 旧实现一律落成 `{}`，等于把整个请求体参数丢掉。
+            let synthesized = example_from_media(media);
+            let raw = match synthesized {
+                Some(v) => value_to_string(&v),
+                None => "{}".into(),
+            };
             return BodySpec::Json { raw };
         }
     }
     for (content_type, media) in &rb.content {
         if content_type.contains("x-www-form-urlencoded") {
-            let mut fields = Vec::new();
-            if let Some(serde_json::Value::Object(map)) = &media.example {
-                for (k, v) in map {
-                    fields.push(KeyValue::new(k.clone(), value_to_string(v)));
-                }
-            }
+            // 同样：fields 由 example 或 schema.properties 得来。
+            let fields = urlencoded_fields(media);
             return BodySpec::UrlEncoded { fields };
         }
     }
     BodySpec::None
+}
+
+/// 合成 JSON 体：显式 `example` → 集合式 `examples` 首值 → schema 推导。
+///
+/// 返回 `None` 表示连 schema 都没有，调用方回退到 `{}`。
+fn example_from_media(media: &MediaType) -> Option<serde_json::Value> {
+    if let Some(ex) = &media.example {
+        return Some(ex.clone());
+    }
+    // `examples` 是 `media.example` 的互斥替代（Map<String, Example|Ref>）；
+    // 取第一个带 value 的，顺序即文档顺序。
+    for (_, ex) in &media.examples {
+        let ReferenceOr::Item(ex) = ex else { continue };
+        if let Some(v) = &ex.value {
+            return Some(v.clone());
+        }
+    }
+    let schema = media.schema.as_ref()?;
+    Some(example_from_schema_inner(schema, 0))
+}
+
+/// `&ReferenceOr<Box<Schema>>`（properties / items 的形状）→ 值。
+fn example_from_boxed(schema: &ReferenceOr<Box<Schema>>, depth: usize) -> serde_json::Value {
+    match schema {
+        ReferenceOr::Item(b) => example_from_schema(b, depth),
+        ReferenceOr::Reference { .. } => serde_json::Value::Object(serde_json::Map::new()),
+    }
+}
+
+/// 由 schema 推导一份占位示例值（结构化字段导入的核心）。
+///
+/// 优先级：`example` > `default` > `enum[0]` > 按类型骨架。
+/// `$ref` 不解析（本函数拿不到 components，且导入对 schema 无损要求低），
+/// 走 `{}` 兜底，与旧行为一致，不会更差。
+fn example_from_schema(schema: &Schema, depth: usize) -> serde_json::Value {
+    if let Some(ex) = &schema.schema_data.example {
+        return ex.clone();
+    }
+    if let Some(default) = &schema.schema_data.default {
+        return default.clone();
+    }
+    // 深度上限：自引用 schema 防爆栈（顺带封顶嵌套对象体积）。
+    if depth >= MAX_SCHEMA_DEPTH {
+        return serde_json::Value::Object(serde_json::Map::new());
+    }
+    match &schema.schema_kind {
+        SchemaKind::Type(Type::Object(obj)) => {
+            let mut map = serde_json::Map::new();
+            for (name, prop) in &obj.properties {
+                map.insert(name.clone(), example_from_boxed(prop, depth + 1));
+            }
+            serde_json::Value::Object(map)
+        }
+        SchemaKind::Type(Type::Array(arr)) => {
+            let item = arr
+                .items
+                .as_ref()
+                .map(|i| example_from_boxed(i, depth + 1))
+                .unwrap_or(serde_json::Value::Null);
+            serde_json::Value::Array(vec![item])
+        }
+        SchemaKind::Type(Type::String(st)) => first_enum_string(&st.enumeration)
+            .map(serde_json::Value::String)
+            .unwrap_or_else(|| serde_json::Value::String(String::new())),
+        SchemaKind::Type(Type::Integer(_)) => serde_json::Value::Number(0.into()),
+        SchemaKind::Type(Type::Number(_)) => {
+            serde_json::Value::Number(serde_json::Number::from_f64(0.0).unwrap_or_else(|| 0.into()))
+        }
+        SchemaKind::Type(Type::Boolean(_)) => serde_json::Value::Bool(false),
+        // 组合类型：取分支第一个可用示例，比 {} 更接近真实请求体。
+        SchemaKind::AllOf { all_of } => merge_all_of(all_of, depth),
+        SchemaKind::OneOf { one_of } => one_of
+            .first()
+            .map(|s| example_from_schema_inner(s, depth + 1))
+            .unwrap_or(serde_json::Value::Null),
+        SchemaKind::AnyOf { any_of } => any_of
+            .first()
+            .map(|s| example_from_schema_inner(s, depth + 1))
+            .unwrap_or(serde_json::Value::Null),
+        _ => serde_json::Value::Object(serde_json::Map::new()),
+    }
+}
+
+/// `allOf` 合并：所有分支同上时并入同一个对象（典型 `allOf: [Obj, {required}]`）。
+fn merge_all_of(branches: &[ReferenceOr<Schema>], depth: usize) -> serde_json::Value {
+    let mut map = serde_json::Map::new();
+    let mut merged_any = false;
+    for b in branches {
+        if let serde_json::Value::Object(part) = example_from_schema_inner(b, depth + 1) {
+            for (k, v) in part {
+                map.insert(k, v);
+            }
+            merged_any = true;
+        }
+    }
+    if merged_any {
+        serde_json::Value::Object(map)
+    } else {
+        serde_json::Value::Object(serde_json::Map::new())
+    }
+}
+
+/// `allOf` 的分支是 `ReferenceOr<Schema>`（非 Box）。
+fn example_from_schema_inner(schema: &ReferenceOr<Schema>, depth: usize) -> serde_json::Value {
+    match schema {
+        ReferenceOr::Item(s) => example_from_schema(s, depth),
+        ReferenceOr::Reference { .. } => serde_json::Value::Object(serde_json::Map::new()),
+    }
+}
+
+fn first_enum_string(enumeration: &[Option<String>]) -> Option<String> {
+    enumeration.iter().flatten().next().cloned()
+}
+
+/// schema 深度上限：防御自引用 / 极深嵌套。
+const MAX_SCHEMA_DEPTH: usize = 12;
+
+/// x-www-form-urlencoded 字段：example 对象优先，其次 schema.properties。
+fn urlencoded_fields(media: &MediaType) -> Vec<KeyValue> {
+    if let Some(serde_json::Value::Object(map)) = &media.example {
+        return map
+            .iter()
+            .map(|(k, v)| KeyValue::new(k.clone(), value_to_string(v)))
+            .collect();
+    }
+    let Some(ReferenceOr::Item(schema)) = &media.schema else {
+        return Vec::new();
+    };
+    let SchemaKind::Type(Type::Object(obj)) = &schema.schema_kind else {
+        return Vec::new();
+    };
+    obj.properties
+        .iter()
+        .map(|(name, prop)| {
+            let v = example_from_boxed(prop, 0);
+            KeyValue::new(name.clone(), value_to_string(&v))
+        })
+        .collect()
 }
 
 /// 示例值转字符串。
@@ -600,5 +739,203 @@ mod tests {
     #[test]
     fn import_any_unknown_format_errors() {
         assert!(import_any("not-a-doc").is_err());
+    }
+
+    // ---------- requestBody 结构化字段导入（回归）----------
+    //
+    // 旧 bug：`body_from_request_body` 只读 `media.example`，而 OpenAPI 3.0
+    // 最常见的写法是**只给 schema**（properties 描述字段），此时请求体一律
+    // 落成 `{}`，等于把整个 requestBody 参数丢掉。
+
+    /// 只给 schema.properties 时的 JSON 体。
+    const BODY_SCHEMA_ONLY: &str = r#"{
+  "openapi": "3.0.0",
+  "info": { "title": "t", "version": "1" },
+  "paths": {
+    "/posts": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "body"],
+                "properties": {
+                  "title":  { "type": "string", "example": "小秦技术" },
+                  "body":   { "type": "string" },
+                  "userId": { "type": "integer" },
+                  "tags":   { "type": "array", "items": { "type": "string" } },
+                  "meta": {
+                    "type": "object",
+                    "properties": { "draft": { "type": "boolean" } }
+                  },
+                  "kind": { "type": "string", "enum": ["post", "page"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "ok" } }
+      }
+    }
+  }
+}"#;
+
+    fn json_body(text: &str) -> serde_json::Value {
+        let eps = import_endpoints(text).expect("import ok");
+        let ep = eps.iter().find(|e| e.method == HttpMethod::POST).unwrap();
+        let BodySpec::Json { raw } = &ep.request.body else {
+            panic!("expected json body, got {:?}", ep.request.body);
+        };
+        serde_json::from_str(raw).expect("body 应是合法 JSON")
+    }
+
+    #[test]
+    fn schema_only_request_body_is_not_lost() {
+        let body = json_body(BODY_SCHEMA_ONLY);
+        // 旧实现是 `{}`——这里断言字段真的进来了。
+        assert_ne!(body, serde_json::json!({}), "requestBody 参数被丢掉了");
+        assert_eq!(body["title"], "小秦技术", "字段级 example 应优先");
+        assert_eq!(body["body"], "", "string 骨架");
+        assert_eq!(body["userId"], 0, "integer 骨架");
+        assert_eq!(body["tags"], serde_json::json!([""]), "array → 单元素骨架");
+        assert_eq!(body["meta"]["draft"], false, "嵌套 object 递归");
+        assert_eq!(body["kind"], "post", "enum 取首值");
+    }
+
+    #[test]
+    fn explicit_media_example_still_wins() {
+        let spec = r#"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/a": { "post": {
+            "requestBody": { "content": { "application/json": {
+              "example": { "name": "张三" },
+              "schema": { "type": "object", "properties": { "name": { "type": "string" } } }
+            } } },
+            "responses": { "200": { "description": "ok" } } } } }
+        }"#;
+        assert_eq!(json_body(spec), serde_json::json!({ "name": "张三" }));
+    }
+
+    #[test]
+    fn media_examples_map_is_honored() {
+        // `examples`（Map）与 `example` 互斥，取第一个带 value 的。
+        let spec = r#"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/a": { "post": {
+            "requestBody": { "content": { "application/json": {
+              "examples": { "first": { "value": { "id": 7 } } }
+            } } },
+            "responses": { "200": { "description": "ok" } } } } }
+        }"#;
+        assert_eq!(json_body(spec), serde_json::json!({ "id": 7 }));
+    }
+
+    #[test]
+    fn schema_default_and_allof_are_synthesized() {
+        let spec = r#"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/a": { "post": {
+            "requestBody": { "content": { "application/json": {
+              "schema": { "allOf": [
+                { "type": "object", "properties": { "a": { "type": "string", "default": "x" } } },
+                { "type": "object", "properties": { "b": { "type": "integer" } } }
+              ] }
+            } } },
+            "responses": { "200": { "description": "ok" } } } } }
+        }"#;
+        assert_eq!(json_body(spec), serde_json::json!({ "a": "x", "b": 0 }));
+    }
+
+    #[test]
+    fn self_referential_schema_does_not_blow_the_stack() {
+        // 深度上限兜底：即便文档里嵌套远超上限，也不能爆栈。
+        // 程序化构造，避免手写括号出错。
+        let mut schema = serde_json::json!({ "type": "object" });
+        for _ in 0..40 {
+            schema = serde_json::json!({
+                "type": "object",
+                "properties": { "self": schema }
+            });
+        }
+        let spec = serde_json::json!({
+            "openapi": "3.0.0",
+            "info": { "title": "t", "version": "1" },
+            "paths": { "/a": { "post": {
+                "requestBody": { "content": { "application/json": { "schema": schema } } },
+                "responses": { "200": { "description": "ok" } }
+            } } }
+        })
+        .to_string();
+        // 只要不 panic 即可；同时确认最外层字段存在。
+        let body = json_body(&spec);
+        assert!(body.get("self").is_some());
+    }
+
+    #[test]
+    fn urlencoded_body_from_schema_properties() {
+        let spec = r#"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/login": { "post": {
+            "requestBody": { "content": { "application/x-www-form-urlencoded": {
+              "schema": { "type": "object", "properties": {
+                "user": { "type": "string", "example": "admin" },
+                "pass": { "type": "string" }
+              } }
+            } } },
+            "responses": { "200": { "description": "ok" } } } } }
+        }"#;
+        let eps = import_endpoints(spec).unwrap();
+        let ep = eps.iter().find(|e| e.method == HttpMethod::POST).unwrap();
+        let BodySpec::UrlEncoded { fields } = &ep.request.body else {
+            panic!("expected urlencoded, got {:?}", ep.request.body);
+        };
+        // 旧实现：没有 media.example 时 fields 为空 → 表单字段全丢。
+        assert_eq!(fields.len(), 2);
+        let by_key = |k: &str| fields.iter().find(|f| f.key == k).expect("字段缺失");
+        assert_eq!(by_key("user").value, "admin");
+        assert_eq!(by_key("pass").value, "");
+    }
+
+    #[test]
+    fn openapi3_body_survives_the_full_import_any_path() {
+        // 端到端：`import_any` 是 Tauri `import_document` 的后端入口，
+        // 覆盖 detect → parse → map → body 的完整链路。
+        let spec = r#"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/posts": { "post": {
+            "requestBody": { "content": { "application/json": { "schema": {
+              "type": "object",
+              "properties": {
+                "title":  { "type": "string", "example": "小秦技术" },
+                "userId": { "type": "integer", "example": 1 }
+              }
+            } } } },
+            "responses": { "201": { "description": "ok" } } } } }
+        }"#;
+        let (eps, fmt) = import_any(spec).expect("import ok");
+        assert_eq!(fmt, ImportFormat::OpenApi30);
+        let ep = eps.iter().find(|e| e.method == HttpMethod::POST).unwrap();
+        let BodySpec::Json { raw } = &ep.request.body else {
+            panic!("expected json body");
+        };
+        let v: serde_json::Value = serde_json::from_str(raw).unwrap();
+        assert_eq!(v["title"], "小秦技术");
+        assert_eq!(v["userId"], 1);
+    }
+
+    #[test]
+    fn request_body_reference_degrades_gracefully() {
+        // `$ref` 不解析（拿不到 components），但不能 panic，且不返回字段。
+        let spec = r##"{
+          "openapi": "3.0.0", "info": { "title": "t", "version": "1" },
+          "paths": { "/a": { "post": {
+            "requestBody": { "content": { "application/json": {
+              "schema": { "$ref": "#/components/schemas/Post" }
+            } } },
+            "responses": { "200": { "description": "ok" } } } } }
+        }"##;
+        assert_eq!(json_body(spec), serde_json::json!({}));
     }
 }

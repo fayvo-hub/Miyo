@@ -10,7 +10,7 @@ use fox_core::model::{ApiKeyLocation, AuthSpec, BodySpec, HttpMethod, KeyValue, 
 use fox_core::AppError;
 use serde_json::Value;
 
-use crate::import::{parse_value, ImportedEndpoint, ImportedExample};
+use crate::import::{parse_value, value_to_string, ImportedEndpoint, ImportedExample};
 
 /// 导入 Swagger 2.0 文档，返回待落库的接口列表。
 pub fn import_swagger2(text: &str) -> Result<Vec<ImportedEndpoint>, AppError> {
@@ -74,6 +74,66 @@ fn str_list(v: Option<&Value>) -> Vec<String> {
         })
         .unwrap_or_default()
 }
+
+/// 由 JSON Schema 推导一份占位示例值（Swagger 2.0 的 body 参数）。
+///
+/// 优先级：`example` > `default` > `enum[0]` > 按类型骨架。
+/// `$ref` 不解析（拿不到 definitions，且导入对 schema 无损要求低），
+/// 走 `{}` 兜底，与旧行为一致。
+fn example_from_schema_json(schema: &Value, depth: usize) -> Value {
+    if let Some(ex) = schema.get("example") {
+        return ex.clone();
+    }
+    if let Some(default) = schema.get("default") {
+        return default.clone();
+    }
+    // 深度上限：自引用 schema 防爆栈。
+    if depth >= MAX_SCHEMA_DEPTH {
+        return Value::Object(serde_json::Map::new());
+    }
+    // `$ref` 或 allOf 等组合：合并所有分支的属性。
+    if let Some(all_of) = schema.get("allOf").and_then(|v| v.as_array()) {
+        let mut map = serde_json::Map::new();
+        for b in all_of {
+            if let Value::Object(part) = example_from_schema_json(b, depth + 1) {
+                map.extend(part);
+            }
+        }
+        return Value::Object(map);
+    }
+    // 显式 `properties` 是唯一可靠的「有字段」信号：优先于 type 判断，
+    // 因为很多文档省略 type: object 只写 properties。
+    if let Some(props) = schema.get("properties").and_then(|v| v.as_object()) {
+        let mut map = serde_json::Map::new();
+        for (name, prop) in props {
+            map.insert(name.clone(), example_from_schema_json(prop, depth + 1));
+        }
+        return Value::Object(map);
+    }
+    match schema.get("type").and_then(|v| v.as_str()).unwrap_or("") {
+        "array" => {
+            let item = schema
+                .get("items")
+                .map(|i| example_from_schema_json(i, depth + 1))
+                .unwrap_or(Value::Null);
+            Value::Array(vec![item])
+        }
+        "object" => Value::Object(serde_json::Map::new()),
+        "string" => schema
+            .get("enum")
+            .and_then(|v| v.as_array())
+            .and_then(|a| a.first())
+            .cloned()
+            .unwrap_or_else(|| Value::String(String::new())),
+        "integer" => Value::Number(0.into()),
+        "number" => Value::Number(serde_json::Number::from_f64(0.0).unwrap_or_else(|| 0.into())),
+        "boolean" => Value::Bool(false),
+        _ => Value::Object(serde_json::Map::new()),
+    }
+}
+
+/// schema 深度上限：防御自引用 / 极深嵌套。
+const MAX_SCHEMA_DEPTH: usize = 12;
 
 /// securityDefinitions → AuthSpec（显式优先级：basic > bearer > apiKey）。
 fn map_security(v: Option<&Value>) -> Option<AuthSpec> {
@@ -179,12 +239,11 @@ fn map_operation(
             "path" => path_variables.push(kv),
             "formData" => form_fields.push(kv),
             "body" => {
-                body_json = Some(
-                    p.get("schema")
-                        .and_then(|s| s.get("example").or_else(|| s.get("default")))
-                        .map(|v| v.to_string())
-                        .unwrap_or_else(|| "{}".to_string()),
-                );
+                // Swagger 2.0 的 body 参数用 `schema` 描述字段，且绝大多数
+                // 文档只给 `properties` 不给 `example`/`default`；旧实现此时
+                // 一律落成 `{}`，等于把请求体参数丢掉。改为 schema 推导。
+                let schema = p.get("schema").unwrap_or(&Value::Null);
+                body_json = Some(value_to_string(&example_from_schema_json(schema, 0)));
             }
             _ => {}
         }
@@ -409,5 +468,83 @@ mod tests {
             get.request.auth,
             fox_core::model::AuthSpec::Basic { .. }
         ));
+    }
+
+    /// Swagger 2.0 `in: body` 只给 `schema.properties`（无 example/default）。
+    ///
+    /// 旧实现此时把 body 落成 `{}`，请求体字段全丢——与 OpenAPI 3.0 同一类 bug。
+    #[test]
+    fn body_parameter_schema_properties_are_not_lost() {
+        let doc = r#"{
+          "swagger": "2.0",
+          "info": { "title": "t", "version": "1.0" },
+          "consumes": ["application/json"],
+          "paths": {
+            "/posts": {
+              "post": {
+                "parameters": [
+                  { "name": "body", "in": "body", "required": true,
+                    "schema": {
+                      "type": "object",
+                      "required": ["title"],
+                      "properties": {
+                        "title":  { "type": "string", "example": "小秦技术" },
+                        "body":   { "type": "string" },
+                        "userId": { "type": "integer" },
+                        "tags":   { "type": "array", "items": { "type": "string" } }
+                      }
+                    } }
+                ],
+                "responses": { "201": { "description": "ok" } }
+              }
+            }
+          }
+        }"#;
+        let list = import_swagger2(doc).unwrap();
+        let post = list
+            .iter()
+            .find(|e| e.method.to_string() == "POST")
+            .unwrap();
+        let fox_core::model::BodySpec::Json { raw } = &post.request.body else {
+            panic!("期望 json body，实得 {:?}", post.request.body);
+        };
+        let v: serde_json::Value = serde_json::from_str(raw).expect("body 应是合法 JSON");
+        assert_ne!(v, serde_json::json!({}), "body 参数被丢掉了");
+        assert_eq!(v["title"], "小秦技术");
+        assert_eq!(v["body"], "");
+        assert_eq!(v["userId"], 0);
+        assert_eq!(v["tags"], serde_json::json!([""]));
+    }
+
+    /// 顶层 schema 是数组/标量时，body 不应被包成对象。
+    #[test]
+    fn body_parameter_non_object_schema() {
+        let doc = r#"{
+          "swagger": "2.0",
+          "info": { "title": "t", "version": "1.0" },
+          "paths": {
+            "/bulk": {
+              "post": {
+                "parameters": [
+                  { "name": "body", "in": "body",
+                    "schema": { "type": "array", "items": { "type": "integer" } } }
+                ],
+                "responses": { "200": { "description": "ok" } }
+              }
+            }
+          }
+        }"#;
+        let list = import_swagger2(doc).unwrap();
+        let post = list
+            .iter()
+            .find(|e| e.method.to_string() == "POST")
+            .unwrap();
+        let fox_core::model::BodySpec::Json { raw } = &post.request.body else {
+            panic!("期望 json body");
+        };
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(raw).unwrap(),
+            serde_json::json!([0])
+        );
     }
 }
