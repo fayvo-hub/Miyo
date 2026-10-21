@@ -336,7 +336,6 @@ export const en: Record<ZhKey, string> = {
   'editor.notSent': 'No request sent yet',
   'editor.notSentHint': 'Click Send or press Cmd + Enter (Ctrl + Enter) to get a response',
   'editor.responseHint': 'The response will appear here after sending',
-  'editor.examples': 'Response examples ({n})',
   'editor.deleteExampleConfirm': 'Delete example "{name}"?',
   'editor.deleteExample': 'Delete example',
   'editor.empty': 'Select an endpoint on the left to start editing',
@@ -394,6 +393,7 @@ export const en: Record<ZhKey, string> = {
   'response.tabBody': 'Body',
   'response.tabHeaders': 'Headers',
   'response.tabCookies': 'Cookies',
+  'response.tabExamples': 'Examples',
 
   'body.none': 'None',
   'body.textPh': 'Plain text',

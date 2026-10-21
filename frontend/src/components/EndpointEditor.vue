@@ -1474,30 +1474,61 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div
-      ref="configBoxEl"
-      class="config-box"
-      :class="{ collapsed: requestBodyCollapsed, grow: !hasResponse && !requestManual }"
-      :style="hasResponse || requestManual ? { height: `${requestBodyHeight}px` } : undefined"
-    >
-      <Tabs v-model="activeTab" :tabs="configTabs" size="sm" />
-      <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
-      <AuthPanel v-else-if="activeTab === 'auth'" :draft="draft" />
-      <HeadersPanel v-else-if="activeTab === 'headers'" :draft="draft" />
-      <BodyPanel v-else-if="activeTab === 'body'" :draft="draft" />
-      <GrpcPanel v-else-if="activeTab === 'grpc'" :draft="draft" />
-      <PathVariablesPanel v-else-if="activeTab === 'path'" :draft="draft" />
-      <RequestExamplesPanel v-else-if="activeTab === 'examples'" :draft="draft" />
-      <CodePanel
-        v-else
-        :method="draft.method"
-        :url="requestUrl"
-        :headers="draft.request.headers"
-        :body="draft.request.body"
-        :auth="draft.request.auth"
-      />
+    <!-- 请求区 + 响应区合并为一张卡（Single Border Architecture）：
+         两卡各自带完整边框、又相距 14px 时会出现两条平行线，且拖拽热区与
+         两条线都不重合 → 「看着有线、拖起来没反应」。合并后中间只剩分割条
+         那一条接缝，热区、视觉线、拖动行为三者重合。 -->
+    <div class="req-resp-stack" :class="{ 'no-response': !hasResponse }">
+      <div
+        ref="configBoxEl"
+        class="config-box"
+        :class="{ collapsed: requestBodyCollapsed, grow: !hasResponse && !requestManual }"
+        :style="hasResponse || requestManual ? { height: `${requestBodyHeight}px` } : undefined"
+      >
+        <Tabs v-model="activeTab" :tabs="configTabs" size="sm" />
+        <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
+        <AuthPanel v-else-if="activeTab === 'auth'" :draft="draft" />
+        <HeadersPanel v-else-if="activeTab === 'headers'" :draft="draft" />
+        <BodyPanel v-else-if="activeTab === 'body'" :draft="draft" />
+        <GrpcPanel v-else-if="activeTab === 'grpc'" :draft="draft" />
+        <PathVariablesPanel v-else-if="activeTab === 'path'" :draft="draft" />
+        <RequestExamplesPanel v-else-if="activeTab === 'examples'" :draft="draft" />
+        <CodePanel
+          v-else
+          :method="draft.method"
+          :url="requestUrl"
+          :headers="draft.request.headers"
+          :body="draft.request.body"
+          :auth="draft.request.auth"
+        />
+      </div>
 
-      <!-- 配置区底部：单请求超时 / 跟随重定向（绑定 draft.request，走既有脏检查与保存链路） -->
+    <!-- 物理分割条 = 唯一拖拽热区，也是请求面板与响应区之间唯一的一条视觉分界线：
+           两卡已被 .req-resp-stack 合并为一张卡，此处即那条接缝。
+           ::after 为上下外扩的透明命中热区；::before 承载 hover/拖拽时的可拖提示线。
+           未发送期同样可拖：enterManualSplit 切固定高，编辑器 availH 经 ResizeObserver
+           跟随——看到底线即可拖。 -->
+      <div
+        class="rp-splitter"
+        :class="{ dragging: splitterDragging }"
+        role="separator"
+        tabindex="0"
+        aria-orientation="horizontal"
+        :aria-label="t('editor.splitterHint')"
+        :aria-valuenow="Math.round(requestBodyHeight)"
+        :aria-valuemin="REQUEST_MIN"
+        :aria-valuemax="Math.round(requestMaxHeight())"
+        :title="t('editor.splitterHint')"
+        @mousedown="onSplitterDown"
+        @dblclick="toggleRequestBody"
+        @keydown="onSplitterKeydown"
+      ></div>
+
+      <!-- 请求设置行（超时 / 跟随重定向）：置于接缝线**之下**，属响应侧工具栏。
+           理由：接缝线必须是「拖拽把手」，而把手最该落在 Body 编辑器正下方——
+           若设置行留在请求卡内，线就被顶到设置行之下，Body 编辑器与线之间还夹着
+           32px 设置行，看起来像「线不在该在的地方」。
+           绑定 draft.request，脏检查与保存链路不变。 -->
       <div class="req-settings">
         <span class="rs-label">{{ t('editor.reqSettings') }}</span>
         <label class="rs-field" :title="timeoutPlaceholder">
@@ -1521,101 +1552,91 @@ onUnmounted(() => {
           {{ t('editor.followRedirects') }}
         </label>
       </div>
+
+      <template v-if="hasResponse">
+        <div class="response-zone">
+          <!-- Apifox 式请求中占位：转圈 + 实时计时 + 骨架 shimmer，一眼可知「这次发出去了」。 -->
+          <div v-if="sending && !response && !sendError" class="req-loading" role="status" aria-live="polite">
+            <span class="req-loading-ring" aria-hidden="true"></span>
+            <p class="req-loading-title">{{ t('editor.sendingTitle') }}</p>
+            <p class="req-loading-sub">{{ draft.method }} {{ requestUrl }}</p>
+            <div class="req-loading-skel">
+              <Skeleton :lines="5" height="12px" />
+            </div>
+            <button class="rf-btn rf-btn-sm req-loading-cancel" type="button" @click="cancelSend">
+              {{ t('editor.cancelRequest') }}
+            </button>
+          </div>
+          <div v-else ref="flashEl" class="response-anim" :class="{ 'is-stale': sending }">
+            <GrpcResponsePanel
+              v-if="isGrpc && (grpcDisplay.response || grpcDisplay.stream)"
+              :method="draft.method"
+              :response="grpcDisplay.response"
+              :stream="grpcDisplay.stream"
+            />
+            <ResponsePanel
+              v-else-if="!isGrpc && response"
+              :response="response"
+              :load-full-body="loadFullBody"
+              :examples-count="activeExamples.length"
+              @save-example="saveExample"
+              @drag-start="onSplitterDown"
+            >
+              <!-- 响应示例移入响应面板页签：不再作为独立卡片压在响应区下方，
+                   既省垂直空间，也不再把主视区顶出去。数据仍由本组件持有。 -->
+              <template #examples>
+                <div class="examples">
+                  <div v-for="ex in activeExamples" :key="ex.id" class="example-row">
+                    <button
+                      class="example-main"
+                      type="button"
+                      :class="{ open: viewingExample?.id === ex.id }"
+                      @click="viewExample(ex)"
+                    >
+                      <span class="example-status" :class="{ err: ex.status >= 400 }">{{ ex.status }}</span>
+                      <span class="example-name">{{ ex.name }}</span>
+                      <span class="example-meta">{{ ex.created_at.slice(0, 16).replace('T', ' ') }}</span>
+                    </button>
+                    <Popconfirm
+                      :title="t('editor.deleteExampleConfirm', { name: ex.name })"
+                      @confirm="removeExample(ex)"
+                    >
+                      <IconButton name="trash" :size="13" tone="danger" :title="t('editor.deleteExample')" />
+                    </Popconfirm>
+                  </div>
+                  <pre v-if="viewingExample" class="example-body">{{ prettyBody(viewingExample.body) }}</pre>
+                </div>
+              </template>
+            </ResponsePanel>
+            <div v-else-if="sendError" class="send-error" role="alert">
+              <span>{{ t('editor.sendFail', { v: sendError }) }}</span>
+            </div>
+            <EmptyState
+              v-else
+              class="response-empty"
+              icon="send"
+              :title="t('editor.notSent')"
+              :description="t('editor.notSentHint')"
+            />
+          </div>
+        </div>
+      </template>
+      <!-- 未发送期占位低条：手动拖过分割条（请求卡固定高）时改为吸收剩余空间，
+           保持「请求卡底边分割条 = 视觉分界线」且低条始终贴到工作区底部 -->
+      <button
+        v-else
+        class="response-hint"
+        :class="{ 'flex-fill': requestManual }"
+        type="button"
+        @click="urlInputEl?.focus()"
+      >
+        <span class="response-hint-inner">
+          <Icon name="send" :size="20" />
+          <span>{{ t('editor.responseHint') }}</span>
+        </span>
+      </button>
     </div>
 
-    <!-- 物理分割条 = 唯一拖拽热区：请求面板底边与下方响应区/占位区的绝对分界
-         （::after 上下外扩命中热区）。未发送期同样可拖：enterManualSplit 切
-         固定高，编辑器 availH 经 ResizeObserver 跟随——看到底线即可拖。 -->
-    <div
-      class="rp-splitter"
-      :class="{ dragging: splitterDragging }"
-      role="separator"
-      tabindex="0"
-      aria-orientation="horizontal"
-      :aria-label="t('editor.splitterHint')"
-      :aria-valuenow="Math.round(requestBodyHeight)"
-      :aria-valuemin="REQUEST_MIN"
-      :aria-valuemax="Math.round(requestMaxHeight())"
-      :title="t('editor.splitterHint')"
-      @mousedown="onSplitterDown"
-      @dblclick="toggleRequestBody"
-      @keydown="onSplitterKeydown"
-    ></div>
-
-    <template v-if="hasResponse">
-      <div class="response-zone">
-        <!-- Apifox 式请求中占位：转圈 + 实时计时 + 骨架 shimmer，一眼可知「这次发出去了」。 -->
-        <div v-if="sending && !response && !sendError" class="req-loading" role="status" aria-live="polite">
-          <span class="req-loading-ring" aria-hidden="true"></span>
-          <p class="req-loading-title">{{ t('editor.sendingTitle') }}</p>
-          <p class="req-loading-sub">{{ draft.method }} {{ requestUrl }}</p>
-          <div class="req-loading-skel">
-            <Skeleton :lines="5" height="12px" />
-          </div>
-          <button class="rf-btn rf-btn-sm req-loading-cancel" type="button" @click="cancelSend">
-            {{ t('editor.cancelRequest') }}
-          </button>
-        </div>
-        <div v-else ref="flashEl" class="response-anim" :class="{ 'is-stale': sending }">
-          <GrpcResponsePanel
-            v-if="isGrpc && (grpcDisplay.response || grpcDisplay.stream)"
-            :method="draft.method"
-            :response="grpcDisplay.response"
-            :stream="grpcDisplay.stream"
-          />
-          <ResponsePanel
-            v-else-if="!isGrpc && response"
-            :response="response"
-            :load-full-body="loadFullBody"
-            @save-example="saveExample"
-            @drag-start="onSplitterDown"
-          />
-          <div v-else-if="sendError" class="send-error" role="alert">
-            <span>{{ t('editor.sendFail', { v: sendError }) }}</span>
-          </div>
-          <EmptyState
-            v-else
-            class="response-empty"
-            icon="send"
-            :title="t('editor.notSent')"
-            :description="t('editor.notSentHint')"
-          />
-        </div>
-      </div>
-    </template>
-    <!-- 未发送期占位低条：手动拖过分割条（请求卡固定高）时改为吸收剩余空间，
-         保持「请求卡底边分割条 = 视觉分界线」且低条始终贴到工作区底部 -->
-    <button
-      v-else
-      class="response-hint"
-      :class="{ 'flex-fill': requestManual }"
-      type="button"
-      @click="urlInputEl?.focus()"
-    >
-      <span class="response-hint-inner">
-        <Icon name="send" :size="20" />
-        <span>{{ t('editor.responseHint') }}</span>
-      </span>
-    </button>
-    <div v-if="activeExamples.length" class="examples">
-      <h3 class="section-title">{{ t('editor.examples', { n: activeExamples.length }) }}</h3>
-      <div v-for="ex in activeExamples" :key="ex.id" class="example-row">
-        <button
-          class="example-main"
-          type="button"
-          :class="{ open: viewingExample?.id === ex.id }"
-          @click="viewExample(ex)"
-        >
-          <span class="example-status" :class="{ err: ex.status >= 400 }">{{ ex.status }}</span>
-          <span class="example-name">{{ ex.name }}</span>
-          <span class="example-meta">{{ ex.created_at.slice(0, 16).replace('T', ' ') }}</span>
-        </button>
-        <Popconfirm :title="t('editor.deleteExampleConfirm', { name: ex.name })" @confirm="removeExample(ex)">
-            <IconButton name="trash" :size="13" tone="danger" :title="t('editor.deleteExample')" />
-          </Popconfirm>
-      </div>
-      <pre v-if="viewingExample" class="example-body">{{ prettyBody(viewingExample.body) }}</pre>
-    </div>
     </template>
     <DesignPanel v-else-if="store.activeView === 'design'" :draft="draft" @save="save" />
     <DocsPanel v-else-if="store.activeView === 'docs'" :draft="draft" :url="requestUrl" />
@@ -2326,6 +2347,26 @@ onUnmounted(() => {
   margin-left: 12px;
 }
 
+/* 请求卡 + 响应卡合并容器：两卡之间无 gap，接缝由 .rp-splitter 独占一条线。
+ * 合并前两卡各带完整边框、相距 editor 的 14px gap，形成两条平行线；
+ * 拖拽热区与两条线都不重合，导致「看着有线却拖不动」。 */
+.req-resp-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  /* 外框与圆角由容器统一提供，两卡自身不再画框（否则接缝处又会多出线） */
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+/* 未发送期：请求卡吃满剩余高度，占位低条贴底——外框仍由容器负责 */
+.req-resp-stack.no-response {
+  flex: 1 1 auto;
+}
 /* 核心输入区卡片：比全局背景浅一档，微阴影 + 圆角增强悬浮感 */
 .config-box {
   display: flex;
@@ -2356,26 +2397,26 @@ onUnmounted(() => {
   margin-top: auto;
 }
 
-/* ---- 配置区底部：请求设置 Footer Bar（内缩圆角条、实线切割、暗一档底色） ---- */
+/* ---- 配置区底部：请求设置 Inner Toolbar（卡片内底栏，无自身分隔线）----
+ * Single Border Architecture：整个请求面板底部只保留分割条那一条物理分界线。
+ * 本栏此前带 border-top，与分割条处的边界线构成「双分割线」，已移除。
+ * 悬浮感改由渐变承担——纯背景过渡，不画线、不占布局高度：
+ * sticky 时内容会从其下方滚过，没有区分度会直接顶到设置文字上。
+ */
 .req-settings {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  /* 高度受限（响应出现后 config-box 固定高）时不被 flex 压缩；
-   * sticky 固定 Footer：config-box 内容超高滚动时钉在卡片底缘，不随内容滚走
-   * （sticky 同为定位元素，保留原 relative 的绘制层级，避免被编辑器溢出内容盖住） */
+  /* 高度受限时不被 flex 压缩：这是一行固定高的工具栏。 */
   flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
-  /* 贴卡片左右内容宽（ml 一档由卡片内距承担），底部与卡片边缘齐平 */
-  margin: 8px 0 -10px;
+  /* 已移出 .config-box（不再钉在请求卡底部），故不再需要 sticky 与负偏移；
+     它现在是响应侧的第一行，位置天然固定。 */
+  margin: 0;
   padding: 6px 16px;
-  border-top: 1px solid var(--border-panel);
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-  /* 井槽底走 --bg-code（深 #121318 / 浅 slate-50），双主题同源，
-     原 color-mix(black N%) + 组件级浅色覆写已收敛到 token */
+  border-radius: 0;
+  /* 井槽底走 --bg-code（深 #121318 / 浅 slate-50），双主题同源。
+     接缝线由 .req-resp-stack .req-settings 的 border-top 提供。 */
   background: var(--bg-code);
   font-size: var(--fs-xs);
   color: var(--text-2);
@@ -2502,28 +2543,73 @@ onUnmounted(() => {
  * 负 margin 抵消 .editor 的 gap，让请求编辑器底边紧贴分割条（2px），
  * 响应面板与分割条之间保留 6px 呼吸空间。
  */
+/* 两卡接缝处的分割条：它是请求区与响应区之间唯一的一条线，也是唯一拖拽热区。
+ * 合并进 .req-resp-stack 后上下已无 gap，故不再用负 margin「骗」位置——
+ * 负 margin 会让实际盒与视觉边界错位，出现「看着线在那里、拖动却没反应」。 */
+/* 两卡接缝处的分割条：它是请求区与响应区之间唯一的那条线，也是唯一拖拽热区。
+ * 高 1px = 线本身（不再额外占位），让「线」与「把手」是同一个像素行；
+ * 若给它独立高度，线就会被推离 Body 编辑器底边。
+ * 命中热区由 ::after 向上下外扩承担，不靠盒高。 */
 .rp-splitter {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 6px;
+  height: 1px;
   flex-shrink: 0;
-  margin: -10px 0 -6px;
+  margin: 0;
+  /* 静止时：这 1px 就是那条接缝线（走主题变量，双主题可见）。 */
+  background: var(--border-panel);
   cursor: row-resize;
   user-select: none;
   touch-action: none;
-  /* 无任何视觉元素：边界细线由响应面板顶边框承担 */
 }
-/* 命中热区外扩（上下各 +6/+8px，覆盖卡片底 padding 与工作区间隙这两段死区）：
- * 6px 的实际盒高太小，瞄准易脱靶——热区不碰两侧任何可交互元素 */
+/* 命中热区：以 1px 线为中心上下各扩 12px（合计 25px），
+ * 即使起点略偏也能抓中，直接解决「拖不动 / 拖错地方」。
+ * 本层必须完全透明——有任何背景都会变成第二条视觉线。 */
 .rp-splitter::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  top: -6px;
-  bottom: -8px;
+  top: -12px;
+  bottom: -12px;
+}
+/* 拖拽反馈层（严格单线）：
+ * ::after 已被透明热区占用，故用 ::before 承载「高亮」。
+ * 以自身（即真实分割线）为中心向上下各扩，让高亮线与真实线完全重合——
+ * 「高亮哪条线，拖的就是哪条线」。 */
+.rp-splitter::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  /* 默认 0 高：完全不可见，不引入第二条线 */
+  height: 0;
+  transform: translateY(-50%);
+  background: var(--accent);
+  opacity: 0;
+  border-radius: 1px;
+  transition:
+    height 0.15s ease,
+    opacity 0.15s ease;
+  pointer-events: none;
+}
+.rp-splitter:hover::before,
+.rp-splitter.dragging::before {
+  height: 3px;
+  opacity: 0.85;
+}
+/* 拖拽中更实、更明显（此时用户已明确进入调整状态） */
+.rp-splitter.dragging::before {
+  opacity: 1;
+}
+/* 仅在键盘聚焦时给描边：鼠标点击（含按下拖拽）不应留下「选中框」，
+ * 那会让人误以为拖出了什么选框。:focus-visible 在鼠标交互下本就不触发，
+ * 但 mousedown 里 preventDefault 后仍需显式排除，避免拖完残留。 */
+.rp-splitter:focus:not(:focus-visible) {
+  outline: none;
 }
 .rp-splitter:focus-visible {
   outline: 2px solid var(--focus-ring);
@@ -2690,5 +2776,44 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ---- 合并容器（.req-resp-stack）内的覆盖：必须排在所有基础规则之后 ----
+ * 目标：请求卡与响应卡拼成一张视觉整卡，接缝处只留一条线。
+ * 放在文件末尾而非上方：scoped CSS 同权重下后者胜，写在前面的规则会被
+ * .config-box / .response-hint / .response-zone 的基础 border 覆盖掉。
+ * （本条曾在文件中段插入，同样被后面的基础规则反超 → 两条线复发。） */
+.req-resp-stack > .config-box {
+  /* 外框由容器提供；卡片底边紧贴接缝线（线由设置行的 border-top 画）。 */
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  /* 设置行已移出，此处恢复常规内距，Body 编辑器不贴卡底。 */
+  padding-bottom: 10px;
+}
+.req-resp-stack .req-settings {
+  /* 接缝线由 .rp-splitter 自己承担（它就在 Body 编辑器正下方）。
+     设置行在它之下，不再画线，避免出现第二条。 */
+  border-top: none;
+}
+.req-resp-stack .response-zone,
+.req-resp-stack .response-hint {
+  /* 设置行已承担接缝线，响应侧不再重复画线（否则又是两条）。 */
+  border-top: none;
+}
+/* 子组件内部的类需用 :deep() 穿透——scoped 会把选择器编译成带本组件
+ * 属性选择器的形式（.req-resp-stack .rp[data-v-本组件]），而 .rp 元素带的是
+ * ResponsePanel 自己的 scope 属性，两者 hash 不同 → 规则永不匹配。
+ * （这一条曾被漏掉，导致响应卡自带上边框与合并容器的边框叠成两条线。） */
+.req-resp-stack :deep(.rp),
+.req-resp-stack :deep(.response-empty) {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+/* 未发送期占位低条：接缝线一条即可，其余表面交给容器 */
+.req-resp-stack .response-hint {
+  border-radius: 0;
 }
 </style>

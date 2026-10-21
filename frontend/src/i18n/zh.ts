@@ -332,7 +332,6 @@ export const zh = {
   'editor.notSent': '尚未发送请求',
   'editor.notSentHint': '点击发送按钮或按 Cmd + Enter (Ctrl + Enter) 获取响应结果',
   'editor.responseHint': '发送请求后，响应将显示在这里',
-  'editor.examples': '响应示例 ({n})',
   'editor.deleteExampleConfirm': '删除示例「{name}」？',
   'editor.deleteExample': '删除示例',
   'editor.empty': '从左侧选择接口开始编辑',
@@ -390,6 +389,7 @@ export const zh = {
   'response.tabBody': 'Body',
   'response.tabHeaders': 'Headers',
   'response.tabCookies': 'Cookies',
+  'response.tabExamples': '示例',
 
   'body.none': '无',
   'body.textPh': '纯文本内容',
