@@ -15,6 +15,7 @@ import { hasPendingUpdate, pendingUpdateVersion } from '../composables/useAutoUp
 import Brand from '../components/Brand.vue'
 import HeaderUpdateTag from '../components/HeaderUpdateTag.vue'
 import ProjectTabs from '../components/ProjectTabs.vue'
+import WindowControls from '../components/WindowControls.vue'
 import EndpointTree from '../components/EndpointTree.vue'
 import EnvironmentBar from '../components/EnvironmentBar.vue'
 import Icon from '../components/ui/Icon.vue'
@@ -22,6 +23,7 @@ import IconButton from '../components/ui/IconButton.vue'
 import Skeleton from '../components/ui/Skeleton.vue'
 import Menu, { type MenuItem } from '../components/ui/Menu.vue'
 import CreatePanel, { type CreateActionKey } from '../components/CreatePanel.vue'
+import CreateChoicePage from '../components/CreateChoicePage.vue'
 import Modal from '../components/ui/Modal.vue'
 import ShortcutsHelp from '../components/ShortcutsHelp.vue'
 import TabBar from '../components/TabBar.vue'
@@ -57,6 +59,11 @@ const curlFolderId = ref<string | null>(null)
 const showDocImport = ref(false)
 const showMockRules = ref(false)
 const showSettings = ref(false)
+
+/** 激活页签是「新建」伪页签 → 内容区渲染新建选择页（否则渲染接口编辑器）。 */
+const activeIsCreate = computed(
+  () => !!store.activeTabId && store.isCreateTab(store.activeTabId),
+)
 const showSync = ref(false)
 const showShortcuts = ref(false)
 
@@ -345,6 +352,23 @@ function onCreateSelect(key: CreateActionKey): void {
   else if (key === 'import-doc') showDocImport.value = true
 }
 
+/** 新建选择页动作：两个入口都消耗当前「新建」页签——
+ *  新建请求原地替换为接口页签；导入 cURL 先关页签再开对话框
+ *  （取消导入则停在相邻页签，+ 可再开新的选择页）。 */
+function onCreatePick(key: CreateActionKey): void {
+  if (key === 'new-request') store.openNewEndpointFromCreateTab()
+  else if (key === 'import-curl') {
+    onCreatePageClose()
+    openCurlImport(null)
+  }
+}
+
+/** 选择页 Esc：关掉当前「新建」页签（激活态自动落到相邻页签）。 */
+function onCreatePageClose(): void {
+  const id = store.activeTabId
+  if (id && store.isCreateTab(id)) store.closeTab(id)
+}
+
 const DOCS_ITEMS = computed<MenuItem[]>(() => [
   { key: 'import', label: t('workspace.importDocFile'), icon: 'upload' },
   { key: 'export', label: t('workspace.exportOpenapi'), icon: 'download' },
@@ -502,6 +526,7 @@ onBeforeUnmount(() => {
           </span>
         </div>
       </div>
+      <WindowControls />
     </div>
 
     <div class="workspace-body">
@@ -599,8 +624,14 @@ onBeforeUnmount(() => {
       <main class="rf-main">
         <TabBar
           v-if="store.openTabs.length"
+          @create="store.openCreateTab()"
         />
-        <EndpointEditor />
+        <CreateChoicePage
+          v-if="activeIsCreate"
+          @pick="onCreatePick"
+          @close="onCreatePageClose"
+        />
+        <EndpointEditor v-else />
       </main>
     </div>
 
@@ -767,6 +798,11 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   background: var(--rf-border);
   opacity: 0.55;
+}
+
+/* Windows 自绘窗口控制钮贴窗口右缘（抵消顶栏右内边距） */
+.top-bar :deep(.win-controls) {
+  margin-right: -12px;
 }
 
 .tb-inner-divider {

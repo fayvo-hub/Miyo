@@ -22,7 +22,8 @@ function makeStore() {
     project: { id: 'p1' },
     activeTabId: 't8' as string | null,
     draftOf: (id: string) => ({ method: 'GET', id }),
-    titleOf: (id: string) => `未命名接口 ${id}`,
+    titleOf: (id: string) => (id.startsWith('create:') ? '新建…' : `未命名接口 ${id}`),
+    isCreateTab: (id: string) => id.startsWith('create:'),
     isDirty: vi.fn((_id: string) => false),
     closeTab: vi.fn(),
     closeOtherTabs: vi.fn(),
@@ -87,12 +88,29 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     wrapper.unmount()
   })
 
-  it('点击「+」新建空请求（行为保持）', () => {
+  it('点击「+」上抛 create 事件（由父级在内容区打开新建选择页）', async () => {
     const wrapper = mountBar()
     document
       .querySelector<HTMLButtonElement>('.tab-add:not(.tab-more)')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(mocked.openNewEndpoint).toHaveBeenCalledWith(null)
+    await nextTick()
+    expect(wrapper.emitted('create')).toHaveLength(1)
+    // 不再直接建快捷请求：动作由选择页发起
+    expect(mocked.openNewEndpoint).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
+  it('「新建」伪页签：闪电图标 + 新建… 标题，无方法徽章', () => {
+    mocked.openTabs.push('create:c1')
+    const wrapper = mountBar()
+
+    const rows = document.querySelectorAll('.tab-scroll .tab')
+    expect(rows).toHaveLength(9)
+    const last = rows[8] as HTMLElement
+    expect(last.querySelector('.tab-spark')).toBeTruthy()
+    expect(last.querySelector('.method-tag')).toBeNull()
+    expect(last.querySelector('.tab-title')?.textContent).toBe('新建…')
+
     wrapper.unmount()
   })
 

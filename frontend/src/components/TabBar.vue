@@ -20,6 +20,11 @@ import Menu, { type MenuItem } from './ui/Menu.vue'
 import Popconfirm from './ui/Popconfirm.vue'
 import Tooltip from './ui/Tooltip.vue'
 
+const emit = defineEmits<{
+  /** 点「+」：由父级在内容区打开新建选择页（独立页面，对标 Apifox）。 */
+  create: []
+}>()
+
 const store = useWorkspaceStore()
 const locale = useLocaleStore()
 const t = locale.t
@@ -56,6 +61,7 @@ watch(
 const tabs = computed(() =>
   store.openTabs.map((id) => ({
     id,
+    create: store.isCreateTab(id),
     method: store.draftOf(id)?.method ?? 'GET',
     title: store.titleOf(id),
     dirty: store.isDirty(id),
@@ -203,7 +209,9 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
         @mousedown="onTabMouseDown($event, tab.id)"
         @keydown="onTabActivateKey($event, tab.id)"
       >
-        <span class="method-tag" :class="methodTone(tab.method)">{{ tab.method }}</span>
+        <!-- 「新建」伪页签：无方法徽章，闪电指代“待创建” -->
+        <span v-if="tab.create" class="tab-spark" aria-hidden="true"><Icon name="zap" :size="12" /></span>
+        <span v-else class="method-tag" :class="methodTone(tab.method)">{{ tab.method }}</span>
         <span class="tab-title" v-tooltip-overflow="tab.title">{{ tab.title }}</span>
         <span v-if="tab.dirty" class="tab-dirty" :title="t('tabbar.unsaved')"><Icon name="dot" :size="8" /></span>
         <Popconfirm
@@ -220,7 +228,7 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
           class="tab-add"
           type="button"
           :aria-label="t('tabbar.newRequest')"
-          @click="store.openNewEndpoint(null)"
+          @click="emit('create')"
         >
           <Icon name="plus" :size="15" />
         </button>
@@ -372,6 +380,13 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
   line-height: 1.2;
   padding: 3px 6px;
   border-radius: 999px;
+}
+
+/* 「新建」伪页签的闪电：主题色小图标 */
+.tab-spark {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--accent);
 }
 
 .tab-title {

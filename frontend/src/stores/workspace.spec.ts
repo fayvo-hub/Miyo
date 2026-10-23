@@ -630,3 +630,99 @@ describe('用例运行：URL 路径变量代入', () => {
     expect(backend.execCalls.at(-1)?.url).toContain('/users/{id}')
   })
 })
+
+describe('「新建」伪页签：+ 每次新开、选择不消耗、快照过滤', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useLocaleStore().setMode('zh')
+    backend.projects.length = 0
+    backend.endpointsByProject.clear()
+    backend.envsByProject.clear()
+    backend.setActive(null)
+    const a = makeProject('p-a', '项目A')
+    const b = makeProject('p-b', '项目B')
+    backend.projects.push(a, b)
+    backend.endpointsByProject.set('p-a', [makeEndpoint('ep-1', 'p-a', 'users')])
+    backend.endpointsByProject.set('p-b', [makeEndpoint('ep-2', 'p-b', 'orders')])
+    backend.envsByProject.set('p-a', [])
+    backend.envsByProject.set('p-b', [])
+  })
+
+  it('openCreateTab：每次 + 新开一枚伪页签并激活（回归：单例浮层时再点 + 是死按钮）', () => {
+    const store = useWorkspaceStore()
+
+    store.openCreateTab()
+    const first = store.activeTabId!
+    expect(store.isCreateTab(first)).toBe(true)
+    expect(store.openTabs).toEqual([first])
+
+    // 未选择再点 +：再开一枚，而不是毫无反应
+    store.openCreateTab()
+    expect(store.openTabs).toHaveLength(2)
+    expect(store.activeTabId).not.toBe(first)
+
+    // 伪页签：无草稿、不判脏、标题「新建…」
+    expect(store.draftOf(store.activeTabId!)).toBeNull()
+    expect(store.isDirty(store.activeTabId!)).toBe(false)
+    expect(store.titleOf(store.activeTabId!)).toBe('新建…')
+  })
+
+  it('选择「新建 HTTP 请求」：伪页签原地替换为新接口页签（不是旁边多一枚）', async () => {
+    backend.setActive('p-a')
+    const store = useWorkspaceStore()
+    await store.init()
+    store.openEndpoint(store.endpoints[0]!)
+
+    store.openCreateTab()
+    const createId = store.activeTabId!
+    expect(store.openTabs).toEqual(['ep-1', createId])
+
+    // 页面上点「新建 HTTP 请求」→ 当前「新建」页签被替换成新接口页签
+    store.openNewEndpointFromCreateTab()
+    expect(store.openTabs).toHaveLength(2)
+    expect(store.openTabs).not.toContain(createId)
+    expect(store.isCreateTab(store.activeTabId!)).toBe(false)
+    expect(store.activeTabId).not.toBe('ep-1')
+    // 原地替换：新接口页签占据原「新建」页签的位置（栏位顺序不变）
+    expect(store.openTabs).toEqual(['ep-1', store.activeTabId])
+    expect(store.titleOf(store.activeTabId!)).toBe('未命名接口')
+  })
+
+  it('closeTab 关闭「新建」页签：激活态回退相邻页签', async () => {
+    backend.setActive('p-a')
+    const store = useWorkspaceStore()
+    await store.init()
+    store.openEndpoint(store.endpoints[0]!)
+    expect(store.activeTabId).toBe('ep-1')
+
+    store.openCreateTab()
+    const createId = store.activeTabId!
+    store.closeTab(createId)
+    expect(store.openTabs).toEqual(['ep-1'])
+    expect(store.activeTabId).toBe('ep-1')
+  })
+
+  it('快照过滤：切项目再切回，「新建」页签不复活、激活态不指向伪页签', async () => {
+    backend.setActive('p-a')
+    const store = useWorkspaceStore()
+    await store.init()
+
+    store.openCreateTab()
+    await store.switchProject('p-b')
+    expect(store.openTabs.every((id) => !store.isCreateTab(id))).toBe(true)
+
+    await store.switchProject('p-a')
+    expect(store.openTabs.every((id) => !store.isCreateTab(id))).toBe(true)
+    expect(store.activeTabId === null || !store.isCreateTab(store.activeTabId)).toBe(true)
+  })
+
+  it('刷新校验豁免：endpoints 列表刷新不清掉「新建」页签', async () => {
+    backend.setActive('p-a')
+    const store = useWorkspaceStore()
+    await store.init()
+
+    store.openCreateTab()
+    await store.refresh()
+    expect(store.openTabs.some((id) => store.isCreateTab(id))).toBe(true)
+  })
+})

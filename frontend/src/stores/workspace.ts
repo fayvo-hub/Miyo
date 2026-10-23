@@ -276,8 +276,19 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
   const draftOf = (id: string): Endpoint | null => drafts.value.get(id) ?? null
 
-  /** 标签页标题：草稿名 > 保存名 > method+path。 */
+  /** 「新建」选择页伪页签：无 draft、不持久化（快照/刷新校验均豁免），
+   *  激活时内容区渲染新建选择页。每次「+」新开一枚（对标 Apifox 多枚「新建…」并存）。 */
+  const isCreateTab = (id: string): boolean => id.startsWith('create:')
+
+  function openCreateTab(): void {
+    const id = `create:${crypto.randomUUID()}`
+    openTabs.value.push(id)
+    activeTabId.value = id
+  }
+
+  /** 标签页标题：新建伪页签 > 草稿名 > 保存名 > method+path。 */
   const titleOf = (id: string): string => {
+    if (isCreateTab(id)) return t('tabbar.createTab')
     const d = drafts.value.get(id)
     if (d?.name) return d.name
     if (d) return `${d.method} ${d.path}`
@@ -344,7 +355,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     endpoints.value = e
     const valid = new Set(e.map((x) => x.id))
     for (const id of [...openTabs.value]) {
-      if (!valid.has(id)) closeTab(id)
+      // 「新建」伪页签不对应接口，豁免校验（否则每次刷新都被清掉）
+      if (!valid.has(id) && !isCreateTab(id)) closeTab(id)
     }
     await loadEnvironments()
   }
@@ -415,9 +427,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       environments: environments.value,
       activeEnvId: activeEnvId.value,
       sessionBaseUrl: sessionBaseUrl.value,
-      openTabs: openTabs.value,
+      // 「新建」伪页签是临时 UI 态，不入快照（切项目回来不复活）
+      openTabs: openTabs.value.filter((id) => !isCreateTab(id)),
       drafts: drafts.value,
-      activeTabId: activeTabId.value,
+      activeTabId:
+        activeTabId.value && !isCreateTab(activeTabId.value) ? activeTabId.value : null,
       activeView: activeView.value,
       examples: examples.value,
       requestExamples: requestExamples.value,
@@ -467,9 +481,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       environments.value = snap.environments
       activeEnvId.value = snap.activeEnvId
       sessionBaseUrl.value = snap.sessionBaseUrl
-      openTabs.value = snap.openTabs
+      // 兜底过滤：旧快照若混入「新建」伪页签，恢复时剥掉
+      openTabs.value = snap.openTabs.filter((id) => !isCreateTab(id))
       drafts.value = snap.drafts
-      activeTabId.value = snap.activeTabId
+      activeTabId.value =
+        snap.activeTabId && !isCreateTab(snap.activeTabId) ? snap.activeTabId : null
       activeView.value = snap.activeView
       examples.value = snap.examples
       requestExamples.value = snap.requestExamples
@@ -1015,8 +1031,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     }
   }
 
-  /** 打开「新建接口」草稿标签页（未持久化，保存时生成 id）；默认标题「未命名接口」，创建后自动聚焦全选便于输入。 */
-  function openNewEndpoint(folderId: string | null): void {
+  /** 生成「未命名接口」空草稿（未持久化，保存时生成落库）：只建草稿，不动页签。 */
+  function createBlankDraft(folderId: string | null): string {
     const now = new Date().toISOString()
     const blank: Endpoint = {
       id: crypto.randomUUID(),
@@ -1034,8 +1050,36 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     }
     drafts.value.set(blank.id, blank)
     pristineBaselines.set(blank.id, deepClone(blank))
-    if (!openTabs.value.includes(blank.id)) openTabs.value.push(blank.id)
-    activeTabId.value = blank.id
+    return blank.id
+  }
+
+  /** 打开「新建接口」草稿标签页；默认标题「未命名接口」，创建后自动聚焦全选便于输入。
+   *  返回新草稿 id。 */
+  function openNewEndpoint(folderId: string | null): string {
+    const id = createBlankDraft(folderId)
+    if (!openTabs.value.includes(id)) openTabs.value.push(id)
+    activeTabId.value = id
+    focusTitle()
+    return id
+  }
+
+  /** 从「新建」伪页签发起新建请求：伪页签**原地替换**为新接口页签（当前页面被替换，
+   *  而不是旁边多一枚、「新建」还留着——用户实测报错的交互）。
+   *  激活态不是伪页签时退化为普通 openNewEndpoint（追加）。 */
+  function openNewEndpointFromCreateTab(): void {
+    const createId = activeTabId.value
+    const endpointId = createBlankDraft(null)
+    if (createId && isCreateTab(createId)) {
+      const idx = openTabs.value.indexOf(createId)
+      if (idx !== -1) {
+        openTabs.value.splice(idx, 1, endpointId)
+        activeTabId.value = endpointId
+        focusTitle()
+        return
+      }
+    }
+    if (!openTabs.value.includes(endpointId)) openTabs.value.push(endpointId)
+    activeTabId.value = endpointId
     focusTitle()
   }
 
@@ -2018,6 +2062,9 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     closeProjectTab,
     openEndpoint,
     openNewEndpoint,
+    openNewEndpointFromCreateTab,
+    openCreateTab,
+    isCreateTab,
     focusTitleSignal,
     setDraft,
     closeTab,
