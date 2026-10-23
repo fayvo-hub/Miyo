@@ -59,7 +59,7 @@ impl ControlClient {
             }
         }
         Err(AppError::Connection(
-            "未发现运行中的 RustFox Agent 控制面（端口文件或 127.0.0.1:4110~4129）。请先启动 RustFox 桌面应用。"
+            "未发现运行中的 Miyo Agent 控制面（端口文件或 127.0.0.1:4110~4129）。请先启动 Miyo 桌面应用。"
                 .into(),
         ))
     }
@@ -176,7 +176,7 @@ async fn decode<T: serde::de::DeserializeOwned>(res: reqwest::Response) -> Resul
         .map_err(|e| AppError::Validation(format!("响应解析失败：{e}")))
 }
 
-/// 默认数据目录（与 fox-storage 一致：debug 构建 → RustFox-dev）。
+/// 默认数据目录（与 fox-storage 一致：debug 构建 → Miyo-dev）。
 pub fn default_data_dir() -> std::path::PathBuf {
     fox_storage::db::data_dir()
 }

@@ -2,7 +2,7 @@
 /**
  * ProjectList：仪表板视图（Dashboard）。
  *
- * - 顶部栏：RustFox 品牌 + 设置（无重复搜索框）；
+ * - 顶部栏：Miyo 品牌 + 设置（无重复搜索框）；
  * - 左侧导航：DashboardNav 组件；
  * - 摘要区：总 API 数 + 最近修改项目 + 快速请求入口；
  * - 工具栏：名称过滤 + 视图切换（网格/列表）+ 排序（最近修改/名称/API数量）+ 新建项目；
@@ -490,7 +490,7 @@ useWindowDrag(topBarEl)
         <span class="top-logo" aria-hidden="true">
           <img :src="logo" alt="" width="18" height="18" />
         </span>
-        <span class="top-title">RustFox</span>
+        <span class="top-title">Miyo</span>
         <span class="top-tag">{{ t('app.tagline') }}</span>
       </button>
       <ProjectTabs class="top-tabs" @new-project="showCreate = true" />

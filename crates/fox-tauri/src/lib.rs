@@ -15,7 +15,7 @@
 //! ```
 //!
 //! 插件初始化流程：
-//! 1. 打开 / 创建 `{data_dir}/RustFox/rustfox.db` 并执行迁移（`fox_storage::db::init_db`）；
+//! 1. 打开 / 创建 `{data_dir}/Miyo/rustfox.db` 并执行迁移（`fox_storage::db::init_db`）；
 //! 2. `app.manage(AppState)` 托管全局状态（连接池 + `tokio::sync::RwLock` 激活上下文）；
 //! 3. 注册全部 Command（见下方 [`commands`]）。
 //!
@@ -113,7 +113,7 @@ pub mod plugin {
                             );
                             rfd::MessageDialog::new()
                                 .set_level(rfd::MessageLevel::Error)
-                                .set_title("RustFox 启动失败")
+                                .set_title("Miyo 启动失败")
                                 .set_description(&msg)
                                 .show();
                             return Err(CommandError::from(e).into());

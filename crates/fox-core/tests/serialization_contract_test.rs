@@ -49,7 +49,7 @@ fn kv(key: &str, value: &str) -> KeyValue {
 fn request_spec() -> RequestSpec {
     RequestSpec {
         params: vec![kv("page", "1")],
-        headers: vec![kv("X-Client", "RustFox")],
+        headers: vec![kv("X-Client", "Miyo")],
         path_variables: vec![kv("id", "1")],
         auth: AuthSpec::ApiKey {
             key: "X-Key".into(),
@@ -236,7 +236,7 @@ fn ipc_models_serialize_snake_case_keys() {
         "GlobalParam",
         &GlobalParam {
             key: "X-Client".into(),
-            value: "RustFox".into(),
+            value: "Miyo".into(),
             enabled: true,
             location: GlobalParamLocation::Header,
         },

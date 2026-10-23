@@ -1,6 +1,6 @@
 # 版本升级与发版流程
 
-RustFox 发版分两步：把版本号从 `X.Y.Z` 升到 `X.Y.(Z+1)`，再用 `vX.Y.(Z+1)` tag 触发 GitHub Actions 产出各平台安装包与 updater 清单。
+Miyo 发版分两步：把版本号从 `X.Y.Z` 升到 `X.Y.(Z+1)`，再用 `vX.Y.(Z+1)` tag 触发 GitHub Actions 产出各平台安装包与 updater 清单。
 
 > **推荐用发版助手脚本**（零依赖，Node ≥ 20）：`scripts/release.mjs`。
 

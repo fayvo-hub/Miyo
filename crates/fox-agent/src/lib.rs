@@ -1,7 +1,7 @@
 //! # fox-agent：Agent 控制面
 //!
 //! 在本机回环地址暴露带令牌鉴权的 HTTP API，让 AI Agent（Claude / Cursor /
-//! 任意能发 HTTP 的工具）把 cURL 命令保存为 RustFox 接口，无需人工粘贴。
+//! 任意能发 HTTP 的工具）把 cURL 命令保存为 Miyo 接口，无需人工粘贴。
 //!
 //! ## 设计要点
 //!

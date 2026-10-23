@@ -1,9 +1,9 @@
 ---
 name: push
-description: 推送 RustFox 代码到远程：按 CI 同款门禁预检（cargo fmt/check/clippy/test、fox-tauri、前端 lint/test/build），主题化提交后推送并监控 CI 直到绿。当用户说「推送」「push」「提交推送」「推代码」时使用。仅用于本仓库（weihubeats/RustFox）。
+description: 推送 Miyo 代码到远程：按 CI 同款门禁预检（cargo fmt/check/clippy/test、fox-tauri、前端 lint/test/build），主题化提交后推送并监控 CI 直到绿。当用户说「推送」「push」「提交推送」「推代码」时使用。仅用于本仓库（weihubeats/RustFox）。
 ---
 
-# RustFox 推送流程
+# Miyo 推送流程
 
 用户说「推送」（可带范围：`推送 前端`、`推送 全部`；缺省全部未提交改动）时执行本流程。
 目标：**本地跑过 = CI 绿**，杜绝「推送后 CI 挂了再补一刀」。

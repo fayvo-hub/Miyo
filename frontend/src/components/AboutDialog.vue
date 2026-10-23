@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * AboutDialog：自定义「关于 RustFox」弹窗（替代系统默认 About 面板）。
+ * AboutDialog：自定义「关于 Miyo」弹窗（替代系统默认 About 面板）。
  * - 品牌 logo（狐狸图标 + 渐变底 + 柔和投影）；
  * - 名称 / 版本 / 副标题 + GitHub / 检查更新链接 + 版权行；
  * - 检查更新（tauri-plugin-updater）：发现新版本 → 展示版本号与更新说明 →
  *   下载（带进度）→ 安装 → 重启（tauri-plugin-process relaunch）。
- * 触发来源：macOS 原生菜单「About RustFox」→ rustfox://about 事件 → App.vue 打开。
+ * 触发来源：macOS 原生菜单「About Miyo」→ rustfox://about 事件 → App.vue 打开。
  */
 import { check, type Update } from '@tauri-apps/plugin-updater'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -168,7 +168,7 @@ function skipVersion(): void {
         <img :src="logo" alt="" width="38" height="38" />
       </div>
 
-      <div class="a-title">RustFox</div>
+      <div class="a-title">Miyo</div>
       <div class="a-version">v{{ version }}</div>
       <div class="a-subtitle">{{ t('about.subtitle') }}</div>
 

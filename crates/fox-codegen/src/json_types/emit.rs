@@ -207,7 +207,7 @@ fn go_tag(key: &str) -> String {
 // ---------- 渲染 ----------
 
 pub(crate) fn emit_rust(model: &ResolvedModel) -> String {
-    let mut out = String::from("// 由 RustFox 自动生成，请勿手改。\n\n");
+    let mut out = String::from("// 由 Miyo 自动生成，请勿手改。\n\n");
     for record in &model.records {
         out.push_str("#[derive(Debug, Serialize, Deserialize)]\n");
         out.push_str(&format!("pub struct {} {{\n", record.preferred));
@@ -227,7 +227,7 @@ pub(crate) fn emit_rust(model: &ResolvedModel) -> String {
 }
 
 pub(crate) fn emit_java(model: &ResolvedModel) -> String {
-    let mut out = String::from("// 由 RustFox 自动生成，请勿手改。\n\n");
+    let mut out = String::from("// 由 Miyo 自动生成，请勿手改。\n\n");
     out.push_str("import com.fasterxml.jackson.annotation.JsonProperty;\n");
     out.push_str("import java.util.List;\n");
     out.push_str("import lombok.Builder;\n");
@@ -248,7 +248,7 @@ pub(crate) fn emit_java(model: &ResolvedModel) -> String {
 }
 
 pub(crate) fn emit_go(model: &ResolvedModel) -> String {
-    let mut out = String::from("// 由 RustFox 自动生成，请勿手改。\n\n");
+    let mut out = String::from("// 由 Miyo 自动生成，请勿手改。\n\n");
     for record in &model.records {
         out.push_str(&format!("type {} struct {{\n", record.preferred));
         for field in &record.fields {

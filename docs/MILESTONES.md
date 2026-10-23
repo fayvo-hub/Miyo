@@ -1,4 +1,4 @@
-# RustFox 里程碑
+# Miyo 里程碑
 
 里程碑总览，详细进度记录见 [docs/PROGRESS.md](PROGRESS.md)，完整规范见 [docs/SPEC.md](SPEC.md)。
 

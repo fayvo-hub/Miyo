@@ -14,7 +14,7 @@ body:
     id: solution
     attributes:
       label: Proposed solution
-      description: How should RustFox behave?
+      description: How should Miyo behave?
     validations:
       required: true
   - type: textarea

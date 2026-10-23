@@ -21,7 +21,7 @@ function makeFixture(version = '0.0.8'): string {
   mkdirSync(confDir, { recursive: true })
   writeFileSync(
     path.join(confDir, 'tauri.conf.json'),
-    JSON.stringify({ productName: 'RustFox', version }, null, 2) + '\n',
+    JSON.stringify({ productName: 'Miyo', version }, null, 2) + '\n',
   )
   writeFileSync(
     path.join(root, 'frontend/package.json'),
@@ -82,7 +82,7 @@ describe('syncVersions / checkConsistency（临时目录往返）', () => {
 
     const conf = JSON.parse(readFileSync(path.join(root, VERSION_FILES.conf), 'utf8'))
     expect(conf.version).toBe('0.0.9')
-    expect(conf.productName).toBe('RustFox')
+    expect(conf.productName).toBe('Miyo')
 
     const pkg = JSON.parse(readFileSync(path.join(root, VERSION_FILES.pkg), 'utf8'))
     expect(pkg.version).toBe('0.0.9')

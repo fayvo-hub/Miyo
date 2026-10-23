@@ -246,7 +246,7 @@ export function useFoxApi() {
   const exportEnvironment = (environmentId: string, format: EnvExchangeFormat) =>
     run(() => call<ExportedEnv>('export_environment', { environmentId, format }))
 
-  /** 导入环境预览（不落库；自动识别 RustFox / Postman 格式，归属当前项目）。 */
+  /** 导入环境预览（不落库；自动识别 Miyo / Postman 格式，归属当前项目）。 */
   const importEnvironment = (text: string, projectId: string) =>
     run(() => call<ImportedEnv>('import_environment', { text, projectId }))
 

@@ -1,9 +1,9 @@
 ---
 name: release
-description: 发布 RustFox 新版本：升级版本号、提交推送、打 tag 触发多平台构建。当用户说「发布」「发版」「release」「打个 tag」「升级版本发布」时使用。仅用于本仓库（weihubeats/RustFox）的发版流程。
+description: 发布 Miyo 新版本：升级版本号、提交推送、打 tag 触发多平台构建。当用户说「发布」「发版」「release」「打个 tag」「升级版本发布」时使用。仅用于本仓库（weihubeats/RustFox）的发版流程。
 ---
 
-# RustFox 发布流程
+# Miyo 发布流程
 
 用户说「发布」（可带版本参数：`发布 minor`、`发布 0.1.0`；缺省 patch）时执行以下流程。
 

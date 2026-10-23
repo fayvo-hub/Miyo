@@ -2,7 +2,7 @@
 
 **Language / 语言**：[简体中文](../AGENT.md) · English
 
-RustFox ships with a built-in **Agent control plane**: when the desktop app starts it also starts a local HTTP service (loopback only, `127.0.0.1`) so AI agents can save cURL commands straight into RustFox as endpoints, and query projects and endpoints.
+Miyo ships with a built-in **Agent control plane**: when the desktop app starts it also starts a local HTTP service (loopback only, `127.0.0.1`) so AI agents can save cURL commands straight into Miyo as endpoints, and query projects and endpoints.
 
 Two integration options:
 
@@ -22,7 +22,7 @@ AI Agent ──(HTTP + Bearer token)────────┘         │
                                              SQLite → UI refreshes live
 ```
 
-- The control plane **starts automatically with the RustFox desktop app**; nothing to enable manually.
+- The control plane **starts automatically with the Miyo desktop app**; nothing to enable manually.
 - The port auto-probes from `4110` (avoiding the Mock range around 4010).
 - Every request must carry a token: `Authorization: Bearer <token>` or `X-Agent-Token`.
 
@@ -32,12 +32,12 @@ The token is the control-plane credential, generated automatically on first app 
 
 - File location: `{data dir}/agent-token` (permissions 0600)
 - Data directory:
-  - Windows: `%APPDATA%\RustFox\agent-token`
-  - Linux: `~/.local/share/RustFox/agent-token`
+  - Windows: `%APPDATA%\Miyo\agent-token`
+  - Linux: `~/.local/share/Miyo/agent-token`
 - You can also confirm it in-app: open DevTools Console and run
   `await __TAURI_INTERNALS__.invoke('plugin:fox|agent_status')` to see `tokenPath`.
 
-> Development builds (`tauri dev`) use the `RustFox-dev` directory, isolated from the release install.
+> Development builds (`tauri dev`) use the `Miyo-dev` directory, isolated from the release install.
 
 ## 3. Option one: MCP server
 
@@ -47,8 +47,8 @@ The token is the control-plane credential, generated automatically on first app 
 
 | Platform / install | Path |
 | --- | --- |
-| macOS (/Applications install) | `/Applications/RustFox.app/Contents/MacOS/rustfox-mcp` |
-| Windows (NSIS default) | `C:\Program Files\RustFox\rustfox-mcp.exe` |
+| macOS (/Applications install) | `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` |
+| Windows (NSIS default) | `C:\Program Files\Miyo\rustfox-mcp.exe` |
 | Linux (.deb) | `/usr/bin/rustfox-mcp` (already on PATH — configure as `rustfox-mcp`) |
 | Linux (.AppImage) | `rustfox-mcp` inside the mounted image |
 | Dev mode (tauri dev) | `frontend/src-tauri/binaries/rustfox-mcp-<triple>` in the repo |
@@ -58,7 +58,7 @@ The token is the control-plane credential, generated automatically on first app 
 
 ```bash
 git clone https://github.com/weihubeats/RustFox.git
-cd RustFox && cargo build --release -p fox-mcp
+cd Miyo && cargo build --release -p fox-mcp
 # Output: target/release/rustfox-mcp
 sudo cp target/release/rustfox-mcp /usr/local/bin/   # optional: put on PATH
 ```
@@ -73,7 +73,7 @@ For v0.0.10+ installs the binary is **not on PATH** — prefer the absolute path
 ```json
 {
   "mcpServers": {
-    "rustfox": { "command": "/Applications/RustFox.app/Contents/MacOS/rustfox-mcp" }
+    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
   }
 }
 ```
@@ -84,7 +84,7 @@ In dev mode (tauri dev), or once on PATH:
 { "command": "rustfox-mcp" }
 ```
 
-**Cursor** — Settings → MCP → Add Server; set Command to the absolute path `/Applications/RustFox.app/Contents/MacOS/rustfox-mcp` (macOS) or your platform's path.
+**Cursor** — Settings → MCP → Add Server; set Command to the absolute path `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` (macOS) or your platform's path.
 
 Restart the client / reload the session; when the tool list shows 4 tools you're done:
 
@@ -95,7 +95,7 @@ Restart the client / reload the session; when the tool list shows 4 tools you're
 | `list_endpoints` | List endpoints of a project (needs projectId) |
 | `agent_info` | Control-plane address and token path |
 
-Then just say "save this curl to RustFox" in chat; on success the desktop sidebar refreshes live and shows a toast.
+Then just say "save this curl to Miyo" in chat; on success the desktop sidebar refreshes live and shows a toast.
 
 ### 3.3 save_curl parameters
 
@@ -117,7 +117,7 @@ Import behavior:
 **① One-liner import from an existing cURL** (Claude Code / Cursor):
 
 ```
-Save this curl to RustFox:
+Save this curl to Miyo:
 curl -X POST https://api.example.com/orders \
   -H "Content-Type: application/json" \
   -d '{"userId":1,"amount":99}'
@@ -126,7 +126,7 @@ curl -X POST https://api.example.com/orders \
 **② Save an endpoint straight from Java code**: paste the Controller code (or select the method in Cursor) and the AI builds the cURL and calls `save_curl`:
 
 ```
-Save this endpoint to RustFox:
+Save this endpoint to Miyo:
 @PostMapping("/orders")
 public Result<Long> createOrder(@RequestBody CreateOrderReq req) {
     return orderService.create(req);
@@ -156,7 +156,7 @@ For custom scripts or agents without MCP support.
 Example:
 
 ```bash
-TOKEN=$(cat "$HOME/Library/Application Support/RustFox/agent-token")
+TOKEN=$(cat "$HOME/Library/Application Support/Miyo/agent-token")
 curl -s http://127.0.0.1:4110/agent/curl \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -178,7 +178,7 @@ Errors are always `{code, message}`: `VALIDATION`(400) / `NOT_FOUND`(404) / `UNA
 | Symptom | Fix |
 | --- | --- |
 | `spawn rustfox-mcp ENOENT` | Binary not on PATH: for v0.0.10+ use the absolute path from §3.1, or build the old way and put it on PATH |
-| `rustfox-mcp` says "no running control plane" | Start the RustFox desktop app first; make sure the local loopback 4110~4129 is not blocked by a firewall |
+| `rustfox-mcp` says "no running control plane" | Start the Miyo desktop app first; make sure the local loopback 4110~4129 is not blocked by a firewall |
 | 401 UNAUTHORIZED | The token file belongs to a different install (e.g. mixing dev/release directories); delete `agent-token` and restart the app, then reconfigure |
 | VALIDATION with multiple projects | Have the agent call `list_projects` first and retry with a projectId |
 | MCP tool list missing | Check `.mcp.json` syntax and the execute permission on rustfox-mcp (`chmod +x`); check the client's MCP logs |

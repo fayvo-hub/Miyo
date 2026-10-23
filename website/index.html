@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RustFox — Lightweight cross-platform API client</title>
+<title>Miyo — Lightweight cross-platform API client</title>
 <meta name="description" content="A ~10 MB lightweight cross-platform API debugging client. Requests, mock server, automated testing and load testing in one installer. Local-first — your data stays yours.">
 <link rel="canonical" href="https://weihubeats.github.io/RustFox/">
 <link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/">
@@ -11,26 +11,26 @@
 <link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/">
 <meta name="theme-color" content="#0d1117">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="RustFox">
+<meta property="og:site_name" content="Miyo">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://weihubeats.github.io/RustFox/">
-<meta property="og:title" content="RustFox — Lightweight cross-platform API client">
+<meta property="og:title" content="Miyo — Lightweight cross-platform API client">
 <meta property="og:description" content="A ~10 MB lightweight cross-platform API debugging client. Requests, mock, testing and load testing in one installer.">
 <meta property="og:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
 <meta property="og:image:width" content="2880">
 <meta property="og:image:height" content="1600">
-<meta property="og:image:alt" content="RustFox — lightweight cross-platform API client">
+<meta property="og:image:alt" content="Miyo — lightweight cross-platform API client">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="RustFox — Lightweight cross-platform API client">
+<meta name="twitter:title" content="Miyo — Lightweight cross-platform API client">
 <meta name="twitter:description" content="A ~10 MB lightweight cross-platform API client, one installer and ready to run.">
 <meta name="twitter:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
 <link rel="icon" type="image/png" href="./assets/favicon.png">
 <link rel="manifest" href="./manifest.json">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"RustFox","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"en","url":"https://weihubeats.github.io/RustFox/","screenshot":"https://weihubeats.github.io/RustFox/assets/home.png","featureList":["~10 MB installer","Requests & mock server","Automated testing & load testing","Realtime WebSocket / SSE debugging","Cookie management, undo & shortcuts","Local-first AES-256-GCM encrypted storage","AI Agent / MCP integration"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/RustFox/blob/main/LICENSE"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Miyo","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"en","url":"https://weihubeats.github.io/RustFox/","screenshot":"https://weihubeats.github.io/RustFox/assets/home.png","featureList":["~10 MB installer","Requests & mock server","Automated testing & load testing","Realtime WebSocket / SSE debugging","Cookie management, undo & shortcuts","Local-first AES-256-GCM encrypted storage","AI Agent / MCP integration"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/RustFox/blob/main/LICENSE"}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS says the app is damaged?","acceptedAnswer":{"@type":"Answer","text":"Not damaged — Gatekeeper blocks un-notarized apps. Run xattr -cr /Applications/RustFox.app then right-click → Open."}},{"@type":"Question","name":"Windows SmartScreen warning?","acceptedAnswer":{"@type":"Answer","text":"Click More info → Run anyway. The installer has no code-signing certificate yet — normal for open-source projects."}},{"@type":"Question","name":"Environment variables show garbled text?","acceptedAnswer":{"@type":"Answer","text":"The master.key in the data directory was lost, so values cannot be decrypted. Restore from a backup JSON (Settings → Restore)."}},{"@type":"Question","name":"MCP reports spawn ENOENT?","acceptedAnswer":{"@type":"Answer","text":"The binary is not on PATH. Since v0.0.10 use the absolute path bundled inside the installer (macOS: /Applications/RustFox.app/Contents/MacOS/rustfox-mcp)."}},{"@type":"Question","name":"dev build cannot see release data?","acceptedAnswer":{"@type":"Answer","text":"Expected — dev uses the RustFox-dev data directory. Export/import a backup JSON to move data between them."}},{"@type":"Question","name":"How do I report a bug?","acceptedAnswer":{"@type":"Answer","text":"Use the Feedback button in the top bar to generate a local diagnostic report and attach it to a GitHub Issue."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS says the app is damaged?","acceptedAnswer":{"@type":"Answer","text":"Not damaged — Gatekeeper blocks un-notarized apps. Run xattr -cr /Applications/Miyo.app then right-click → Open."}},{"@type":"Question","name":"Windows SmartScreen warning?","acceptedAnswer":{"@type":"Answer","text":"Click More info → Run anyway. The installer has no code-signing certificate yet — normal for open-source projects."}},{"@type":"Question","name":"Environment variables show garbled text?","acceptedAnswer":{"@type":"Answer","text":"The master.key in the data directory was lost, so values cannot be decrypted. Restore from a backup JSON (Settings → Restore)."}},{"@type":"Question","name":"MCP reports spawn ENOENT?","acceptedAnswer":{"@type":"Answer","text":"The binary is not on PATH. Since v0.0.10 use the absolute path bundled inside the installer (macOS: /Applications/Miyo.app/Contents/MacOS/rustfox-mcp)."}},{"@type":"Question","name":"dev build cannot see release data?","acceptedAnswer":{"@type":"Answer","text":"Expected — dev uses the Miyo-dev data directory. Export/import a backup JSON to move data between them."}},{"@type":"Question","name":"How do I report a bug?","acceptedAnswer":{"@type":"Answer","text":"Use the Feedback button in the top bar to generate a local diagnostic report and attach it to a GitHub Issue."}}]}
 </script>
 <style>
 :root {
@@ -173,7 +173,7 @@ footer a:hover { color: var(--text); }
 
 <nav>
   <div class="container nav-inner">
-    <a class="brand" href="#top"><img src="./assets/logo.png" alt=""> RustFox</a>
+    <a class="brand" href="#top"><img src="./assets/logo.png" alt=""> Miyo</a>
     <div class="nav-right">
       <div class="nav-links">
         <a href="#features">Features</a>
@@ -220,14 +220,14 @@ footer a:hover { color: var(--text); }
   <figure class="hero-shot">
     <picture>
       <source type="image/webp" srcset="./assets/api-home.webp">
-      <img src="./assets/api-home.png" alt="RustFox workspace — request editor with a mock 200 response" width="2880" height="1600">
+      <img src="./assets/api-home.png" alt="Miyo workspace — request editor with a mock 200 response" width="2880" height="1600">
     </picture>
   </figure>
 </header>
 
 <section id="stats">
   <div class="container">
-    <h2>Why RustFox?</h2>
+    <h2>Why Miyo?</h2>
     <p class="section-sub">20–40× lighter than Electron-based tools for the same workload.</p>
     <div class="stats">
       <div class="stat"><div class="num">~10 MB</div><div class="label">Installer size</div></div>
@@ -263,7 +263,7 @@ footer a:hover { color: var(--text); }
     <p class="section-sub">Numbers from official installers and local measurements — verify yourself.</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Dimension</th><th>RustFox</th><th>Postman</th><th>Bruno</th><th>Insomnia</th></tr></thead>
+        <thead><tr><th>Dimension</th><th>Miyo</th><th>Postman</th><th>Bruno</th><th>Insomnia</th></tr></thead>
         <tbody>
           <tr><td>Installer size</td><td class="hl">~10 MB (system WebView)</td><td>~310 MB (Electron)</td><td>~433 MB (Electron)</td><td>~200 MB (Electron)</td></tr>
           <tr><td>Cold start</td><td class="hl">&lt; 1 s</td><td>2–4 s</td><td>2–5 s</td><td>2–4 s</td></tr>
@@ -286,7 +286,7 @@ footer a:hover { color: var(--text); }
     </div>
     <div class="codeblock">{
   "mcpServers": {
-    "rustfox": { "command": "/Applications/RustFox.app/Contents/MacOS/rustfox-mcp" }
+    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
   }
 }</div>
   </div>
@@ -300,28 +300,28 @@ footer a:hover { color: var(--text); }
       <figure class="shot">
         <picture>
           <source type="image/webp" srcset="./assets/home.webp">
-          <img src="./assets/home.png" alt="RustFox dashboard" loading="lazy" width="2880" height="1600">
+          <img src="./assets/home.png" alt="Miyo dashboard" loading="lazy" width="2880" height="1600">
         </picture>
         <figcaption>Dashboard — welcome stats, recent activity, project cards, drag-and-drop import</figcaption>
       </figure>
       <figure class="shot">
         <picture>
           <source type="image/webp" srcset="./assets/api-home.webp">
-          <img src="./assets/api-home.png" alt="RustFox workspace" loading="lazy" width="2880" height="1600">
+          <img src="./assets/api-home.png" alt="Miyo workspace" loading="lazy" width="2880" height="1600">
         </picture>
         <figcaption>Workspace — request editing / syntax highlighting / mock / testing / load testing</figcaption>
       </figure>
       <figure class="shot">
         <picture>
           <source type="image/webp" srcset="./assets/graphql.webp">
-          <img src="./assets/graphql.png" alt="RustFox GraphQL workbench" loading="lazy" width="2880" height="1600">
+          <img src="./assets/graphql.png" alt="Miyo GraphQL workbench" loading="lazy" width="2880" height="1600">
         </picture>
         <figcaption>GraphQL workbench — Query / Variables / OperationName with data vs errors rendered per GraphQL semantics</figcaption>
       </figure>
       <figure class="shot">
         <picture>
           <source type="image/webp" srcset="./assets/realtime.webp">
-          <img src="./assets/realtime.png" alt="RustFox realtime debugging" loading="lazy" width="2880" height="1600">
+          <img src="./assets/realtime.png" alt="Miyo realtime debugging" loading="lazy" width="2880" height="1600">
         </picture>
         <figcaption>Realtime debugging — WebSocket / SSE frame log with Ping, auto-reconnect and pop-out window</figcaption>
       </figure>
@@ -334,11 +334,11 @@ footer a:hover { color: var(--text); }
     <h2>FAQ</h2>
     <p class="section-sub">More in the <a href="./docs/en/user-guide/#11-faq">user guide FAQ</a>.</p>
     <div class="faq">
-      <details open><summary>macOS says the app is "damaged"?</summary><p>It isn't — that's Gatekeeper blocking an un-notarized app. Move it to Applications, run <code>xattr -cr /Applications/RustFox.app</code>, then right-click → Open.</p></details>
+      <details open><summary>macOS says the app is "damaged"?</summary><p>It isn't — that's Gatekeeper blocking an un-notarized app. Move it to Applications, run <code>xattr -cr /Applications/Miyo.app</code>, then right-click → Open.</p></details>
       <details><summary>Windows SmartScreen warning?</summary><p>Click "More info → Run anyway". The installer has no code-signing certificate yet — normal for open-source apps.</p></details>
       <details><summary>Environment variables look garbled?</summary><p>The data-dir <code>master.key</code> was lost. Restore from a backup JSON (Settings → Restore).</p></details>
       <details><summary>MCP reports spawn ENOENT?</summary><p>The binary isn't on PATH. Since v0.0.10 use the absolute path inside the install bundle (see the agent section above), not a bare <code>rustfox-mcp</code>.</p></details>
-      <details><summary>Dev build can't see release data?</summary><p>Expected: dev builds use the isolated <code>RustFox-dev</code> directory. Move data via backup JSON.</p></details>
+      <details><summary>Dev build can't see release data?</summary><p>Expected: dev builds use the isolated <code>Miyo-dev</code> directory. Move data via backup JSON.</p></details>
       <details><summary>How do I report a problem?</summary><p>The top-bar "Feedback" button generates a local diagnostics report — attach it to a GitHub Issue.</p></details>
     </div>
   </div>
@@ -359,7 +359,7 @@ footer a:hover { color: var(--text); }
         <div class="os">🐧</div><h3>Linux</h3><p>.deb / .rpm / .AppImage</p>
       </a>
     </div>
-    <p class="note">macOS says "damaged"? Run <code>xattr -cr /Applications/RustFox.app</code> then right-click → Open. See the <a href="./docs/en/user-guide/#1-2-macos">user guide</a>.</p>
+    <p class="note">macOS says "damaged"? Run <code>xattr -cr /Applications/Miyo.app</code> then right-click → Open. See the <a href="./docs/en/user-guide/#1-2-macos">user guide</a>.</p>
   </div>
 </section>
 

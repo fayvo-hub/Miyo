@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# RustFox 打包脚本（Tauri 2 版：macOS / Linux / Windows）
+# Miyo 打包脚本（Tauri 2 版：macOS / Linux / Windows）
 #
 # 用法:
 #   scripts/package-tauri.sh            # 构建 + 打包当前平台（产物在 target/release/bundle/）
 #
 # 依赖:Node 22+（npm ci）、Rust stable（tauri CLI 经 npm 调用）
 # 产物（bundle 目录）:
-#   macOS:   RustFox.app / RustFox.dmg / RustFox-macos-*.zip
-#   Linux:   RustFox.deb / RustFox.AppImage
-#   Windows: RustFox.msi / RustFox-setup.exe
+#   macOS:   Miyo.app / Miyo.dmg / Miyo-macos-*.zip
+#   Linux:   Miyo.deb / Miyo.AppImage
+#   Windows: Miyo.msi / Miyo-setup.exe
 
 set -euo pipefail
 

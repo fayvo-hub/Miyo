@@ -1,4 +1,4 @@
-# RustFox
+# Miyo
 
 [![Release](https://img.shields.io/github/v/release/weihubeats/RustFox?include_prereleases&sort=semver)](https://github.com/weihubeats/RustFox/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/RustFox/ci.yml?branch=main)](https://github.com/weihubeats/RustFox/actions/workflows/ci.yml)
@@ -14,17 +14,17 @@
   Screenshots: docs/imags/home.png (dashboard), docs/imags/api-home.png (workspace).
   Replace the paths below after updating the screenshots.
 -->
-[![RustFox dashboard](docs/imags/home.png)](docs/imags/home.png)
+[![Miyo dashboard](docs/imags/home.png)](docs/imags/home.png)
 
-[![RustFox workspace](docs/imags/api-home.png)](docs/imags/api-home.png)
+[![Miyo workspace](docs/imags/api-home.png)](docs/imags/api-home.png)
 
-## Why RustFox?
+## Why Miyo?
 
 ### 🪶 10 MB, zero runtime dependencies
 
-Competing tools bundle an entire Chromium/Node.js runtime. RustFox is built with **Rust + Tauri 2 + the system WebView** — no bundled browser engine, no Node sandbox, no JRE. Install and go.
+Competing tools bundle an entire Chromium/Node.js runtime. Miyo is built with **Rust + Tauri 2 + the system WebView** — no bundled browser engine, no Node sandbox, no JRE. Install and go.
 
-| Dimension | RustFox | Postman | Bruno | Insomnia |
+| Dimension | Miyo | Postman | Bruno | Insomnia |
 | --- | --- | --- | --- | --- |
 | Installer size | **~10 MB** | ~310 MB (Electron) | ~433 MB (Electron) | ~200 MB (Electron) |
 | Cold start | **< 1 s** | 2–4 s | 2–5 s | 2–4 s |
@@ -92,31 +92,31 @@ Everything lives in a local `rustfox.db`; environment variable values are **AES-
 
 ## AI Agent integration
 
-RustFox ships with a built-in **Agent control plane** (started automatically with the app): a token-protected HTTP API on loopback that lets AI agents (Claude / Cursor / anything that can run commands) save cURL commands as endpoints — no manual copy-paste.
+Miyo ships with a built-in **Agent control plane** (started automatically with the app): a token-protected HTTP API on loopback that lets AI agents (Claude / Cursor / anything that can run commands) save cURL commands as endpoints — no manual copy-paste.
 
 Full guide (`rustfox-mcp` setup, client configuration, HTTP API reference, troubleshooting): **[docs/en/AGENT.md](docs/en/AGENT.md)**
 
 ### MCP server (recommended)
 
-> **Prerequisite**: MCP needs the `rustfox-mcp` binary. Installers since v0.0.10 bundle it, but it is not on PATH — use the absolute path inside the install (macOS: `/Applications/RustFox.app/Contents/MacOS/rustfox-mcp`).
+> **Prerequisite**: MCP needs the `rustfox-mcp` binary. Installers since v0.0.10 bundle it, but it is not on PATH — use the absolute path inside the install (macOS: `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`).
 
 For MCP-capable clients such as Claude Code, configure it once in the project `.mcp.json`:
 
 ```json
-{ "mcpServers": { "rustfox": { "command": "/Applications/RustFox.app/Contents/MacOS/rustfox-mcp" } } }
+{ "mcpServers": { "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" } } }
 ```
 
 > A bare `rustfox-mcp` works only if the binary is on PATH (Linux .deb install, or a `cargo build --release -p fox-mcp` copied into `/usr/local/bin`).
 
-Then just ask the AI to save endpoints into RustFox (paste cURL or source code):
+Then just ask the AI to save endpoints into Miyo (paste cURL or source code):
 
 ```
-Save this endpoint to RustFox:
+Save this endpoint to Miyo:
 @PostMapping("/orders")
 public Result<Long> createOrder(@RequestBody CreateOrderReq req) { ... }
 ```
 
-Afterwards, say "save this curl to RustFox" in chat. Four tools are provided:
+Afterwards, say "save this curl to Miyo" in chat. Four tools are provided:
 
 | Tool | Description |
 | --- | --- |
@@ -147,11 +147,11 @@ Grab the installer for your platform from [Releases](https://github.com/weihubea
 
 | Platform | Installer |
 | --- | --- |
-| Windows | `RustFox_*-x64-setup.exe` (NSIS; on SmartScreen pick "More info → Run anyway") |
-| macOS | `RustFox_*-aarch64.dmg` (Apple Silicon) / `RustFox_*-x64.dmg` (Intel) |
+| Windows | `Miyo_*-x64-setup.exe` (NSIS; on SmartScreen pick "More info → Run anyway") |
+| macOS | `Miyo_*-aarch64.dmg` (Apple Silicon) / `Miyo_*-x64.dmg` (Intel) |
 | Linux | `.deb` / `.rpm` / `.AppImage` |
 
-> **macOS: "developer can't be verified" on first launch?** The app is ad-hoc signed but not notarized (no paid Apple Developer cert) — right-click the app → Open to proceed. If an older installer instead says the app is "damaged", run `xattr -cr /Applications/RustFox.app` once. See the [user guide](docs/en/USER_GUIDE.md#12-macos).
+> **macOS: "developer can't be verified" on first launch?** The app is ad-hoc signed but not notarized (no paid Apple Developer cert) — right-click the app → Open to proceed. If an older installer instead says the app is "damaged", run `xattr -cr /Applications/Miyo.app` once. See the [user guide](docs/en/USER_GUIDE.md#12-macos).
 
 After installing, use "About → Check for Updates" in-app to upgrade (auto-update supported since v0.0.3).
 

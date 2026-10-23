@@ -1,4 +1,4 @@
-# RustFox Documentation (English)
+# Miyo Documentation (English)
 
 > Source of truth: `SPEC.md` is the frozen M0–M16 historical spec; post-migration
 > architecture lives in [ARCHITECTURE.md](ARCHITECTURE.md); version history is in the

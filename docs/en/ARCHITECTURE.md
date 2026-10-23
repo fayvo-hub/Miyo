@@ -1,4 +1,4 @@
-# RustFox Architecture
+# Miyo Architecture
 
 **Language / 语言**：[简体中文](../ARCHITECTURE.md) · English
 
@@ -8,7 +8,7 @@ wins — and please update this document.
 
 ## 1. Overview
 
-![RustFox system architecture](../imags/architecture.png)
+![Miyo system architecture](../imags/architecture.png)
 
 (Editable source: [imags/architecture.svg](../imags/architecture.svg))
 
@@ -129,16 +129,16 @@ components only reference tokens. Dark / light / follow-system themes are suppor
 
 ### Dashboard (/projects)
 
-![RustFox dashboard layout](../imags/home.png)
+![Miyo dashboard layout](../imags/home.png)
 
-- Top bar: RustFox brand + project tabs + settings.
+- Top bar: Miyo brand + project tabs + settings.
 - Left nav: Dashboard (current) / API Projects.
 - Main area: welcome & stat cards (projects / endpoints / recent activity / quick start),
   project filter and creation, project card grid (enter → `/workspace`), drag-and-drop import zone.
 
 ### Workspace (/workspace)
 
-![RustFox workspace layout](../imags/api-home.png)
+![Miyo workspace layout](../imags/api-home.png)
 
 - Top bar: brand / project tabs (with rename & delete menu) / environment pill selector / Mock status /
   docs & Mock dropdowns / GraphQL workbench / settings.
@@ -193,7 +193,7 @@ Auth panel "Authorize"
 
 | Item | Description |
 |---|---|
-| Database | `{data_dir}/RustFox/rustfox.db` (single SQLite file; SQLx migrations in `fox-storage/migrations/`) |
+| Database | `{data_dir}/Miyo/rustfox.db` (single SQLite file; SQLx migrations in `fox-storage/migrations/`) |
 | Encryption | Environment variable values are AES-256-GCM encrypted with the `master.key` file; the `DECRYPT` error code means key mismatch |
 | Backup | fox-backup exports JSON (with plaintext variables); restore remaps all IDs into a brand-new project |
 | Save semantics | Every save path with an id is an **upsert** (`INSERT … ON CONFLICT(id) DO UPDATE`) — renames/edits never hit primary-key conflicts |

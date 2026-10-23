@@ -70,7 +70,7 @@ impl BackupFile {
         let file: BackupFile = serde_json::from_value(value)
             .map_err(|e| AppError::Validation(format!("备份文件解析失败：{e}")))?;
         if file.format != FORMAT {
-            return Err(fox_core::validation("不是有效的 RustFox 备份文件"));
+            return Err(fox_core::validation("不是有效的 Miyo 备份文件"));
         }
         if file.schema_version > SCHEMA_VERSION {
             return Err(fox_core::validation(format!(

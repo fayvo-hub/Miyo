@@ -117,7 +117,7 @@ jobs:
         if: startsWith(matrix.name, 'macos')
         shell: bash
         run: |
-          APP="target/release/bundle/macos/RustFox.app"
+          APP="target/release/bundle/macos/Miyo.app"
           codesign --verify --deep --strict --verbose=2 "$APP"
           codesign -dv "$APP" 2>&1 | grep -q "Signature=adhoc"
 
@@ -125,11 +125,11 @@ jobs:
         if: startsWith(matrix.name, 'macos')
         shell: bash
         run: |
-          # arm/intel 两个构建的更新产物同名（RustFox.app.tar.gz），必须加架构后缀防覆盖
+          # arm/intel 两个构建的更新产物同名（Miyo.app.tar.gz），必须加架构后缀防覆盖
           ARCH="${{ matrix.name == 'macos-arm' && 'aarch64' || 'x64' }}"
           MAC_DIR="target/release/bundle/macos"
-          mv "$MAC_DIR/RustFox.app.tar.gz" "$MAC_DIR/RustFox_${RELEASE_TAG#v}_$ARCH.app.tar.gz"
-          mv "$MAC_DIR/RustFox.app.tar.gz.sig" "$MAC_DIR/RustFox_${RELEASE_TAG#v}_$ARCH.app.tar.gz.sig"
+          mv "$MAC_DIR/Miyo.app.tar.gz" "$MAC_DIR/Miyo_${RELEASE_TAG#v}_$ARCH.app.tar.gz"
+          mv "$MAC_DIR/Miyo.app.tar.gz.sig" "$MAC_DIR/Miyo_${RELEASE_TAG#v}_$ARCH.app.tar.gz.sig"
 
       - name: Upload artifacts (job)
         uses: actions/upload-artifact@v7
@@ -274,7 +274,7 @@ jobs:
             echo '- 首个正式发布版本' > changelog.md
           fi
           {
-            echo "### RustFox ${RELEASE_TAG#v} 更新内容"
+            echo "### Miyo ${RELEASE_TAG#v} 更新内容"
             echo
             cat changelog.md
             echo
@@ -282,10 +282,10 @@ jobs:
             echo
             echo '## 分发包（Tauri 2）'
             echo
-            echo '- **Windows**: `RustFox_x.x.x_x64-setup.exe`（NSIS 安装包）或 `RustFox_x.x.x_x64_en-US.msi`'
-            echo '- **macOS**: `RustFox_x.x.x_aarch64.dmg`（Apple Silicon）或 `RustFox_x.x.x_x64.dmg`（Intel）'
-            echo '  —— 未做 Apple 开发者签名/公证：首次打开若提示「无法验证开发者」，右键应用 → 打开即可（或执行 `xattr -cr /Applications/RustFox.app`），详见使用手册'
-            echo '- **Linux**: `rustfox_x.x.x_amd64.deb` 与 `.AppImage`'
+            echo '- **Windows**: `Miyo_x.x.x_x64-setup.exe`（NSIS 安装包）或 `Miyo_x.x.x_x64_en-US.msi`'
+            echo '- **macOS**: `Miyo_x.x.x_aarch64.dmg`（Apple Silicon）或 `Miyo_x.x.x_x64.dmg`（Intel）'
+            echo '  —— 未做 Apple 开发者签名/公证：首次打开若提示「无法验证开发者」，右键应用 → 打开即可（或执行 `xattr -cr /Applications/Miyo.app`），详见使用手册'
+            echo '- **Linux**: `Miyo_x.x.x_amd64.deb` 与 `.AppImage`'
             echo
             echo "使用手册：[docs/USER_GUIDE.md](https://github.com/\${GITHUB_REPOSITORY}/blob/\${RELEASE_TAG}/docs/USER_GUIDE.md)"
           } > release_body.md
@@ -295,7 +295,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
-          name: RustFox ${{ env.RELEASE_TAG }}
+          name: Miyo ${{ env.RELEASE_TAG }}
           body_path: release_body.md
           files: |
             artifacts/**

@@ -26,7 +26,7 @@ rust-version = "1.85"
 license = "Apache-2.0"
 repository = "https://github.com/weihubeats/RustFox"
 homepage = "https://weihubeats.github.io/RustFox/"
-description = "RustFox — lightweight cross-platform API debugging client (backend crates)"
+description = "Miyo — lightweight cross-platform API debugging client (backend crates)"
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

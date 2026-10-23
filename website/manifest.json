@@ -1,6 +1,6 @@
 {
-  "name": "RustFox — Lightweight cross-platform API client",
-  "short_name": "RustFox",
+  "name": "Miyo — Lightweight cross-platform API client",
+  "short_name": "Miyo",
   "description": "A ~10 MB lightweight cross-platform API debugging client. Requests, mock server, automated testing and load testing in one installer.",
   "start_url": "./",
   "display": "standalone",

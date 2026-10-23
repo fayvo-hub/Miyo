@@ -1,4 +1,4 @@
-# RustFox 架构
+# Miyo 架构
 
 **语言 / Language**：[简体中文](ARCHITECTURE.md) · [English](en/ARCHITECTURE.md)
 
@@ -7,7 +7,7 @@
 
 ## 1. 总览
 
-![RustFox 系统架构](imags/architecture.png)
+![Miyo 系统架构](imags/architecture.png)
 
 （可编辑源文件：[imags/architecture.svg](imags/architecture.svg)）
 
@@ -124,16 +124,16 @@ UI 规范：`src/style.css` 定义设计令牌（`--bg-* / --text-* / --accent: 
 
 ### 首页（/projects）
 
-![RustFox 首页布局](imags/home.png)
+![Miyo 首页布局](imags/home.png)
 
-- 顶栏：RustFox 品牌 + 项目标签条 + 设置。
+- 顶栏：Miyo 品牌 + 项目标签条 + 设置。
 - 左侧导航：仪表板（当前页）/ API 项目。
 - 主区：欢迎与统计卡（总项目数 / 总接口数 / 最近活动 / 快速开始）、项目过滤与新建、项目卡片列表
   （进入项目 → `/workspace`）、拖拽导入 Dropzone。
 
 ### 工作区（/workspace）
 
-![RustFox 工作区布局](imags/api-home.png)
+![Miyo 工作区布局](imags/api-home.png)
 
 - 顶栏：品牌 / 项目标签（含重命名、删除项目菜单）/ 环境切换（Pill 选择器）/ Mock 状态 /
   文档与 Mock 下拉 / GraphQL 工作台 / 设置。
@@ -187,7 +187,7 @@ Auth 面板「授权」
 
 | 项 | 说明 |
 |---|---|
-| 数据库 | `{data_dir}/RustFox/rustfox.db`（SQLite 单文件，SQLx 迁移脚本在 `fox-storage/migrations/`） |
+| 数据库 | `{data_dir}/Miyo/rustfox.db`（SQLite 单文件，SQLx 迁移脚本在 `fox-storage/migrations/`） |
 | 加密 | 环境变量值 AES-256-GCM，密钥文件 `master.key`；`DECRYPT` 错误码对应密钥不匹配 |
 | 备份 | fox-backup 导出 JSON（含明文变量）；恢复时 ID 全量重映射为全新项目 |
 | 保存语义 | 所有带 id 的保存路径为 **upsert**（`INSERT … ON CONFLICT(id) DO UPDATE`），重命名/编辑不会触发主键冲突 |

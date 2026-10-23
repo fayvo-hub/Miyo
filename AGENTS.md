@@ -1,6 +1,6 @@
 # AGENTS.md
 
-RustFox：Tauri 2 + Vue 3 的跨平台 API 调试工具（Rust 工作区 + 前端工作区 + 两个独立的 Tauri 工作区）。
+Miyo：Tauri 2 + Vue 3 的跨平台 API 调试工具（Rust 工作区 + 前端工作区 + 两个独立的 Tauri 工作区）。
 
 ## 技能（Skills）
 

@@ -1,4 +1,4 @@
-# RustFox Tauri 2.0 + Vue 3 迁移架构设计
+# Miyo Tauri 2.0 + Vue 3 迁移架构设计
 
 > 目标:将 UI 层从 Dioxus 0.5 迁移到 Tauri 2.0 + Vue 3 + TailwindCSS,
 > 保留全部 Rust 业务逻辑,实现「后端先行、前端逐步替换」的平滑迁移。

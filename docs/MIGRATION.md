@@ -1,12 +1,12 @@
-# 从 Apifox / Postman 迁移到 RustFox
+# 从 Apifox / Postman 迁移到 Miyo
 
 > 英文版见 [en/MIGRATION.md](en/MIGRATION.md)。
-> RustFox 以**开放格式**为迁移桥梁：只要源工具能导出 OpenAPI / Postman Collection，
+> Miyo 以**开放格式**为迁移桥梁：只要源工具能导出 OpenAPI / Postman Collection，
 > 就能整体搬入；搬不进来的（历史、登录态、 runner 配置）文末有手动对照。
 
 ## 1. 一览：什么能自动转，什么要手动
 
-| Apifox / Postman 概念 | RustFox 对应 | 方式 |
+| Apifox / Postman 概念 | Miyo 对应 | 方式 |
 | --- | --- | --- |
 | 接口 + 分组目录 | 接口 + 文件夹 | OpenAPI / Postman Collection 导入，自动建目录 |
 | 接口描述、参数、Body、响应示例 | 同名内容 | 导入自动带入 |
@@ -40,7 +40,7 @@
 ## 4. 环境与变量：对照填一行
 
 1. 新建环境，把 Apifox 的前置 URL 填入 base_url；
-2. 把 Apifox 环境变量逐个填入 RustFox 环境变量，写法不变（两边都是 `{{name}}`，
+2. 把 Apifox 环境变量逐个填入 Miyo 环境变量，写法不变（两边都是 `{{name}}`，
    优先级：环境 > 项目 > 全局）；
 3. 手头有 Postman Environment 文件可直接导入（环境管理弹窗底部），重名自动加后缀；
 4. 切换环境发送一条旧接口，确认域名与变量解析正确。
@@ -49,7 +49,7 @@
 
 - **认证**：Bearer Token / 用户名密码 / API Key 照抄到接口 Auth；
   OAuth2 在设置里重走授权；Cookie 登录态带不过来，重新登录一次即可回放。
-- **Mock**：Apifox 的 Mock 期望 → RustFox Mock 规则（方法 + 路径 + Header + Body
+- **Mock**：Apifox 的 Mock 期望 → Miyo Mock 规则（方法 + 路径 + Header + Body
   匹配，优先级高于响应示例）；简单固定响应可直接存为「响应示例」兜底。
 - **断言/后置操作**：Apifox 的「后置操作 → 提取变量」对应 `extract`，
   「断言」对应 `assertions`（状态码 / 响应体包含 / JSONPath / 耗时），

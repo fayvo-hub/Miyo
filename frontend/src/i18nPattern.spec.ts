@@ -62,7 +62,7 @@ const TEMPLATE_ALLOWLIST: Record<string, RegExp[]> = {}
  * 可译的 UI 词（Key / Value / Description / Body / Params / soon …）不在此列。
  */
 const EN_TERM_ALLOW =
-  /^(RustFox|Mock|Ping|Pong|Secure|HttpOnly|SameSite|Path|Domain|Expires|JSON|YAML|TOML|XML|HTML|CSV|Markdown \(\.md\)|GraphQL|Query|Mutation|Subscription|Variables|operationName|cURL|curl|TypeScript|JavaScript( \([^)]*\))?|Java|Python|Go|Shell|C#|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|SSE|WS|WSS|TLS|OK|Created|Accepted|No Content|Bad Request|Unauthorized|Forbidden|Not Found|Conflict|Gone|Too Many Requests|Internal Server Error|Bad Gateway|Service Unavailable)$/
+  /^(Miyo|Mock|Ping|Pong|Secure|HttpOnly|SameSite|Path|Domain|Expires|JSON|YAML|TOML|XML|HTML|CSV|Markdown \(\.md\)|GraphQL|Query|Mutation|Subscription|Variables|operationName|cURL|curl|TypeScript|JavaScript( \([^)]*\))?|Java|Python|Go|Shell|C#|GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|SSE|WS|WSS|TLS|OK|Created|Accepted|No Content|Bad Request|Unauthorized|Forbidden|Not Found|Conflict|Gone|Too Many Requests|Internal Server Error|Bad Gateway|Service Unavailable)$/
 
 /** 静态 placeholder 属性（:placeholder / v-bind: 绑定由负向后顾排除）。 */
 const PLACEHOLDER_ATTR = /(?<![:\w-])[\w-]*placeholder\s*=\s*(?:"([^"]*)"|'([^']*)')/g

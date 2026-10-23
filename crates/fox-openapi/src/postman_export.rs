@@ -212,7 +212,7 @@ pub fn export_postman(
     let collection = json!({
         "info": {
             "name": project_name,
-            "description": format!("{project_name} — 由 RustFox 导出"),
+            "description": format!("{project_name} — 由 Miyo 导出"),
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         },
         "item": items,

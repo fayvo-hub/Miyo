@@ -365,14 +365,14 @@ function onRowDblClick(env: Environment): void {
   })
 }
 
-// ---------- 环境导入导出（RustFox 原生 JSON / Postman Environment） ----------
+// ---------- 环境导入导出（Miyo 原生 JSON / Postman Environment） ----------
 // 导出格式收敛进「导出」按钮的下拉菜单（两种格式都完整展示，不再用角落里被挤到截断的下拉）；
-// 导入无需选格式：import_environment 自动识别 RustFox / Postman。
+// 导入无需选格式：import_environment 自动识别 Miyo / Postman。
 const exchanging = ref(false)
 
-/** 导出菜单项（RustFox JSON / Postman 为专有名词，两种语言显示原文）。 */
+/** 导出菜单项（Miyo JSON / Postman 为专有名词，两种语言显示原文）。 */
 const EXPORT_FORMAT_ITEMS: MenuItem[] = [
-  { key: 'rustfox_json', label: 'RustFox JSON', icon: 'file' },
+  { key: 'rustfox_json', label: 'Miyo JSON', icon: 'file' },
   { key: 'postman_json', label: 'Postman', icon: 'download' },
 ]
 
@@ -751,7 +751,7 @@ async function remove(env: Environment): Promise<void> {
           </div>
         </aside>
 
-        <!-- 导出格式菜单（RustFox JSON / Postman） -->
+        <!-- 导出格式菜单（Miyo JSON / Postman） -->
         <Menu ref="exportMenu" @select="onExportSelect" />
 
         <!-- ============ 右侧详情 ============ -->
@@ -1060,7 +1060,7 @@ async function remove(env: Environment): Promise<void> {
       </div>
       <div class="em-import-row">
         <span class="em-import-label">{{ t('envmgr.previewFormat') }}</span>
-        <span>{{ importPreview.format === 'postman' ? 'Postman' : 'RustFox' }}</span>
+        <span>{{ importPreview.format === 'postman' ? 'Postman' : 'Miyo' }}</span>
       </div>
       <div class="em-import-row">
         <span class="em-import-label">{{ t('envmgr.previewContent') }}</span>

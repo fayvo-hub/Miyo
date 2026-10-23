@@ -1,4 +1,4 @@
-# RustFox：基于 Rust 的 API 管理工具可执行开发文档
+# Miyo：基于 Rust 的 API 管理工具可执行开发文档
 
 > 本项目参考 Apifox 的产品形态，但不复制其名称、Logo、UI 资产、私有格式。
 > 目标是实现一个本地优先、单机可用的 API 管理工具，覆盖 API 设计、调试、Mock、测试、文档管理等核心能力。
@@ -19,7 +19,7 @@
 
 ## 0. 给 AI Coder 的强制执行指令
 
-你现在是一个 Rust 全栈工程师与架构师，需要按照本文档实现一个名为 `RustFox` 的 API 管理工具。
+你现在是一个 Rust 全栈工程师与架构师，需要按照本文档实现一个名为 `Miyo` 的 API 管理工具。
 
 ### 0.1 执行原则
 
@@ -54,14 +54,14 @@ docs/PROGRESS.md
 ### 1.1 产品名称
 
 ```text
-RustFox
+Miyo
 ```
 
 名称仅为临时名称，后续可替换。
 
 ### 1.2 产品定位
 
-RustFox 是一个本地优先的 API 管理工具，提供：
+Miyo 是一个本地优先的 API 管理工具，提供：
 
 1. API 接口管理
 2. API 文档管理
@@ -435,20 +435,20 @@ base64 = "0.23"
 数据库文件路径：
 
 ```text
-{SystemDataDir}/RustFox/rustfox.db
+{SystemDataDir}/Miyo/rustfox.db
 ```
 
 示例：
 
 ```text
 Linux:
-~/.local/share/RustFox/rustfox.db
+~/.local/share/Miyo/rustfox.db
 
 macOS:
-~/Library/Application Support/RustFox/rustfox.db
+~/Library/Application Support/Miyo/rustfox.db
 
 Windows:
-C:\Users\{User}\AppData\Roaming\RustFox\rustfox.db
+C:\Users\{User}\AppData\Roaming\Miyo\rustfox.db
 ```
 
 ---
@@ -977,7 +977,7 @@ Swagger 2.0
 
 ### 15.2 导入映射
 
-| OpenAPI | RustFox |
+| OpenAPI | Miyo |
 |---|---|
 | info.title | 项目名称或导入目录名 |
 | paths | endpoints |
@@ -1604,7 +1604,7 @@ RUST_LOG=debug
 
 ```text
 stdout
-{DataDir}/RustFox/logs/rustfox.log
+{DataDir}/Miyo/logs/rustfox.log
 ```
 
 ---
@@ -2339,6 +2339,6 @@ jsonwebtoken
 
 # 结束
 
-本文档就是 RustFox 第一阶段的唯一执行标准。
+本文档就是 Miyo 第一阶段的唯一执行标准。
 AI Coder 必须按照本文档从 M0 到 M10 顺序实现，不得跳阶段。
 每个阶段完成后必须通过格式化、clippy、测试，并更新进度文档。

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate RustFox icons from rustfox-source.png.
+"""Generate Miyo icons from rustfox-source.png.
 
 Crops to square, generates all PNG sizes, ICO, iconset, and icns.
 

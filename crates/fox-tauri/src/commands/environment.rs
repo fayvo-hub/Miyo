@@ -4,7 +4,7 @@
 //! 按项目列出，`save_environment` 校验归属当前激活项目）。
 //!
 //! 导入导出对标 Postman/Bruno：原来环境只能随整项目备份 JSON 迁移，
-//! 无单环境文件互通。本模块提供 RustFox 原生 JSON 与 Postman Environment
+//! 无单环境文件互通。本模块提供 Miyo 原生 JSON 与 Postman Environment
 //! v1 双格式（自动识别导入）。注意：导出含变量明文（与备份 JSON 一致），
 //! 请妥善保管导出文件。
 
@@ -104,7 +104,7 @@ pub async fn delete_environment(
 #[derive(Debug, Clone, Copy, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum EnvExchangeFormat {
-    /// RustFox 原生 JSON（变量 + Base URL 全量）。
+    /// Miyo 原生 JSON（变量 + Base URL 全量）。
     RustfoxJson,
     /// Postman Environment v1（`{name, values:[{key,value,enabled}]}`；Base URL 丢弃）。
     PostmanJson,
@@ -177,7 +177,7 @@ pub async fn export_environment(
     }
 }
 
-/// 导入预览（不落库）：自动识别 RustFox / Postman 格式，返回可直接保存的环境草稿。
+/// 导入预览（不落库）：自动识别 Miyo / Postman 格式，返回可直接保存的环境草稿。
 /// id 全部重新生成，名称冲突时由前端在保存前改名（此处仅后缀提示）。
 #[derive(Debug, Clone, Serialize)]
 pub struct ImportedEnv {
@@ -192,10 +192,10 @@ pub struct ImportedEnv {
 pub async fn import_environment(text: String, project_id: Uuid) -> CommandResult<ImportedEnv> {
     let value: serde_json::Value = serde_json::from_str(&text)
         .map_err(|e| CommandError::validation(format!("不是合法 JSON：{e}")))?;
-    // RustFox 原生：含 variables 数组（兼容旧版多模块导出：modules → 首个基址）。
+    // Miyo 原生：含 variables 数组（兼容旧版多模块导出：modules → 首个基址）。
     if value.get("variables").is_some_and(|v| v.is_array()) {
         let mut env: Environment = serde_json::from_value(normalize_legacy_env(value))
-            .map_err(|e| CommandError::validation(format!("RustFox 环境格式解析失败：{e}")))?;
+            .map_err(|e| CommandError::validation(format!("Miyo 环境格式解析失败：{e}")))?;
         if env.name.trim().is_empty() {
             return Err(CommandError::validation("环境名称为空"));
         }
@@ -247,11 +247,11 @@ pub async fn import_environment(text: String, project_id: Uuid) -> CommandResult
         });
     }
     Err(CommandError::validation(
-        "无法识别的环境格式（支持 RustFox 环境 JSON / Postman Environment）",
+        "无法识别的环境格式（支持 Miyo 环境 JSON / Postman Environment）",
     ))
 }
 
-/// 旧版（RustFox 多模块）导出兼容：`modules` 数组取默认 / 首个模块的
+/// 旧版（Miyo 多模块）导出兼容：`modules` 数组取默认 / 首个模块的
 /// base_url 提升为环境 Base URL，并补 `project_id` 占位（由调用方覆盖）。
 fn normalize_legacy_env(mut value: serde_json::Value) -> serde_json::Value {
     let Some(object) = value.as_object_mut() else {

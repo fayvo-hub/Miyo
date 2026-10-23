@@ -2,7 +2,7 @@
 
 [default]
 description = """
-RustFox 核心插件的默认权限：允许前端调用全部 fox 命令
+Miyo 核心插件的默认权限：允许前端调用全部 fox 命令
 （项目 / 接口 / 文件夹 / 环境 / cURL 解析 / 请求执行）。
 命令的 allow-* 权限由 tauri-build 依据 invoke_handler 自动生成。
 """

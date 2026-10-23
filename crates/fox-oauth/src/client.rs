@@ -305,7 +305,7 @@ async fn authorize_inner(
                             let _ = code_tx.send(Ok(code.clone()));
                             (
                                 "授权成功",
-                                "授权成功，已获取授权码，可以关闭此页面并返回 RustFox。",
+                                "授权成功，已获取授权码，可以关闭此页面并返回 Miyo。",
                             )
                         }
                         None => {

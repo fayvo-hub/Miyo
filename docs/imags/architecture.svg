@@ -17,7 +17,7 @@
   </defs>
   <rect width="1200" height="900" fill="#faf9fd"/>
 
-  <text x="600" y="46" text-anchor="middle" font-size="26" font-weight="800" fill="#2c2640">RustFox 系统架构（Tauri 2）</text>
+  <text x="600" y="46" text-anchor="middle" font-size="26" font-weight="800" fill="#2c2640">Miyo 系统架构（Tauri 2）</text>
   <text x="600" y="70" text-anchor="middle" font-size="14" fill="#8d87ab">Vue 3 前端 ── Tauri IPC ── Rust 领域逻辑 ── SQLite 本地存储</text>
 
   <!-- Layer 1: 前端 -->
@@ -90,7 +90,7 @@
   <!-- 数据层 -->
   <rect class="box" x="420" y="810" width="360" height="60"/>
   <text x="600" y="837" text-anchor="middle" class="item">SQLite · rustfox.db（AES-256-GCM 加密环境变量）</text>
-  <text x="600" y="857" text-anchor="middle" class="item2">系统数据目录 under RustFox/master.key</text>
+  <text x="600" y="857" text-anchor="middle" class="item2">系统数据目录 under Miyo/master.key</text>
 
   <!-- 箭头 -->
   <path class="arrow" d="M945 250 L945 330"/>

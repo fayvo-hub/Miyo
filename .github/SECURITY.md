@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-RustFox is pre-1.0 and released frequently. Please update to the latest release
+Miyo is pre-1.0 and released frequently. Please update to the latest release
 (`About → Check for Updates`) before reporting an issue — fixes land in the next patch.
 
 ## Reporting a vulnerability

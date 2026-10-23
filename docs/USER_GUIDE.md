@@ -1,10 +1,10 @@
-# RustFox 用户使用手册
+# Miyo 用户使用手册
 
 **语言 / Language**：[简体中文](USER_GUIDE.md) · [English](en/USER_GUIDE.md)
 
 面向最终用户。**不需要安装 Rust、不需要任何命令行知识**，下载、解压、双击即可使用。
 
-- 适用版本：RustFox 0.0.x（最新验证 0.0.25，版本差异见 [CHANGELOG.md](../CHANGELOG.md)）
+- 适用版本：Miyo 0.0.x（最新验证 0.0.25，版本差异见 [CHANGELOG.md](../CHANGELOG.md)）
 - 支持平台：Windows 10/11、macOS 11+、Linux（常用桌面环境）
 
 ---
@@ -15,22 +15,22 @@
 
 | 方式 | 步骤 |
 | --- | --- |
-| 安装包（推荐） | 下载 `RustFox-<版本>-setup.exe` → 双击运行 → 按提示完成安装 → 桌面出现 **RustFox** 快捷方式，开始菜单出现「RustFox」程序组 |
+| 安装包（推荐） | 下载 `Miyo-<版本>-setup.exe` → 双击运行 → 按提示完成安装 → 桌面出现 **Miyo** 快捷方式，开始菜单出现「Miyo」程序组 |
 
 > 首次运行如弹出「Windows 已保护你的电脑」（SmartScreen），点击「更多信息」→「仍要运行」即可。这是因为安装包尚未购买代码签名证书，属正常现象。
 
 ### 1.2 macOS
 
-1. 下载 `RustFox-<版本>-<架构>.dmg`（Apple Silicon 选 `aarch64`，Intel 选 `x64`）
-2. 挂载后把 **RustFox.app** 拖入「应用程序」文件夹
-3. 首次打开：右键 RustFox.app →「打开」，或「系统设置 → 隐私与安全性 → 仍要打开」。
+1. 下载 `Miyo-<版本>-<架构>.dmg`（Apple Silicon 选 `aarch64`，Intel 选 `x64`）
+2. 挂载后把 **Miyo.app** 拖入「应用程序」文件夹
+3. 首次打开：右键 Miyo.app →「打开」，或「系统设置 → 隐私与安全性 → 仍要打开」。
    应用未购买 Apple 开发者证书（仅 ad-hoc 签名、未公证），Gatekeeper 会提示
    「无法验证开发者」——这是正常现象，**不是应用损坏**，确认后即可使用
-4. 若提示「"RustFox"已损坏，无法打开」（旧版本安装器未签名的遗留问题），
+4. 若提示「"Miyo"已损坏，无法打开」（旧版本安装器未签名的遗留问题），
    打开「终端」执行以下命令解除隔离后重试：
 
    ```bash
-   xattr -cr /Applications/RustFox.app
+   xattr -cr /Applications/Miyo.app
    ```
 
 之后可从「启动台」或「应用程序」双击启动，也可固定到 Dock。
@@ -49,10 +49,10 @@
 启动后自动初始化本地数据库（无需联网、无需注册），直接进入主界面：
 
 ```
-┌─────────────────────────────── RustFox ───────────────────────────────┐
-│ RustFox │ [选择项目 ▼] │ [未选环境 ▼] │       搜索接口 │ 反馈 │ 设置 ⚙ │
+┌─────────────────────────────── Miyo ───────────────────────────────┐
+│ Miyo │ [选择项目 ▼] │ [未选环境 ▼] │       搜索接口 │ 反馈 │ 设置 ⚙ │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                          🦊  开始使用 RustFox                             │
+│                          🦊  开始使用 Miyo                             │
 │                   创建你的第一个项目，开始管理 API                            │
 │                          [ 创建项目 ]                                      │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -69,11 +69,11 @@
 
 首页布局：
 
-![RustFox 首页布局](imags/home.png)
+![Miyo 首页布局](imags/home.png)
 
 工作区布局：
 
-![RustFox 工作区布局](imags/api-home.png)
+![Miyo 工作区布局](imags/api-home.png)
 
 ## 3. 项目管理
 
@@ -170,7 +170,7 @@
 
 ### 5.2 环境导入导出
 
-环境管理弹窗底部可导出选中环境（RustFox 原生 JSON / Postman Environment），
+环境管理弹窗底部可导出选中环境（Miyo 原生 JSON / Postman Environment），
 或从这两种文件导入为新环境（重名自动加后缀）。导出含变量明文，请妥善保管。
 
 ## 6. 自动化测试
@@ -246,13 +246,13 @@ Tests 页「测试用例」区（`TestCasesPanel` + `TestCaseDrawer`）：
 
 ## 10. 数据在哪（备份意味着存好数据安全）
 
-所有数据在本机「系统数据目录 / RustFox」：
+所有数据在本机「系统数据目录 / Miyo」：
 
 | 平台 | 路径 |
 | --- | --- |
-| Linux | `~/.local/share/RustFox/` |
-| macOS | `~/Library/Application Support/RustFox/` |
-| Windows | `%APPDATA%\RustFox\` |
+| Linux | `~/.local/share/Miyo/` |
+| macOS | `~/Library/Application Support/Miyo/` |
+| Windows | `%APPDATA%\Miyo\` |
 
 - `rustfox.db`：主数据库（项目/接口/环境/Mock 规则/历史）
 - `master.key`：环境变量加密密钥（**勿删**）
@@ -266,8 +266,8 @@ Tests 页「测试用例」区（`TestCasesPanel` + `TestCaseDrawer`）：
 > 新目录从空数据启动（旧数据请先导出备份再导入）；改完需重启生效。
 > 也可用环境变量 `RUSTFOX_DATA_DIR`（绝对路径）覆盖，优先级高于设置页配置。
 
-> 一键备份建议：复制整个 RustFox 数据目录到外部存储即可完整迁移。
-> 开发/正式隔离：`tauri dev` 开发构建使用 `RustFox-dev` 目录，与正式版数据互不干扰。
+> 一键备份建议：复制整个 Miyo 数据目录到外部存储即可完整迁移。
+> 开发/正式隔离：`tauri dev` 开发构建使用 `Miyo-dev` 目录，与正式版数据互不干扰。
 
 ## 10.1 外观与偏好（设置页）
 
@@ -295,7 +295,7 @@ MCP 客户端配一次 `rustfox-mcp`（v0.0.10+ 安装包内置），或任意�
 | 数据库损坏？ | 启动时自动 `integrity_check`，异常会弹窗指引；迁移前已自动快照（数据目录 `snapshots/` 保留 5 份），复制快照回 `rustfox.db` 即可回滚，或用 `backups/` JSON 重建 |
 | 浅色主题下编辑器看不清 | 设置页切回「深色」或「跟随系统」；如仍异常，反馈时注明主题模式与系统版本 |
 | 请求总是超时 | 设置页调大请求超时；压测/大文件下载场景建议再放宽一档 |
-| dev 构建看不到正式版数据 | 符合预期：dev 用 `RustFox-dev` 目录隔离；用备份 JSON 在两侧互导 |
+| dev 构建看不到正式版数据 | 符合预期：dev 用 `Miyo-dev` 目录隔离；用备份 JSON 在两侧互导 |
 | 反馈问题 | 顶栏「反馈」自动生成本机诊断报告（路径提示），提交到 GitHub Issues 时附上即可 |
 
 ## 12. 反馈与支持

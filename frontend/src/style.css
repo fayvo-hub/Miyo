@@ -1,5 +1,5 @@
 /**
- * RustFox Design Tokens（§0 规格）+ 全局基础样式。
+ * Miyo Design Tokens（§0 规格）+ 全局基础样式。
  *
  * - 深色为默认主题；浅色通过根元素 [data-theme="light"] 覆盖；
  * - 所有组件只引用 var(--bg-* / --text-* / --accent 等)，禁止写死色值；

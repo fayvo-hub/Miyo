@@ -1,13 +1,13 @@
-# Migrating from Apifox / Postman to RustFox
+# Migrating from Apifox / Postman to Miyo
 
 > 中文版见 [../MIGRATION.md](../MIGRATION.md).
-> RustFox migrates through **open formats**: anything the source tool can export as
+> Miyo migrates through **open formats**: anything the source tool can export as
 > OpenAPI / Postman Collection moves over in bulk; what can't (history, login
 > sessions, runner configs) has a manual mapping below.
 
 ## 1. At a glance: what transfers automatically
 
-| Apifox / Postman concept | RustFox equivalent | How |
+| Apifox / Postman concept | Miyo equivalent | How |
 | --- | --- | --- |
 | Endpoints + groups | Endpoints + folders | OpenAPI / Postman Collection import builds the tree |
 | Descriptions, params, bodies, response examples | Same content | Carried over by the import |
@@ -42,7 +42,7 @@ After import, check two things: groups became folders, and (base_url + path) joi
 ## 4. Environments & variables: map them over
 
 1. Create an environment, put the Apifox front URL into base_url;
-2. Copy Apifox environment variables into RustFox variables verbatim — both sides use
+2. Copy Apifox environment variables into Miyo variables verbatim — both sides use
    `{{name}}` (precedence: environment > project > global);
 3. A Postman Environment file imports directly (bottom of the environment manager),
    name clashes get auto-suffixed;
@@ -54,7 +54,7 @@ After import, check two things: groups became folders, and (base_url + path) joi
 - **Auth**: copy Bearer tokens / usernames-passwords / API Keys into the endpoint Auth;
   re-authorize OAuth2 in settings; cookie sessions don't transfer — log in once and
   replay takes over.
-- **Mock**: Apifox mock expectations → RustFox mock rules (method + path + header +
+- **Mock**: Apifox mock expectations → Miyo mock rules (method + path + header +
   body matching, prioritized over response examples); plain fixed responses can be
   stored as "response examples" as fallback.
 - **Assertions / post-processors**: Apifox "extract variable" maps to `extract`,

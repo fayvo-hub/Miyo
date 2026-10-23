@@ -3,7 +3,7 @@
  * 视图通过 <router-view /> 渲染。
  * 另挂全局 error/unhandledrejection 监听：把未捕获的异常通过 console + toast 暴露，
  * 便于在没有 DevTools 的情况下定位前端问题。
- * 监听 macOS 原生菜单「About RustFox」事件以打开自定义关于弹窗。
+ * 监听 macOS 原生菜单「About Miyo」事件以打开自定义关于弹窗。
  */
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="showFloatingBrand" class="app-brand" :aria-label="t('app.brandAria')">
-    <Brand title="RustFox" :subtitle="t('app.tagline')" />
+    <Brand title="Miyo" :subtitle="t('app.tagline')" />
   </div>
   <ProgressBar />
   <ToastHost />

@@ -1,11 +1,11 @@
-# RustFox 冒烟测试 / 手动验收流程（SMOKE_TEST）
+# Miyo 冒烟测试 / 手动验收流程（SMOKE_TEST）
 
 > 本文档对应的自动化补充见 `crates/fox-smoke/tests/smoke_test.rs`
 > （`cargo test --workspace` 时自动执行，纯逻辑、不需 UI）。
 
 ## 0. 术语
 
-- **数据目录**：macOS `~/Library/Application Support/RustFox`；日志在 `{数据目录}/logs/rustfox.log`；
+- **数据目录**：macOS `~/Library/Application Support/Miyo`；日志在 `{数据目录}/logs/rustfox.log`；
   诊断报告生成在 `{数据目录}/reports/`；备份在 `{数据目录}/backups/`；导出文档在 `{数据目录}/exports/`。
 
 ## 1. 基础链路：创建项目 → 环境 → 接口 → 发送请求 → 查看响应

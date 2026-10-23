@@ -1,6 +1,6 @@
-# RustFox 部署与使用指南
+# Miyo 部署与使用指南
 
-RustFox 是一个本地运行的 API 调试与接口测试工具（桌面应用 + 内置 Mock Server），
+Miyo 是一个本地运行的 API 调试与接口测试工具（桌面应用 + 内置 Mock Server），
 单机离线运行，数据默认保存在本机，无需外部服务。
 
 ## 环境要求
@@ -29,22 +29,22 @@ scripts/package-tauri.sh
 ## 运行
 
 - **开发**:`npm --prefix frontend run tauri dev` 自动启动应用窗口
-- **发布**:安装对应平台分发包即可;macOS 拖 `RustFox.app` 进「应用程序」
+- **发布**:安装对应平台分发包即可;macOS 拖 `Miyo.app` 进「应用程序」
 
 启动后会自动初始化 SQLite 数据库与数据目录。
 
 ## 数据与文件
 
-所有数据在「系统数据目录 / RustFox」下：
+所有数据在「系统数据目录 / Miyo」下：
 
 | 路径 | 内容 |
 | --- | --- |
-| `~/.local/share/RustFox/rustfox.db`（Linux/macOS 类似） | 主数据库（项目/接口/环境/Mock 规则/响应示例/测试历史/请求历史） |
-| `~/.local/share/RustFox/master.key` | 环境变量加密主密钥（AES-256-GCM，权限 0600） |
-| `~/.local/share/RustFox/backups/` | 「备份当前项目」导出的 JSON |
-| `~/.local/share/RustFox/exports/` | 「导出项目 Markdown」生成的文档 |
+| `~/.local/share/Miyo/rustfox.db`（Linux/macOS 类似） | 主数据库（项目/接口/环境/Mock 规则/响应示例/测试历史/请求历史） |
+| `~/.local/share/Miyo/master.key` | 环境变量加密主密钥（AES-256-GCM，权限 0600） |
+| `~/.local/share/Miyo/backups/` | 「备份当前项目」导出的 JSON |
+| `~/.local/share/Miyo/exports/` | 「导出项目 Markdown」生成的文档 |
 
-> 提示：macOS 为 `~/Library/Application Support/RustFox`。
+> 提示：macOS 为 `~/Library/Application Support/Miyo`。
 
 ### 环境变量加密
 

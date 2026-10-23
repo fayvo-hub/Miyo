@@ -280,7 +280,7 @@ fn render_curl_script(endpoints: &[Endpoint]) -> String {
     use fox_codegen::{render, GenRequest, Lang};
 
     let mut out = String::from("#!/bin/sh\n");
-    out.push_str("# RustFox 导出的 cURL 脚本\n");
+    out.push_str("# Miyo 导出的 cURL 脚本\n");
     out.push_str(&format!(
         "# 共 {} 个接口 · 生成于 {}\n\n",
         endpoints.len(),

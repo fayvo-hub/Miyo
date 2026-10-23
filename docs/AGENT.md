@@ -2,8 +2,8 @@
 
 **语言 / Language**：[简体中文](AGENT.md) · [English](en/AGENT.md)
 
-RustFox 内置 **Agent 控制面**：应用启动时自动拉起一个本机 HTTP 服务（仅 `127.0.0.1`），
-AI Agent 可以直接把 cURL 命令保存为 RustFox 接口，也可以查询项目与接口列表。
+Miyo 内置 **Agent 控制面**：应用启动时自动拉起一个本机 HTTP 服务（仅 `127.0.0.1`），
+AI Agent 可以直接把 cURL 命令保存为 Miyo 接口，也可以查询项目与接口列表。
 
 两种接入方式：
 
@@ -23,7 +23,7 @@ AI Agent ──(HTTP + Bearer token)────────┘         │
                                              SQLite 落库 → UI 实时刷新
 ```
 
-- 控制面随 **RustFox 桌面应用启动自动拉起**，无需手动开启；
+- 控制面随 **Miyo 桌面应用启动自动拉起**，无需手动开启；
 - 端口从 `4110` 起自动探测（避开 Mock 的 4010 段）；
 - 所有请求需携带令牌：`Authorization: Bearer <token>` 或 `X-Agent-Token`。
 
@@ -33,12 +33,12 @@ Token 是控制面的访问凭证，首次启动应用时自动生成：
 
 - 文件位置：`{数据目录}/agent-token`（权限 0600）
 - 数据目录：
-  - Windows：`%APPDATA%\RustFox\agent-token`
-  - Linux：`~/.local/share/RustFox/agent-token`
+  - Windows：`%APPDATA%\Miyo\agent-token`
+  - Linux：`~/.local/share/Miyo/agent-token`
 - 应用内也可确认：顶栏「设置」旁无入口时，可在 DevTools Console 执行
   `await __TAURI_INTERNALS__.invoke('plugin:fox|agent_status')` 查看 `tokenPath`。
 
-> 开发构建（tauri dev）使用 `RustFox-dev` 目录，与正式版隔离。
+> 开发构建（tauri dev）使用 `Miyo-dev` 目录，与正式版隔离。
 
 ## 3. 方式一：MCP Server
 
@@ -48,8 +48,8 @@ Token 是控制面的访问凭证，首次启动应用时自动生成：
 
 | 平台 / 安装方式 | 路径 |
 | --- | --- |
-| macOS（/Applications 安装） | `/Applications/RustFox.app/Contents/MacOS/rustfox-mcp` |
-| Windows（NSIS 默认目录） | `C:\Program Files\RustFox\rustfox-mcp.exe` |
+| macOS（/Applications 安装） | `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` |
+| Windows（NSIS 默认目录） | `C:\Program Files\Miyo\rustfox-mcp.exe` |
 | Linux（.deb） | `/usr/bin/rustfox-mcp`（已在 PATH，配置直接写 `rustfox-mcp`） |
 | Linux（.AppImage） | 挂载镜像内的 `rustfox-mcp` |
 | 开发模式（tauri dev） | 仓库内 `frontend/src-tauri/binaries/rustfox-mcp-<三元组>` |
@@ -59,7 +59,7 @@ Token 是控制面的访问凭证，首次启动应用时自动生成：
 
 ```bash
 git clone https://github.com/weihubeats/RustFox.git
-cd RustFox && cargo build --release -p fox-mcp
+cd Miyo && cargo build --release -p fox-mcp
 # 产物：target/release/rustfox-mcp
 sudo cp target/release/rustfox-mcp /usr/local/bin/   # 可选：放进 PATH
 ```
@@ -74,7 +74,7 @@ v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝�
 ```json
 {
   "mcpServers": {
-    "rustfox": { "command": "/Applications/RustFox.app/Contents/MacOS/rustfox-mcp" }
+    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
   }
 }
 ```
@@ -85,7 +85,7 @@ v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝�
 { "command": "rustfox-mcp" }
 ```
 
-**Cursor** — Settings → MCP → Add Server，Command 填绝对路径 `/Applications/RustFox.app/Contents/MacOS/rustfox-mcp`（macOS）或对应平台路径。
+**Cursor** — Settings → MCP → Add Server，Command 填绝对路径 `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`（macOS）或对应平台路径。
 
 配置后重启客户端 / 重载会话，工具列表出现 4 个工具即成功：
 
@@ -96,7 +96,7 @@ v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝�
 | `list_endpoints` | 项目下的接口列表（需 projectId） |
 | `agent_info` | 控制面地址与令牌路径 |
 
-之后对话里说「把这个 curl 存到 RustFox」即可；导入成功桌面端侧栏自动刷新并弹提示。
+之后对话里说「把这个 curl 存到 Miyo」即可；导入成功桌面端侧栏自动刷新并弹提示。
 
 ### 3.3 save_curl 参数说明
 
@@ -118,7 +118,7 @@ v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝�
 **① 已有 cURL，一句话入库**（Claude Code / Cursor 通用）：
 
 ```
-把这个 curl 存到 RustFox：
+把这个 curl 存到 Miyo：
 curl -X POST https://api.example.com/orders \
   -H "Content-Type: application/json" \
   -d '{"userId":1,"amount":99}'
@@ -127,7 +127,7 @@ curl -X POST https://api.example.com/orders \
 **② Java 代码里直接让 AI 存接口**：贴出 Controller 代码（或 Cursor 选中方法），AI 自动构造 cURL 并调用 `save_curl`：
 
 ```
-把下面这个接口保存到 RustFox：
+把下面这个接口保存到 Miyo：
 @PostMapping("/orders")
 public Result<Long> createOrder(@RequestBody CreateOrderReq req) {
     return orderService.create(req);
@@ -159,7 +159,7 @@ curl -X POST http://127.0.0.1:8080/api/users -d '{"name":"foo"}' name="创建用
 示例：
 
 ```bash
-TOKEN=$(cat "$HOME/Library/Application Support/RustFox/agent-token")
+TOKEN=$(cat "$HOME/Library/Application Support/Miyo/agent-token")
 curl -s http://127.0.0.1:4110/agent/curl \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -181,7 +181,7 @@ curl -s http://127.0.0.1:4110/agent/curl \
 | 现象 | 处理 |
 | --- | --- |
 | `spawn rustfox-mcp ENOENT` | 二进制不在 PATH：v0.0.10+ 改用安装包内绝对路径（见 §3.1），或按旧版方式构建后放入 PATH |
-| `rustfox-mcp` 报「未发现运行中的控制面」 | 先启动 RustFox 桌面应用；确认端口 4110~4129 未被防火墙拦本机回环 |
+| `rustfox-mcp` 报「未发现运行中的控制面」 | 先启动 Miyo 桌面应用；确认端口 4110~4129 未被防火墙拦本机回环 |
 | 401 UNAUTHORIZED | token 文件与应用不一致（如混用了 dev/正式版目录）；删掉 `agent-token` 后重启应用重新配 |
 | 多项目时报 VALIDATION | 让 Agent 先调 `list_projects`，带上 projectId 重试 |
 | MCP 工具列表没出现 | 检查 `.mcp.json` 语法与 rustfox-mcp 可执行权限（`chmod +x`）；查看客户端 MCP 日志 |

@@ -77,7 +77,7 @@ fn tool_definitions() -> Vec<Value> {
     vec![
         json!({
             "name": "save_curl",
-            "description": "把一条 cURL 命令解析并保存为 RustFox 接口（API 调试工具中的可编辑接口）。URL 拆为 base_url + 路径 + 查询参数；返回 endpointId。多个项目时必须传 projectId。",
+            "description": "把一条 cURL 命令解析并保存为 Miyo 接口（API 调试工具中的可编辑接口）。URL 拆为 base_url + 路径 + 查询参数；返回 endpointId。多个项目时必须传 projectId。",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -91,7 +91,7 @@ fn tool_definitions() -> Vec<Value> {
         }),
         json!({
             "name": "list_projects",
-            "description": "列出 RustFox 中全部项目（id / 名称 / 描述 / 变量）。",
+            "description": "列出 Miyo 中全部项目（id / 名称 / 描述 / 变量）。",
             "inputSchema": { "type": "object", "properties": {} }
         }),
         json!({
@@ -107,7 +107,7 @@ fn tool_definitions() -> Vec<Value> {
         }),
         json!({
             "name": "agent_info",
-            "description": "返回 RustFox Agent 控制面连接信息（地址与令牌文件路径），供需要直接发 HTTP 的场景使用。",
+            "description": "返回 Miyo Agent 控制面连接信息（地址与令牌文件路径），供需要直接发 HTTP 的场景使用。",
             "inputSchema": { "type": "object", "properties": {} }
         }),
     ]

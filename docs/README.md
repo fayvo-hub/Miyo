@@ -1,4 +1,4 @@
-# RustFox 文档索引
+# Miyo 文档索引
 
 > 英文索引见 [en/README.md](en/README.md)。
 > 事实源说明：`SPEC.md` 为 M0–M16 历史规范（已冻结）；Tauri 迁移后的架构以

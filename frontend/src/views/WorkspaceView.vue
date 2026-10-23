@@ -478,7 +478,7 @@ onBeforeUnmount(() => {
   <div class="workspace">
     <div v-if="store.project" ref="topBarEl" class="top-bar">
       <div class="tb-region tb-left">
-        <Brand title="RustFox" class="tb-brand" />
+        <Brand title="Miyo" class="tb-brand" />
       </div>
       <span class="tb-divider" aria-hidden="true"></span>
 

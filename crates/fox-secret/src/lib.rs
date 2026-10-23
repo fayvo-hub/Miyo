@@ -1,7 +1,7 @@
 //! 环境变量加密存储（M11）。
 //!
 //! 使用 AES-256-GCM：随机 32 字节主密钥保存在
-//! `{data_dir}/RustFox/master.key`（权限 0600，与数据库同目录），每次加密
+//! `{data_dir}/Miyo/master.key`（权限 0600，与数据库同目录），每次加密
 //! 生成随机 12 字节 nonce，输出格式 `base64(nonce):base64(ciphertext||tag)`。
 //! 兼容性：非加密格式（无 `:` / nonce 非 12 字节）原样返回（旧版本明文
 //! 数据容错）；明确加密格式但解密失败（主密钥丢失/更换、密文损坏）返回
@@ -37,13 +37,13 @@ pub struct MasterKey([u8; 32]);
 /// 数据目录（与 fox-storage::db::data_dir 一致：Windows 上同为 Roaming，
 /// 保证 master.key 与 rustfox.db 同树，用户整目录备份不会漏密钥）。
 /// 可覆盖（`RUSTFOX_DATA_DIR` / bootstrap 文件），见 `fox_core::paths`；
-/// 无覆盖时保持历史行为（固定 `RustFox`，无 -dev 后缀——dev 的库在
-/// RustFox-dev 而密钥在此，改动会 orphan 现有密钥，故维持原样）。
+/// 无覆盖时保持历史行为（固定 `Miyo`，无 -dev 后缀——dev 的库在
+/// Miyo-dev 而密钥在此，改动会 orphan 现有密钥，故维持原样）。
 pub fn data_dir() -> PathBuf {
     fox_core::paths::data_dir_override().unwrap_or_else(|| {
         dirs::data_dir()
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("RustFox")
+            .join("Miyo")
     })
 }
 
@@ -52,7 +52,7 @@ pub fn data_dir() -> PathBuf {
 fn legacy_data_dir() -> PathBuf {
     dirs::data_local_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("RustFox")
+        .join("Miyo")
 }
 
 fn key_path() -> PathBuf {

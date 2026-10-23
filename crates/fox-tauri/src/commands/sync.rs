@@ -115,7 +115,7 @@ pub async fn sync_push(
             SyncMessage {
                 summary: message.unwrap_or_else(|| {
                     format!(
-                        "RustFox 同步：{} @ {}",
+                        "Miyo 同步：{} @ {}",
                         report.snapshot.project.name,
                         utc_now_short()
                     )

@@ -1,4 +1,4 @@
-//! rustfox-mcp：RustFox 的 Model Context Protocol 服务器。
+//! rustfox-mcp：Miyo 的 Model Context Protocol 服务器。
 //!
 //! stdio transport（换行分隔 JSON-RPC 2.0），把 Agent 控制面暴露为 4 个工具：
 //! `save_curl` / `list_projects` / `list_endpoints` / `agent_info`。
@@ -9,7 +9,7 @@
 //! { "mcpServers": { "rustfox": { "command": "rustfox-mcp" } } }
 //! ```
 //!
-//! 前置条件：RustFox 桌面应用正在运行（自动拉起控制面，端口 4110 起）。
+//! 前置条件：Miyo 桌面应用正在运行（自动拉起控制面，端口 4110 起）。
 
 use std::io::{BufRead, Write};
 

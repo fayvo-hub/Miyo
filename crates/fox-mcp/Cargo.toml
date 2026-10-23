@@ -2,7 +2,7 @@
 name = "fox-mcp"
 version = "0.0.1"
 edition = "2021"
-description = "RustFox MCP Server：stdio JSON-RPC，把 AI Agent 接到 RustFox Agent 控制面"
+description = "Miyo MCP Server：stdio JSON-RPC，把 AI Agent 接到 Miyo Agent 控制面"
 license = "Apache-2.0"
 repository = "https://github.com/weihubeats/RustFox"
 homepage = "https://weihubeats.github.io/RustFox/"

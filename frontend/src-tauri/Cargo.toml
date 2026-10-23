@@ -2,7 +2,7 @@
 name = "rustfox"
 version = "0.0.43"
 edition = "2021"
-description = "RustFox Tauri 2 应用壳：装配 fox-tauri 插件与窗口生命周期"
+description = "Miyo Tauri 2 应用壳：装配 fox-tauri 插件与窗口生命周期"
 license = "Apache-2.0"
 repository = "https://github.com/weihubeats/RustFox"
 homepage = "https://weihubeats.github.io/RustFox/"

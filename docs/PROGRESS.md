@@ -1,4 +1,4 @@
-# RustFox 开发进度
+# Miyo 开发进度
 
 进度记录：每完成一个里程碑追加一条记录。
 
@@ -22,7 +22,7 @@
 - [x] AppError 统一错误类型（含 user_message 中文提示）
 - [x] 变量引擎：`{{name}}` 解析、内置变量（$uuid/$timestamp/$isoTimestamp/$randomInt）、嵌套递归上限 10 层、优先级合并（运行时 > 环境 > 项目）
 - [x] 工具函数：URL 拼接规则、路径变量替换、JSON 格式化
-- [x] fox-storage：SQLite 连接（WAL、外键）、`migrations/0001_init.sql`、数据目录 `{DataDir}/RustFox`
+- [x] fox-storage：SQLite 连接（WAL、外键）、`migrations/0001_init.sql`、数据目录 `{DataDir}/Miyo`
 - [x] Repository：Project / Folder / Endpoint / Environment CRUD、duplicate_endpoint、settings 键值
 - [x] 单元测试：变量替换、URL 拼接、模型序列化（25 个用例）
 - [x] 集成测试：SQLite CRUD、级联删除（6 个用例）
@@ -35,8 +35,8 @@
 
 ## M2：桌面应用骨架（✅ 完成）
 
-- [x] 日志初始化：stdout + `{DataDir}/RustFox/logs/rustfox.log`（RUST_LOG 控制级别，默认 info）
-- [x] 数据目录与 SQLite 初始化（`~/Library/Application Support/RustFox/rustfox.db`）
+- [x] 日志初始化：stdout + `{DataDir}/Miyo/logs/rustfox.log`（RUST_LOG 控制级别，默认 info）
+- [x] 数据目录与 SQLite 初始化（`~/Library/Application Support/Miyo/rustfox.db`）
 - [x] Dioxus 桌面应用：深色主题、三栏骨架（TopBar 48px / Sidebar 280px / Main）
 - [x] TopBar：项目名、环境选择器、搜索框、设置入口
 - [x] 首页：项目创建、项目列表、切换项目、删除项目（Toast 中文提示）
@@ -232,7 +232,7 @@
 2. 所有控件（输入框 / 多行文本域 / 按钮 / 下拉）均带 `rf-` 前缀样式类；所有颜色 / 圆角 / 间距 / 字号全部引用 CSS 变量（styles.rs 之外的源文件无硬编码十六进制颜色）。
 3. 每个可交互元素具备完整状态反馈：hover（边框/背景加深）、active（按下加深或缩放）、focus（3px 蓝色光环）；按钮 disabled 半透明且不可点。
 4. 图标全部为内联 SVG（stroke=currentColor）：搜索、下拉箭头、加号、文件夹、设置滑杆、失败 X 等；界面中无 emoji 作为图标。
-5. 顶栏 48px：logo「RustFox」+ 分隔线 + 项目下拉（未选时显示「未选择项目」占位、默认选中当前项目）+ 环境下拉 + spacer + 搜索框 + 反馈按钮 + 设置按钮；窗口缩放右侧元素不溢出。
+5. 顶栏 48px：logo「Miyo」+ 分隔线 + 项目下拉（未选时显示「未选择项目」占位、默认选中当前项目）+ 环境下拉 + spacer + 搜索框 + 反馈按钮 + 设置按钮；窗口缩放右侧元素不溢出。
 6. 首页：无项目时空状态居中（文件夹图标 +「还没有项目」标题 + 引导文案）；有项目时卡片网格展示（名称 / 描述 / 接口数 / 更新时间 / 删除按钮）；创建表单两行输入 + 「创建项目」主按钮。
 7. 工作区：方法选择下拉高亮当前方法徽章；目录树选中项有左侧高亮条；标签栏脏标记「●」；发送按钮 hover 变亮；响应区深色代码底 + 绿色/红色状态徽章；失败详情行红色 X 图标。
 8. 设置页：环境列表行 hover 反馈；Mock 规则表单、OpenAPI 导入区、备份区均使用统一输入框/按钮/下拉风格；折叠面板的展开/收起状态清晰。
@@ -245,7 +245,7 @@
 - M18：Agent 集成——桌面启动自动拉起 127.0.0.1 控制面（4110 起探测）；`fox-mcp` 提供 save_curl / list_projects / list_endpoints / agent_info；安装包内置二进制（v0.0.10+）；指南 docs/AGENT.md。
 - M19：官网 `website/` 中英落地页 + GitHub Pages 自动部署 workflow。
 - M20：环境全局化——多模块 Base URL、全局变量/全局参数；默认模块随当前项目；项目优先解析（环境 > 项目）。
-- M21：工作区——顶栏多项目标签快照（草稿/标签跨项目保留）；GraphQL 调试视图（/graphql，data/errors 语义）；测试用例 Drawer（Method 联动 / CodeMirror 6 / 拖拽分割）；设计态 Schema 标注 + 多格式文档导出；Cookie 自动回放 + 全局代理（持久化）；历史按接口过滤；项目卡片拖拽排序持久化；dev/正式数据目录隔离（`RustFox-dev`）。
+- M21：工作区——顶栏多项目标签快照（草稿/标签跨项目保留）；GraphQL 调试视图（/graphql，data/errors 语义）；测试用例 Drawer（Method 联动 / CodeMirror 6 / 拖拽分割）；设计态 Schema 标注 + 多格式文档导出；Cookie 自动回放 + 全局代理（持久化）；历史按接口过滤；项目卡片拖拽排序持久化；dev/正式数据目录隔离（`Miyo-dev`）。
 - M22：偏好——主题三档（跟随系统/深色/浅色，`<html data-theme>` + localStorage 持久）；请求超时可配置；自增序列管理；备份/文档导出改目录选择框；更新进度条累计修正。
 - M23：环境按项目归属——移除模块概念（`ModuleUrlConfig` 删除）：环境含 `project_id` 外键（级联删除）+ 单一 `base_url`（可含 `{{变量}}`，自动以 `base_url` 变量注入）；迁移 0013 重建 environments 表并为存量项目预置「开发/测试」环境；激活环境按项目记忆（settings `active_environment_id:{project_id}`）；备份 schema v3（旧备份多模块 → 取默认/首个模块基址升级）；前端 envBar/QuickView/Manager/Settings/Editor/GraphQL 全链路适配。
 

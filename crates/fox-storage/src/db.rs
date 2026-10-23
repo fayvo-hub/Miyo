@@ -8,7 +8,7 @@ use sqlx::SqlitePool;
 
 use fox_core::{AppError, Result};
 
-/// {SystemDataDir}/RustFox（开发构建用 RustFox-dev，与正式版数据隔离：
+/// {SystemDataDir}/Miyo（开发构建用 Miyo-dev，与正式版数据隔离：
 /// 避免 tauri dev 跑过更新的迁移后，旧正式版打开同一数据库因迁移版本
 /// 校验失败而启动即退出）。
 /// 可覆盖：`RUSTFOX_DATA_DIR` 环境变量 > 默认目录下的 `data_dir.txt`
@@ -27,7 +27,7 @@ pub fn bootstrap_path() -> PathBuf {
     fox_core::paths::bootstrap_path()
 }
 
-/// 日志目录 {SystemDataDir}/RustFox/logs
+/// 日志目录 {SystemDataDir}/Miyo/logs
 pub fn log_dir() -> PathBuf {
     data_dir().join("logs")
 }

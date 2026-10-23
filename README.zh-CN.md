@@ -1,4 +1,4 @@
-# RustFox
+# Miyo
 
 [![Release](https://img.shields.io/github/v/release/weihubeats/RustFox?include_prereleases&sort=semver)](https://github.com/weihubeats/RustFox/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/RustFox/ci.yml?branch=main)](https://github.com/weihubeats/RustFox/actions/workflows/ci.yml)
@@ -14,17 +14,17 @@
   示例图片：docs/imags/home.png（主页）、docs/imags/api-home.png（工作区）。
   更新截图后替换下面两行的路径即可。
 -->
-[![RustFox 主页截图](docs/imags/home.png)](docs/imags/home.png)
+[![Miyo 主页截图](docs/imags/home.png)](docs/imags/home.png)
 
-[![RustFox 工作区截图](docs/imags/api-home.png)](docs/imags/api-home.png)
+[![Miyo 工作区截图](docs/imags/api-home.png)](docs/imags/api-home.png)
 
-## 为什么选择 RustFox？
+## 为什么选择 Miyo？
 
 ### 🪶 10 MB，零运行时依赖
 
-同类工具把整个 Chromium/Node.js 运行时打包进安装包，RustFox 用 **Rust + Tauri 2 + 系统 WebView**——不内置浏览器内核、无 Node 沙箱、无 JRE，装完即用。
+同类工具把整个 Chromium/Node.js 运行时打包进安装包，Miyo 用 **Rust + Tauri 2 + 系统 WebView**——不内置浏览器内核、无 Node 沙箱、无 JRE，装完即用。
 
-| 维度 | RustFox | Postman | Bruno | Insomnia |
+| 维度 | Miyo | Postman | Bruno | Insomnia |
 | --- | --- | --- | --- | --- |
 | 安装包体积 | **~10 MB** | ~310 MB (Electron) | ~433 MB (Electron) | ~200 MB (Electron) |
 | 首屏启动 | **< 1 秒** | 2–4 秒 | 2–5 秒 | 2–4 秒 |
@@ -83,7 +83,7 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 
 - GraphQL 调试视图
 - 实时调试：WebSocket 收发 / SSE 订阅（可弹出独立窗口）
-- 环境导入导出（RustFox 原生 / Postman）、OpenAPI 3.1 导入
+- 环境导入导出（Miyo 原生 / Postman）、OpenAPI 3.1 导入
 - Cookie 管理（查看/按域清理/单请求禁用）、Mock 热重载与故障注入
 - 删除撤销、目录树多选批量操作、快捷键帮助（Ctrl+/）、设置页日志查看
 - 备份（JSON）与恢复（ID 全量重映射，绝不覆盖现有数据）
@@ -92,33 +92,33 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 
 ## AI Agent 集成
 
-RustFox 内置 **Agent 控制面**（应用启动时自动拉起）：本机回环地址上的带令牌 HTTP API，
+Miyo 内置 **Agent 控制面**（应用启动时自动拉起）：本机回环地址上的带令牌 HTTP API，
 让 AI Agent（Claude / Cursor / 任意能执行命令的工具）直接把 cURL 命令保存为接口，无需人工粘贴。
 
 完整指南（获取 `rustfox-mcp`、各客户端配置、HTTP API 手册、排障）：**[docs/AGENT.md](docs/AGENT.md)**
 
 ### MCP Server（推荐）
 
-> **前置**：MCP 配置需要 `rustfox-mcp` 二进制。v0.0.10+ 安装包不在 PATH，必须填安装包内绝对路径（macOS 安装包：`/Applications/RustFox.app/Contents/MacOS/rustfox-mcp`）。
+> **前置**：MCP 配置需要 `rustfox-mcp` 二进制。v0.0.10+ 安装包不在 PATH，必须填安装包内绝对路径（macOS 安装包：`/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`）。
 > **v0.0.10 起安装包已内置**，无需额外安装；更早版本请先按 [docs/AGENT.md](docs/AGENT.md) 构建。
 
 Claude Code 等支持 MCP 的客户端，在项目 `.mcp.json` 中配置一次：
 
 ```json
-{ "mcpServers": { "rustfox": { "command": "/Applications/RustFox.app/Contents/MacOS/rustfox-mcp" } } }
+{ "mcpServers": { "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" } } }
 ```
 
 > 仅当二进制已加入 PATH 时才可写裸 `rustfox-mcp`（如 Linux .deb 安装、或 `cargo build --release -p fox-mcp` 后放入 `/usr/local/bin`）。
 
-配好后直接让 AI 把接口存进 RustFox（贴 cURL 或贴代码都行）：
+配好后直接让 AI 把接口存进 Miyo（贴 cURL 或贴代码都行）：
 
 ```
-把这个接口保存到 RustFox：
+把这个接口保存到 Miyo：
 @PostMapping("/orders")
 public Result<Long> createOrder(@RequestBody CreateOrderReq req) { ... }
 ```
 
-之后对话里说「把这个 curl 存到 RustFox」即可。提供 4 个工具：
+之后对话里说「把这个 curl 存到 Miyo」即可。提供 4 个工具：
 
 | 工具 | 说明 |
 | --- | --- |
@@ -150,13 +150,13 @@ token 位于数据目录 `agent-token` 文件（0600），应用内「Agent 状�
 
 | 平台 | 安装包 |
 | --- | --- |
-| Windows | `RustFox_*-x64-setup.exe`（NSIS 安装包，SmartScreen 提示时选「更多信息 → 仍要运行」） |
-| macOS | `RustFox_*-aarch64.dmg`（Apple Silicon）/ `RustFox_*-x64.dmg`（Intel） |
+| Windows | `Miyo_*-x64-setup.exe`（NSIS 安装包，SmartScreen 提示时选「更多信息 → 仍要运行」） |
+| macOS | `Miyo_*-aarch64.dmg`（Apple Silicon）/ `Miyo_*-x64.dmg`（Intel） |
 | Linux | `.deb` / `.rpm` / `.AppImage` |
 
 > **macOS 首次打开提示「无法验证开发者」？** 应用仅 ad-hoc 签名、未做 Apple 公证（未购买开发者证书），
 > 属正常现象——右键应用 →「打开」即可。若旧版本安装器提示「已损坏，无法打开」，
-> 在终端执行一次 `xattr -cr /Applications/RustFox.app` 解除隔离后重试。详见[使用手册](docs/USER_GUIDE.md#12-macos)。
+> 在终端执行一次 `xattr -cr /Applications/Miyo.app` 解除隔离后重试。详见[使用手册](docs/USER_GUIDE.md#12-macos)。
 
 安装后可在应用内「关于 → Check for Updates」检查并一键升级新版本（v0.0.3 起支持自动更新）。
 

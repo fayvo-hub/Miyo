@@ -33,13 +33,13 @@ const GH_BLOB = 'https://github.com/weihubeats/RustFox/blob/main/'
 
 /** 站内文档页注册表：src 为相对仓库根的 markdown 路径。 */
 const PAGES = [
-  { src: 'docs/USER_GUIDE.md', slug: 'user-guide', lang: 'zh', title: '用户手册', pair: 'docs/en/USER_GUIDE.md', desc: '安装、界面、请求、环境、测试、Mock、备份——RustFox 完整使用手册。' },
-  { src: 'docs/en/USER_GUIDE.md', slug: 'user-guide', lang: 'en', title: 'User Guide', pair: 'docs/USER_GUIDE.md', desc: 'Install, UI, requests, environments, testing, mock, backup — the complete RustFox user guide.' },
-  { src: 'docs/MIGRATION.md', slug: 'migration', lang: 'zh', title: '迁移手册', pair: 'docs/en/MIGRATION.md', desc: '从 Apifox / Postman 迁移到 RustFox：导出、导入、环境变量与认证对照。' },
-  { src: 'docs/en/MIGRATION.md', slug: 'migration', lang: 'en', title: 'Migration Guide', pair: 'docs/MIGRATION.md', desc: 'Migrate from Apifox / Postman to RustFox: export, import, environments and auth mapping.' },
+  { src: 'docs/USER_GUIDE.md', slug: 'user-guide', lang: 'zh', title: '用户手册', pair: 'docs/en/USER_GUIDE.md', desc: '安装、界面、请求、环境、测试、Mock、备份——Miyo 完整使用手册。' },
+  { src: 'docs/en/USER_GUIDE.md', slug: 'user-guide', lang: 'en', title: 'User Guide', pair: 'docs/USER_GUIDE.md', desc: 'Install, UI, requests, environments, testing, mock, backup — the complete Miyo user guide.' },
+  { src: 'docs/MIGRATION.md', slug: 'migration', lang: 'zh', title: '迁移手册', pair: 'docs/en/MIGRATION.md', desc: '从 Apifox / Postman 迁移到 Miyo：导出、导入、环境变量与认证对照。' },
+  { src: 'docs/en/MIGRATION.md', slug: 'migration', lang: 'en', title: 'Migration Guide', pair: 'docs/MIGRATION.md', desc: 'Migrate from Apifox / Postman to Miyo: export, import, environments and auth mapping.' },
   { src: 'docs/AGENT.md', slug: 'agent', lang: 'zh', title: 'Agent 集成', pair: 'docs/en/AGENT.md', desc: 'MCP Server 与本机 HTTP 控制面：一句话把 cURL 或后端代码保存为接口。' },
   { src: 'docs/en/AGENT.md', slug: 'agent', lang: 'en', title: 'Agent Integration', pair: 'docs/AGENT.md', desc: 'MCP server and local HTTP control plane: save a cURL or backend snippet as an endpoint.' },
-  { src: 'CHANGELOG.md', slug: 'changelog', lang: 'zh', title: '更新日志', pair: null, desc: 'RustFox 各版本变化速览。' },
+  { src: 'CHANGELOG.md', slug: 'changelog', lang: 'zh', title: '更新日志', pair: null, desc: 'Miyo 各版本变化速览。' },
 ]
 
 const bySrc = new Map(PAGES.map((p) => [p.src, p]))
@@ -284,7 +284,7 @@ function buildPage(page, md) {
     '@graph': [
       {
         '@type': 'TechArticle',
-        headline: `${page.title} — RustFox`,
+        headline: `${page.title} — Miyo`,
         description: desc,
         image: ogImage,
         inLanguage: pageLangAttr,
@@ -292,7 +292,7 @@ function buildPage(page, md) {
         dateModified: new Date().toISOString().slice(0, 10),
         publisher: {
           '@type': 'Organization',
-          name: 'RustFox',
+          name: 'Miyo',
           url: 'https://github.com/weihubeats/RustFox',
         },
       },
@@ -316,24 +316,24 @@ function buildPage(page, md) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${escapeHtml(page.title)} — RustFox</title>
+<title>${escapeHtml(page.title)} — Miyo</title>
 <meta name="description" content="${escapeHtml(desc)}">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="${canonical}">${hreflangs}
 <link rel="icon" type="image/png" href="${assetRel}/favicon.png">
 <meta name="theme-color" content="#0d1117">
 <meta property="og:type" content="article">
-<meta property="og:site_name" content="RustFox">
+<meta property="og:site_name" content="Miyo">
 <meta property="og:locale" content="${ogLocale}">
 <meta property="og:url" content="${canonical}">
-<meta property="og:title" content="${escapeHtml(page.title)} — RustFox">
+<meta property="og:title" content="${escapeHtml(page.title)} — Miyo">
 <meta property="og:description" content="${escapeHtml(desc)}">
 <meta property="og:image" content="${ogImage}">
 <meta property="og:image:width" content="2880">
 <meta property="og:image:height" content="1600">
-<meta property="og:image:alt" content="RustFox — lightweight cross-platform API client">
+<meta property="og:image:alt" content="Miyo — lightweight cross-platform API client">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${escapeHtml(page.title)} — RustFox">
+<meta name="twitter:title" content="${escapeHtml(page.title)} — Miyo">
 <meta name="twitter:description" content="${escapeHtml(desc)}">
 <meta name="twitter:image" content="${ogImage}">
 <script type="application/ld+json">
@@ -347,7 +347,7 @@ ${CSS}
 
 <nav>
   <div class="container nav-inner">
-    <a class="brand" href="${homeHref}"><img src="${assetRel}/logo.png" alt=""> RustFox</a>
+    <a class="brand" href="${homeHref}"><img src="${assetRel}/logo.png" alt=""> Miyo</a>
     <div class="nav-links">
       <a class="active" href="${docsAnchor}">${page.lang === 'zh' ? '文档' : 'Docs'}</a>
       ${pairHref ? `<a href="${pairHref}">${page.lang === 'zh' ? 'English' : '中文'}</a>` : `<a href="${page.lang === 'en' ? homeZh : homeEn}">${page.lang === 'zh' ? 'English' : '中文'}</a>`}

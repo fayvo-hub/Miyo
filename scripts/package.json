@@ -1,13 +1,13 @@
 {
   "name": "rustfox-site-scripts",
   "private": true,
-  "description": "RustFox website build scripts (docs site generator, release tooling)",
+  "description": "Miyo website build scripts (docs site generator, release tooling)",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/weihubeats/RustFox.git"
+    "url": "https://github.com/weihubeats/Miyo.git"
   },
-  "homepage": "https://weihubeats.github.io/RustFox/",
+  "homepage": "https://weihubeats.github.io/Miyo/",
   "type": "module",
   "dependencies": {
     "marked": "^18.1.0"

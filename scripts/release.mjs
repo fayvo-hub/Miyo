@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * RustFox 发版助手（零依赖，Node >= 20）。
+ * Miyo 发版助手（零依赖，Node >= 20）。
  *
  * 版本号单一事实源：frontend/src-tauri/tauri.conf.json（updater 以它为当前客户端版本）。
  * 本脚本把它同步到其余位置，消除手工改多处配置的负担：
@@ -247,7 +247,7 @@ function releaseFlow(arg, flags) {
   console.log(`③ 已提交并推送 ${branch}`)
 
   // ④ 打标签 + 推送（触发多平台构建）
-  sh(`git tag -a ${tag} -m "RustFox ${tag}"`)
+  sh(`git tag -a ${tag} -m "Miyo ${tag}"`)
   sh(`git push origin ${tag}`)
   console.log(`④ 标签 ${tag} 已推送，GitHub Actions 开始构建`)
 
@@ -306,7 +306,7 @@ function main() {
         break
       }
       const tag = `v${base}`
-      sh(`git tag -a ${tag} -m "RustFox ${tag}"`)
+      sh(`git tag -a ${tag} -m "Miyo ${tag}"`)
       console.log(`✓ 已创建标签 ${tag}`)
       if (push) {
         sh(`git push origin ${tag}`)

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "RustFox",
+  "productName": "Miyo",
   "version": "0.0.43",
-  "identifier": "com.rustfox.app",
+  "identifier": "com.miyo.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:5173",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "RustFox",
+        "title": "Miyo",
         "width": 1360,
         "height": 900,
         "minWidth": 900,

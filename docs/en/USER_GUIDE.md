@@ -1,10 +1,10 @@
-# RustFox User Guide
+# Miyo User Guide
 
 **Language / 语言**：[简体中文](../USER_GUIDE.md) · English
 
 For end users. **No Rust, no command-line knowledge required** — download, install, double-click.
 
-- Applies to: RustFox 0.0.x (verified on 0.0.25; per-version changes in [CHANGELOG.md](../../CHANGELOG.md))
+- Applies to: Miyo 0.0.x (verified on 0.0.25; per-version changes in [CHANGELOG.md](../../CHANGELOG.md))
 - Platforms: Windows 10/11, macOS 11+, Linux (common desktop environments)
 
 ---
@@ -15,22 +15,22 @@ For end users. **No Rust, no command-line knowledge required** — download, ins
 
 | Method | Steps |
 | --- | --- |
-| Installer (recommended) | Download `RustFox-<version>-setup.exe` → double-click → follow the prompts → a **RustFox** shortcut appears on the desktop and a "RustFox" group in the Start menu |
+| Installer (recommended) | Download `Miyo-<version>-setup.exe` → double-click → follow the prompts → a **Miyo** shortcut appears on the desktop and a "Miyo" group in the Start menu |
 
 > If Windows SmartScreen says "Windows protected your PC" on first run, click "More info" → "Run anyway". The installer does not carry a code-signing certificate yet — this is expected.
 
 ### 1.2 macOS
 
-1. Download `RustFox-<version>-<arch>.dmg` (`aarch64` for Apple Silicon, `x64` for Intel)
-2. Mount it and drag **RustFox.app** into Applications
-3. First launch: right-click RustFox.app → Open, or System Settings → Privacy & Security → Open Anyway.
+1. Download `Miyo-<version>-<arch>.dmg` (`aarch64` for Apple Silicon, `x64` for Intel)
+2. Mount it and drag **Miyo.app** into Applications
+3. First launch: right-click Miyo.app → Open, or System Settings → Privacy & Security → Open Anyway.
    The app is ad-hoc signed but not notarized (no paid Apple Developer certificate), so Gatekeeper
    will say the developer can't be verified — that's normal and **not a broken app**
-4. If you see "RustFox is damaged and can't be opened" (a leftover of the old unsigned installers),
+4. If you see "Miyo is damaged and can't be opened" (a leftover of the old unsigned installers),
    run this in Terminal once, then try again:
 
    ```bash
-   xattr -cr /Applications/RustFox.app
+   xattr -cr /Applications/Miyo.app
    ```
 
 Afterwards launch from Launchpad or Applications, or pin it to the Dock.
@@ -49,10 +49,10 @@ Afterwards launch from Launchpad or Applications, or pin it to the Dock.
 The local database initializes automatically on first start (no network, no account) and you land on the home screen:
 
 ```
-┌─────────────────────────────── RustFox ───────────────────────────────┐
-│ RustFox │ [Project ▼] │ [No environment ▼] │  Search │ Feedback │ ⚙   │
+┌─────────────────────────────── Miyo ───────────────────────────────┐
+│ Miyo │ [Project ▼] │ [No environment ▼] │  Search │ Feedback │ ⚙   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│                          🦊  Get started with RustFox                    │
+│                          🦊  Get started with Miyo                    │
 │                   Create your first project and start managing APIs      │
 │                          [ Create project ]                              │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -69,11 +69,11 @@ The local database initializes automatically on first start (no network, no acco
 
 Dashboard layout:
 
-![RustFox dashboard layout](../imags/home.png)
+![Miyo dashboard layout](../imags/home.png)
 
 Workspace layout:
 
-![RustFox workspace layout](../imags/api-home.png)
+![Miyo workspace layout](../imags/api-home.png)
 
 ## 3. Projects
 
@@ -148,7 +148,7 @@ Settings → "Environments" (environments are **per project**: edit the environm
 
 ### 5.2 Environment import / export
 
-The environment manager can export the selected environment (native RustFox JSON / Postman Environment)
+The environment manager can export the selected environment (native Miyo JSON / Postman Environment)
 or import either file as a new environment (name conflicts get a suffix). Exports contain plaintext values — keep them safe.
 
 ## 6. Automated testing
@@ -240,13 +240,13 @@ Response routing / body template variables: `{{params.id}}`, `{{query.name}}`, `
 
 ## 10. Where is my data?
 
-Everything lives under the system data directory / RustFox:
+Everything lives under the system data directory / Miyo:
 
 | Platform | Path |
 | --- | --- |
-| Linux | `~/.local/share/RustFox/` |
-| macOS | `~/Library/Application Support/RustFox/` |
-| Windows | `%APPDATA%\RustFox\` |
+| Linux | `~/.local/share/Miyo/` |
+| macOS | `~/Library/Application Support/Miyo/` |
+| Windows | `%APPDATA%\Miyo\` |
 
 - `rustfox.db`: main database (projects/endpoints/environments/mock rules/history)
 - `master.key`: encryption key for environment variables (**do not delete**)
@@ -255,8 +255,8 @@ Everything lives under the system data directory / RustFox:
 - `snapshots/`: automatic pre-upgrade snapshots (5 kept, copy back to roll back)
 - `logs/`: app runtime logs (viewable in the Settings "Logs" tab)
 
-> Tip for full backups: copying the whole RustFox data directory to external storage migrates everything.
-> Dev/release isolation: `tauri dev` builds use a `RustFox-dev` directory, isolated from release data.
+> Tip for full backups: copying the whole Miyo data directory to external storage migrates everything.
+> Dev/release isolation: `tauri dev` builds use a `Miyo-dev` directory, isolated from release data.
 
 ## 10.1 Appearance & preferences (Settings)
 
@@ -284,7 +284,7 @@ Configure `rustfox-mcp` once in MCP clients (bundled in installers since v0.0.10
 | Database corrupted? | Startup runs `integrity_check` and shows a recovery hint on failure; pre-migration snapshots are kept (5 copies in the data-dir `snapshots/`) — copy one back over `rustfox.db`, or rebuild from a `backups/` JSON |
 | Editor unreadable in light theme | Switch back to "Dark" or "System" in Settings; if it persists, mention theme mode + OS version in feedback |
 | Requests always time out | Raise the request timeout in Settings; allow one more notch for load tests / large downloads |
-| Dev build can't see release data | Expected: dev uses the isolated `RustFox-dev` directory; move data between them via backup JSON |
+| Dev build can't see release data | Expected: dev uses the isolated `Miyo-dev` directory; move data between them via backup JSON |
 | Report a problem | The "Feedback" button in the top bar generates a local diagnostics report — attach it to a GitHub Issue |
 
 ## 12. Feedback & support
