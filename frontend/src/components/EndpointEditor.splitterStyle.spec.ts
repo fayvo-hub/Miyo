@@ -1,9 +1,10 @@
 /**
  * EndpointEditor 样式契约：请求面板底部保持「唯一一条分割线」（Single Border Architecture）。
  *
- * 背景：请求设置栏（.req-settings）居于请求卡容器内部，原先自带 border-top；
- * 它与响应面板顶边框 / 分割条处的边界线平行相邻，视觉上构成「双分割线」，
- * 用户难以判断哪条是真正的上下拖拽把手。
+ * 背景：请求卡（.config-box）与响应卡（.rp）各带完整边框时，接缝处会出现
+ * 平行双线，用户难以判断哪条是真正的上下拖拽把手。两卡已并入 .req-resp-stack，
+ * 分割条即唯一那条线；低频的请求设置（超时/重定向）收进页签行 Popover，
+ * 接缝处不插入任何常驻工具行（用户实测：夹在 Body 与响应之间显乱）。
  *
  * jsdom 不做样式计算（getComputedStyle 拿不到 scoped 规则），故按源码断言——
  * 与本仓 themePattern.spec.ts 的守卫方式一致：直接读 .vue 文本查契约。
@@ -18,8 +19,8 @@ const SOURCE = readFileSync(
 )
 
 /** 取某个 CSS 选择器的规则体（从头一个 `{` 配平到 `}`），供精确断言。
- * 必须在行首匹配选择器，否则 `.req-settings` 会先命中
- * `.config-box.grow .req-settings` 这类复合选择器（子串包含），断言打在错的规则上。
+ * 必须在行首匹配选择器，否则 `.config-box` 会先命中
+ * `.req-resp-stack > .config-box` 这类复合选择器（子串包含），断言打在错的规则上。
  * 支持多行选择器（逗号分组），空白按正则 `\s+` 归一。 */
 function ruleBody(selector: string): string {
   const escaped = selector
@@ -42,17 +43,13 @@ function ruleBody(selector: string): string {
 }
 
 describe('EndpointEditor 底部单分割线契约', () => {
-  it('请求设置栏自身不画分隔线（由容器覆盖规则统一提供接缝线）', () => {
-    const body = ruleBody('.req-settings')
-    expect(body, '.req-settings 基础规则不得自带 border-top').not.toMatch(/border-top\s*:/)
-    // 也不能用 border 简写给顶部补线（border: none 之类不算）
-    expect(body).not.toMatch(/border\s*:\s*[^;]*\bsolid\b/)
-  })
-
-  it('请求设置栏不再是 sticky 底栏（已移出请求卡，作响应侧第一行）', () => {
-    const body = ruleBody('.req-settings')
-    expect(body, '移出 config-box 后不应再 sticky').not.toContain('position: sticky')
-    expect(body, '不再需要负偏移').not.toMatch(/margin:\s*-/)
+  it('设置行已收进页签行 Popover：无常驻设置行、触发钮在请求卡内', () => {
+    expect(SOURCE, '常驻设置行不得回归（夹在 Body 与响应之间显乱）').not.toContain(
+      'class="req-settings"',
+    )
+    expect(SOURCE, '页签行须有请求设置触发钮').toContain('class="rs-trigger"')
+    // config-box 是 overflow 滚动容器，内部绝对定位会被裁剪 → 必须 Teleport
+    expect(SOURCE, '设置面板须 Teleport 到 body').toContain('<Teleport to="body">')
   })
 
   it('分割条自身就是那条接缝线（1px，位于 Body 编辑器正下方）', () => {
@@ -119,9 +116,6 @@ describe('EndpointEditor 两卡接缝：只允许一条线且热区落在线上'
     expect(ruleBody('.rp-splitter'), '分割条须画出那条线').toMatch(
       /background:\s*var\(--border-panel\)/,
     )
-    // 设置行不再画线
-    const rs = ruleBody('.req-resp-stack .req-settings')
-    expect(rs, '设置行不得重复画线').toMatch(/border-top:\s*none/)
     // 响应侧不再画线
     const resp = ruleBody(
       '.req-resp-stack .response-zone,\n.req-resp-stack .response-hint',
@@ -134,16 +128,14 @@ describe('EndpointEditor 两卡接缝：只允许一条线且热区落在线上'
     ).toMatch(/border:\s*none/)
   })
 
-  it('设置行位于分割条之下（线才落在 Body 编辑器正下方）', () => {
+  it('分割条之下紧邻响应区（接缝处不得再插入常驻工具行）', () => {
     const splitterAt = SOURCE.indexOf('class="rp-splitter"')
-    const settingsAt = SOURCE.indexOf('class="req-settings"')
+    const respAt = SOURCE.indexOf('<template v-if="hasResponse">')
     expect(splitterAt, '未找到分割条').toBeGreaterThan(-1)
-    expect(settingsAt, '未找到设置行').toBeGreaterThan(-1)
-    expect(settingsAt, '设置行须排在分割条之后（属响应侧）').toBeGreaterThan(splitterAt)
-    // 且不在请求卡内部：config-box 的闭合必须早于设置行
-    const cfgOpen = SOURCE.indexOf('class="config-box"')
-    expect(cfgOpen, '未找到请求卡').toBeGreaterThan(-1)
-    expect(cfgOpen, '请求卡须排在设置行之前').toBeLessThan(settingsAt)
+    expect(respAt, '未找到响应区').toBeGreaterThan(-1)
+    expect(respAt, '响应区须排在分割条之后').toBeGreaterThan(splitterAt)
+    const between = SOURCE.slice(splitterAt, respAt)
+    expect(between, '接缝处不得插入常驻行（设置行已收进 Popover）').not.toContain('class="rs-')
   })
 
   it('分割条不再靠负 margin 错位（这是「热区与视觉线不重合」的根因）', () => {

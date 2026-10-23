@@ -796,6 +796,63 @@ const timeoutPlaceholder = computed(() => {
   return ms == null ? t('editor.timeoutPh') : t('editor.timeoutPhGlobal', { sec: Math.round(ms / 1000) })
 })
 
+/** 请求设置 Popover：超时/重定向是低频设置，收进页签行右侧触发钮——
+ *  请求与响应之间的接缝处不再常驻一行（用户实测：夹在 Body 与响应之间显乱）。
+ *  面板 Teleport 到 body + fixed 定位（config-box 是 overflow 滚动容器，
+ *  内部绝对定位会被裁剪）；滚动 / 缩放 / 外部点击 / Esc 关闭；
+ *  非默认值（设了超时或关闭重定向）时触发钮点亮角标。 */
+const settingsTriggerEl = ref<HTMLElement | null>(null)
+const settingsOpen = ref(false)
+const settingsPos = ref({ left: 0, top: 0 })
+/** 定位用估算尺寸：与 .rs-pop 的 width 一致；高度略放宽只影响上翻判定，宁大勿小。 */
+const SETTINGS_POPOVER = { width: 220, height: 110 }
+
+const hasCustomSettings = computed(() => {
+  const request = draft.value?.request
+  return !!request && (request.timeout_ms != null || request.follow_redirects === false)
+})
+
+function toggleSettings(): void {
+  if (settingsOpen.value) {
+    settingsOpen.value = false
+    return
+  }
+  const rect = settingsTriggerEl.value?.getBoundingClientRect()
+  if (!rect) return
+  const up =
+    window.innerHeight - rect.bottom < SETTINGS_POPOVER.height + 8 && rect.top > SETTINGS_POPOVER.height
+  settingsPos.value = {
+    left: Math.max(
+      8,
+      Math.min(rect.right - SETTINGS_POPOVER.width, window.innerWidth - SETTINGS_POPOVER.width - 8),
+    ),
+    top: up ? rect.top - SETTINGS_POPOVER.height - 6 : rect.bottom + 6,
+  }
+  settingsOpen.value = true
+}
+
+function closeSettings(): void {
+  settingsOpen.value = false
+}
+
+function onSettingsDocMousedown(event: MouseEvent): void {
+  if (!settingsOpen.value) return
+  const target = event.target as Node
+  // 触发钮自行接管开关；面板本体（Teleport 出去）内的操作不关
+  if (settingsTriggerEl.value?.contains(target)) return
+  if (target instanceof Element && target.closest('[data-settings-pop]')) return
+  closeSettings()
+}
+
+function onSettingsDocKeydown(event: KeyboardEvent): void {
+  if (settingsOpen.value && (event.key === 'Escape' || event.key === 'Tab')) closeSettings()
+}
+
+window.addEventListener('mousedown', onSettingsDocMousedown)
+window.addEventListener('keydown', onSettingsDocKeydown)
+window.addEventListener('scroll', closeSettings, true)
+window.addEventListener('resize', closeSettings)
+
 async function send(): Promise<void> {
   if (!draft.value) return
   commitUrlPath()
@@ -1042,8 +1099,8 @@ let hintMinH = 0
 /** 切接口时手动分割态归零（需在 growChrome 声明之后注册，非 immediate 即可）：
  * 新接口无响应应回到 grow 贴内容布局——上一接口拖出的固定高/折叠态若残留，
  * 会把新接口的请求卡锁在小盒里，min-height:0 的 Body 面板被挤成 0 高、
- * 请求设置行（sticky）叠画在溢出的编辑器上（headless 实测：残留态 panel=0、
- * 编辑区 0 高、与设置行重叠 224px；归零后回到 panel=312 / 编辑区 276）。
+ * 卡片头部叠画在溢出的编辑器上（headless 实测：残留态 panel=0、
+ * 编辑区 0 高、与头部重叠 224px；归零后回到 panel=312 / 编辑区 276）。
  * requestBodyHeight 一并回到默认，避免 collapsed 判定带着上一接口的残值。 */
 watch(
   () => draft.value?.id,
@@ -1051,6 +1108,7 @@ watch(
     requestManual.value = false
     requestBodyHeight.value = REQUEST_DEFAULT
     growChrome = -1
+    closeSettings()
   },
 )
 
@@ -1266,6 +1324,10 @@ onUnmounted(() => {
     clearInterval(elapsedTimer)
     elapsedTimer = undefined
   }
+  window.removeEventListener('mousedown', onSettingsDocMousedown)
+  window.removeEventListener('keydown', onSettingsDocKeydown)
+  window.removeEventListener('scroll', closeSettings, true)
+  window.removeEventListener('resize', closeSettings)
 })
 </script>
 
@@ -1473,7 +1535,58 @@ onUnmounted(() => {
         :class="{ collapsed: requestBodyCollapsed, grow: !hasResponse && !requestManual }"
         :style="hasResponse || requestManual ? { height: `${requestBodyHeight}px` } : undefined"
       >
-        <Tabs v-model="activeTab" :tabs="configTabs" size="sm" />
+        <div class="config-head">
+          <Tabs v-model="activeTab" :tabs="configTabs" size="sm" />
+          <button
+            ref="settingsTriggerEl"
+            type="button"
+            class="rs-trigger"
+            :class="{ open: settingsOpen }"
+            aria-haspopup="dialog"
+            :aria-expanded="settingsOpen"
+            :title="t('editor.reqSettings')"
+            @click="toggleSettings"
+          >
+            <Icon name="settings" :size="13" />
+            <span>{{ t('editor.reqSettings') }}</span>
+            <span v-if="hasCustomSettings && !settingsOpen" class="rs-dot" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <!-- 请求设置面板：Teleport 到 body（config-box 是滚动容器，内部绝对定位会被裁剪），
+             位置由 toggleSettings 依触发钮实测矩形计算，空间不足自动上翻。 -->
+        <Teleport to="body">
+          <div
+            v-if="settingsOpen"
+            class="rs-pop"
+            data-settings-pop
+            role="dialog"
+            :aria-label="t('editor.reqSettings')"
+            :style="{ left: `${settingsPos.left}px`, top: `${settingsPos.top}px` }"
+          >
+            <label class="rs-field" :title="timeoutPlaceholder">
+              <span class="rs-text">{{ t('editor.timeoutLabel') }}</span>
+              <CustomNumberInput
+                class="rs-timeout"
+                size="sm"
+                tone="inset"
+                :model-value="draft.request.timeout_ms ?? ''"
+                :placeholder="timeoutPlaceholder"
+                @update:model-value="onTimeoutInput"
+              />
+              <span class="rs-unit">{{ t('editor.msUnit') }}</span>
+            </label>
+            <label class="rs-check" :title="t('editor.followRedirects')">
+              <input
+                :checked="draft.request.follow_redirects"
+                type="checkbox"
+                @change="draft.request.follow_redirects = ($event.target as HTMLInputElement).checked"
+              />
+              {{ t('editor.followRedirects') }}
+            </label>
+          </div>
+        </Teleport>
+
         <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
         <AuthPanel v-else-if="activeTab === 'auth'" :draft="draft" />
         <HeadersPanel v-else-if="activeTab === 'headers'" :draft="draft" />
@@ -1511,35 +1624,6 @@ onUnmounted(() => {
         @dblclick="toggleRequestBody"
         @keydown="onSplitterKeydown"
       ></div>
-
-      <!-- 请求设置行（超时 / 跟随重定向）：置于接缝线**之下**，属响应侧工具栏。
-           理由：接缝线必须是「拖拽把手」，而把手最该落在 Body 编辑器正下方——
-           若设置行留在请求卡内，线就被顶到设置行之下，Body 编辑器与线之间还夹着
-           32px 设置行，看起来像「线不在该在的地方」。
-           绑定 draft.request，脏检查与保存链路不变。 -->
-      <div class="req-settings">
-        <span class="rs-label">{{ t('editor.reqSettings') }}</span>
-        <label class="rs-field" :title="timeoutPlaceholder">
-          <span class="rs-text">{{ t('editor.timeoutLabel') }}</span>
-          <CustomNumberInput
-            class="rs-timeout"
-            size="sm"
-            tone="inset"
-            :model-value="draft.request.timeout_ms ?? ''"
-            :placeholder="timeoutPlaceholder"
-            @update:model-value="onTimeoutInput"
-          />
-          <span class="rs-unit">{{ t('editor.msUnit') }}</span>
-        </label>
-        <label class="rs-check" :title="t('editor.followRedirects')">
-          <input
-            :checked="draft.request.follow_redirects"
-            type="checkbox"
-            @change="draft.request.follow_redirects = ($event.target as HTMLInputElement).checked"
-          />
-          {{ t('editor.followRedirects') }}
-        </label>
-      </div>
 
       <template v-if="hasResponse">
         <div class="response-zone">
@@ -2376,38 +2460,78 @@ onUnmounted(() => {
 .config-box.grow {
   flex: 1 1 auto;
   /* 窗口偏矮时不再一路压扁请求卡：保底到 Body 编辑器可用的整卡高度
-   * （页签行 + 模式条 + 编辑器 + 设置条），缺的纵向空间由可压缩的空态低条
+   * （页签行 + 模式条 + 编辑器），缺的纵向空间由可压缩的空态低条
    * （120px 下限）与 .editor 纵向滚动承担——避免「打开 POST 接口 Body 只剩一条线」 */
   min-height: 320px;
 }
-/* 设置条钉在卡片底缘（有剩余高度时），与卡片圆角贴合 */
-.config-box.grow .req-settings {
-  margin-top: auto;
-}
 
-/* ---- 配置区底部：请求设置 Inner Toolbar（卡片内底栏，无自身分隔线）----
- * Single Border Architecture：整个请求面板底部只保留分割条那一条物理分界线。
- * 本栏此前带 border-top，与分割条处的边界线构成「双分割线」，已移除。
- * 悬浮感改由渐变承担——纯背景过渡，不画线、不占布局高度：
- * sticky 时内容会从其下方滚过，没有区分度会直接顶到设置文字上。
- */
-.req-settings {
+/* ---- 页签行：左页签 + 右侧「请求设置」触发钮 ----
+ * 超时/重定向是低频设置，收进 Popover（Teleport 到 body）；
+ * 请求卡与响应区之间的接缝处不再常驻一行，Body 编辑器正下方就是分割条。 */
+.config-head {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  /* 高度受限时不被 flex 压缩：这是一行固定高的工具栏。 */
+  gap: 8px;
+}
+
+.rs-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   flex-shrink: 0;
-  /* 已移出 .config-box（不再钉在请求卡底部），故不再需要 sticky 与负偏移；
-     它现在是响应侧的第一行，位置天然固定。 */
-  margin: 0;
-  padding: 6px 16px;
-  border-radius: 0;
-  /* 井槽底走 --bg-code（深 #121318 / 浅 slate-50），双主题同源。
-     接缝线由 .req-resp-stack .req-settings 的 border-top 提供。 */
-  background: var(--bg-code);
+  margin-left: auto;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-3);
   font-size: var(--fs-xs);
-  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.rs-trigger:hover,
+.rs-trigger.open {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+
+/* 非默认设置角标：该请求设了超时或关闭了重定向 */
+.rs-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* 请求设置 Popover（Teleport 到 body，fixed 定位） */
+.rs-pop {
+  position: fixed;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 220px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-panel);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+  animation: rs-pop 130ms var(--ease);
+}
+
+@keyframes rs-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 /* 跟随重定向勾选框：appearance 自绘（14px 圆角框 + 对勾），与 inset 输入框同一描边语言 */
@@ -2443,10 +2567,6 @@ onUnmounted(() => {
 }
 .rs-check input[type='checkbox']:checked::before {
   transform: scale(1);
-}
-.rs-label {
-  font-size: var(--fs-xs);
-  color: var(--text-3);
 }
 .rs-field {
   display: inline-flex;
@@ -2772,21 +2892,16 @@ onUnmounted(() => {
  * .config-box / .response-hint / .response-zone 的基础 border 覆盖掉。
  * （本条曾在文件中段插入，同样被后面的基础规则反超 → 两条线复发。） */
 .req-resp-stack > .config-box {
-  /* 外框由容器提供；卡片底边紧贴接缝线（线由设置行的 border-top 画）。 */
+  /* 外框由容器提供；卡片底边紧贴分割条（那条接缝线由 .rp-splitter 绘制）。 */
   border: none;
   border-radius: 0;
   box-shadow: none;
-  /* 设置行已移出，此处恢复常规内距，Body 编辑器不贴卡底。 */
+  /* 恢复常规内距，Body 编辑器不贴卡底。 */
   padding-bottom: 10px;
-}
-.req-resp-stack .req-settings {
-  /* 接缝线由 .rp-splitter 自己承担（它就在 Body 编辑器正下方）。
-     设置行在它之下，不再画线，避免出现第二条。 */
-  border-top: none;
 }
 .req-resp-stack .response-zone,
 .req-resp-stack .response-hint {
-  /* 设置行已承担接缝线，响应侧不再重复画线（否则又是两条）。 */
+  /* 接缝线由分割条承担，响应侧不再重复画线（否则又是两条）。 */
   border-top: none;
 }
 /* 子组件内部的类需用 :deep() 穿透——scoped 会把选择器编译成带本组件
