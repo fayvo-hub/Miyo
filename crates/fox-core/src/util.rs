@@ -36,6 +36,69 @@ pub fn replace_path_variables(path: &str, path_vars: &HashMap<String, String>) -
     result
 }
 
+/// 路径变量名的合法形态：字母/下划线/`$` 开头，后续允许字母数字、`_`、`$`、`-`。
+/// 与前端 `PathVariablesPanel` 的 `NAME` 保持一致（`:id` / `{id}` / `{{id}}` 共用）。
+const PATH_VAR_NAME: &str = r"[A-Za-z_$][\w$-]*";
+
+/// 从路径模板抽取变量名，按出现顺序去重。
+///
+/// 支持三种写法（与前端 `extractNames` 对齐）：
+/// - `{{id}}`（本应用变量语法）
+/// - `{id}`（OpenAPI / Swagger 路径模板）
+/// - `:id`（Postman 路径模板）
+///
+/// 抽取前先剥掉协议与主机（`https://api.x.com` 里的 `://` 不应被当作 `:x`），
+/// 以及 query / hash，避免把 `?a=:b` 误判成路径变量。
+///
+/// 用途：OpenAPI `paths` 键里的 `{id}` 常不配 `in: path` 参数声明，
+/// 单靠 parameters 会漏；导入时以本函数兜底补齐。
+pub fn extract_path_variables(path: &str) -> Vec<String> {
+    // 只取路径部分：去 origin、去 query/hash。
+    let cleaned = match path.find("://") {
+        Some(i) => {
+            let after = &path[i + 3..];
+            match after.find('/') {
+                Some(j) => &after[j..],
+                None => "",
+            }
+        }
+        None => path,
+    };
+    let cleaned = match cleaned.find(['?', '#']) {
+        Some(i) => &cleaned[..i],
+        None => cleaned,
+    };
+
+    let mut found: Vec<(usize, String)> = Vec::new();
+    // 先认 `{{id}}`，再认 `{id}`；双花括号必须先匹配，否则会被单花括号拆开。
+    let double = regex::Regex::new(&format!(r"\{{\{{\s*({PATH_VAR_NAME})\s*\}}\}}")).unwrap();
+    let single = regex::Regex::new(&format!(r"\{{\s*({PATH_VAR_NAME})\s*\}}")).unwrap();
+    let colon = regex::Regex::new(&format!(r"(?:^|/):({PATH_VAR_NAME})")).unwrap();
+
+    for m in double.captures_iter(cleaned) {
+        let full = m.get(0).unwrap();
+        found.push((full.start(), m[1].to_string()));
+    }
+    // 单花括号扫描时先把 `{{...}}` 屏蔽掉，避免重复/错切。
+    let masked = double.replace_all(cleaned, |c: &regex::Captures| " ".repeat(c[0].len()));
+    for m in single.captures_iter(&masked) {
+        let full = m.get(0).unwrap();
+        found.push((full.start(), m[1].to_string()));
+    }
+    for m in colon.captures_iter(cleaned) {
+        found.push((m.get(1).unwrap().start(), m[1].to_string()));
+    }
+
+    found.sort_by_key(|(i, _)| *i);
+    let mut out: Vec<String> = Vec::new();
+    for (_, name) in found {
+        if !out.contains(&name) {
+            out.push(name);
+        }
+    }
+    out
+}
+
 /// URL 拼接规则（SPEC 第 13 节）：
 /// 1. path 是完整 URL 时直接使用；
 /// 2. 否则与 base_url 拼接；
@@ -156,5 +219,73 @@ mod tests {
         assert!(is_json_content_type("application/json; charset=utf-8"));
         assert!(is_json_content_type("application/problem+json"));
         assert!(!is_json_content_type("text/html"));
+    }
+
+    // ---------- extract_path_variables ----------
+
+    #[test]
+    fn extract_curly_braces() {
+        assert_eq!(extract_path_variables("/users/{id}"), vec!["id"]);
+        assert_eq!(
+            extract_path_variables("/orgs/{org}/repos/{repo}"),
+            vec!["org", "repo"]
+        );
+    }
+
+    #[test]
+    fn extract_double_braces_not_split() {
+        // `{{id}}` 必须整体识别成 id，不能被单花括号拆成 `{id` 之类。
+        assert_eq!(extract_path_variables("/users/{{id}}"), vec!["id"]);
+        assert_eq!(
+            extract_path_variables("/a/{{x}}/b/{y}"),
+            vec!["x", "y"],
+            "双花括号与单花括号混用"
+        );
+    }
+
+    #[test]
+    fn extract_colon_style() {
+        assert_eq!(extract_path_variables("/users/:id"), vec!["id"]);
+        assert_eq!(
+            extract_path_variables("/orgs/:org/repos/:repo"),
+            vec!["org", "repo"]
+        );
+    }
+
+    #[test]
+    fn extract_order_preserved_and_deduped() {
+        assert_eq!(
+            extract_path_variables("/{b}/{a}/{b}"),
+            vec!["b", "a"],
+            "按出现顺序，重复只留一个"
+        );
+    }
+
+    #[test]
+    fn extract_ignores_origin_and_query() {
+        // origin 里的 `://` 不能被当成 `:x`；query/hash 里的也不认。
+        assert_eq!(
+            extract_path_variables("https://api.x.com/users/{id}"),
+            vec!["id"]
+        );
+        assert_eq!(
+            extract_path_variables("https://api.x.com:8443/users/{id}?a=:b#c"),
+            vec!["id"],
+            "端口号的冒号与 query 里的 :b 都不算"
+        );
+    }
+
+    #[test]
+    fn extract_no_variables_returns_empty() {
+        assert!(extract_path_variables("/users/list").is_empty());
+        assert!(extract_path_variables("").is_empty());
+        assert!(extract_path_variables("/").is_empty());
+    }
+
+    #[test]
+    fn extract_colon_needs_segment_boundary() {
+        // `:id` 必须是路径段开头，`/a:b` 不算（避免误伤 `http://` 之类）。
+        assert!(extract_path_variables("/items/a:b").is_empty());
+        assert_eq!(extract_path_variables("/items/:id"), vec!["id"]);
     }
 }

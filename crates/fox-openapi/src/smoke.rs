@@ -307,6 +307,7 @@ mod tests {
             category: category.to_string(),
             method: HttpMethod::GET,
             url_path: "/api/users/{id}".to_string(),
+            path_variables: vec![KeyValue::new("id", "1")],
             params: vec![KeyValue::new("id", "1")],
             headers: vec![KeyValue::new("X-Token", "abc")],
             body_type: "json".to_string(),

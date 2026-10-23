@@ -249,6 +249,9 @@ fn map_operation(
         }
     }
 
+    // 兜底：路径模板里的 `{id}` 未声明 `in: path` 参数时也要认出（同 OpenAPI 3.0）。
+    crate::import::supplement_path_variables(path, &mut path_variables);
+
     let consumes = str_list(op.get("consumes"));
     let produces = str_list(op.get("produces"));
     let consumes_owned = if consumes.is_empty() {
@@ -546,5 +549,52 @@ mod tests {
             serde_json::from_str::<serde_json::Value>(raw).unwrap(),
             serde_json::json!([0])
         );
+    }
+
+    /// Swagger 2.0 路径模板里的 `{id}` 未声明 `in: path` 参数时也要认出。
+    /// 旧实现只从声明过的参数取，导入的接口发出去就是字面量 `/users/{id}`。
+    #[test]
+    fn path_key_vars_recognized_without_declared_params() {
+        let doc = r#"{
+          "swagger": "2.0",
+          "info": { "title": "t", "version": "1.0" },
+          "paths": {
+            "/users/{id}/posts/{postId}": {
+              "get": { "responses": { "200": { "description": "ok" } } }
+            }
+          }
+        }"#;
+        let list = import_swagger2(doc).unwrap();
+        let keys: Vec<&str> = list[0]
+            .request
+            .path_variables
+            .iter()
+            .map(|kv| kv.key.as_str())
+            .collect();
+        assert_eq!(keys, vec!["id", "postId"]);
+    }
+
+    /// 声明过的路径参数照旧带取值；两者混用时声明优先。
+    #[test]
+    fn declared_path_param_kept_alongside_supplement() {
+        let doc = r#"{
+          "swagger": "2.0",
+          "info": { "title": "t", "version": "1.0" },
+          "paths": {
+            "/orgs/{org}/repos/{repo}": {
+              "get": {
+                "parameters": [
+                  { "name": "org", "in": "path", "required": true, "default": "acme" }
+                ],
+                "responses": { "200": { "description": "ok" } }
+              }
+            }
+          }
+        }"#;
+        let list = import_swagger2(doc).unwrap();
+        let vars = &list[0].request.path_variables;
+        let by = |k: &str| vars.iter().find(|v| v.key == k).expect("变量缺失");
+        assert_eq!(by("org").value, "acme");
+        assert_eq!(by("repo").value, "");
     }
 }

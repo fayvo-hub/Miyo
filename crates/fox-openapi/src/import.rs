@@ -286,6 +286,10 @@ fn map_operation(path: &str, method: HttpMethod, op: &openapiv3::Operation) -> I
         };
         path_variables.push(kv_from_data(parameter_data));
     }
+    // 兜底：`paths` 键里的 `{id}` 常不配 `in: path` 参数声明（OpenAPI 虽要求
+    // 声明，但真实文档普遍省略），单看 parameters 会整个漏掉路径变量，
+    // 用户只能手点「从路径抽取」。此处从路径模板补齐缺失项。
+    supplement_path_variables(path, &mut path_variables);
 
     let body = op
         .request_body
@@ -378,6 +382,22 @@ fn kv_from_data(data: &openapiv3::ParameterData) -> KeyValue {
         field_type: Default::default(),
         required: data.required,
         example: String::new(),
+    }
+}
+
+/// 用路径模板里的变量补齐 `path_variables`（只补缺失项，不动已声明的）。
+///
+/// `paths` 键形如 `/users/{id}/posts/{postId}`；OpenAPI 规范要求这些段必须有
+/// 对应的 `in: path` 参数声明，但真实文档大量省略——此时旧实现会让
+/// `path_variables` 为空，导入的接口发出去就是字面量 `/users/{id}`。
+/// 声明过的优先（带 example/description），未声明的补空行。
+pub(crate) fn supplement_path_variables(path: &str, path_variables: &mut Vec<KeyValue>) {
+    let declared: Vec<String> = path_variables.iter().map(|kv| kv.key.clone()).collect();
+    for name in fox_core::util::extract_path_variables(path) {
+        if declared.iter().any(|k| k == &name) {
+            continue;
+        }
+        path_variables.push(KeyValue::new(name, String::new()));
     }
 }
 
@@ -629,6 +649,71 @@ mod tests {
         let path_get = eps.iter().find(|e| e.path == "/users/{id}").unwrap();
         assert_eq!(path_get.request.path_variables.len(), 1);
         assert_eq!(path_get.request.path_variables[0].value, "10");
+    }
+
+    // ---------- 路径变量识别（回归）----------
+    //
+    // 旧 bug：`path_variables` 只从显式声明的 `in: path` 参数取。而 `paths` 键里的
+    // `{id}` 在实际文档中普遍不配参数声明，此时 path_variables 为空、导入的接口
+    // 发出去就是字面量 `/users/{id}`——用户只能手点「从路径抽取」补救。
+
+    fn path_keys_of(text: &str) -> Vec<String> {
+        let eps = import_endpoints(text).expect("import ok");
+        eps[0]
+            .request
+            .path_variables
+            .iter()
+            .map(|kv| kv.key.clone())
+            .collect()
+    }
+
+    fn spec_with_path(path: &str, params_json: &str) -> String {
+        format!(
+            r#"{{
+              "openapi": "3.0.0", "info": {{ "title": "t", "version": "1" }},
+              "paths": {{ "{path}": {{ "get": {{
+                {params_json}
+                "responses": {{ "200": {{ "description": "ok" }} }}
+              }} }} }}
+            }}"#
+        )
+    }
+
+    #[test]
+    fn path_key_vars_recognized_without_declared_params() {
+        // 未声明任何 in:path 参数，也要从路径模板认出来。
+        let spec = spec_with_path("/users/{id}/posts/{postId}", "\"summary\": \"x\",");
+        assert_eq!(path_keys_of(&spec), vec!["id", "postId"]);
+    }
+
+    #[test]
+    fn declared_path_param_keeps_its_value_when_supplementing() {
+        // 已声明的带 example 要保留取值，未声明的补空行；顺序 = 声明在前。
+        let spec = spec_with_path(
+            "/orgs/{org}/repos/{repo}",
+            r#""parameters": [
+                 { "name": "org", "in": "path", "required": true,
+                   "schema": { "type": "string" }, "example": "acme" }
+               ],"#,
+        );
+        let eps = import_endpoints(&spec).unwrap();
+        let vars = &eps[0].request.path_variables;
+        let by = |k: &str| vars.iter().find(|v| v.key == k).expect("变量缺失");
+        assert_eq!(by("org").value, "acme", "声明过的取值不能丢");
+        assert_eq!(by("repo").value, "", "未声明的补空行");
+    }
+
+    #[test]
+    fn double_brace_path_var_recognized_once() {
+        // 本应用的 `{{id}}` 写法也要认，且不能被拆成两个变量。
+        let spec = spec_with_path("/users/{{id}}", "\"summary\": \"x\",");
+        assert_eq!(path_keys_of(&spec), vec!["id"]);
+    }
+
+    #[test]
+    fn no_path_vars_leaves_list_empty() {
+        let spec = spec_with_path("/users/list", "\"summary\": \"x\",");
+        assert!(path_keys_of(&spec).is_empty());
     }
 
     #[test]
