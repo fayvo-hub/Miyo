@@ -21,3 +21,4 @@ node_modules/
 /frontend/src-tauri/gen/
 /frontend/src-tauri/binaries/
 .openchamber/
+.zcode/
