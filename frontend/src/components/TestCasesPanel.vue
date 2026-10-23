@@ -169,6 +169,7 @@ function openDrawer(c: TestCase): void {
 async function runDrawerPayload(payload: {
   method: string
   urlPath: string
+  pathVariables: TestCase['path_variables']
   params: TestCase['params']
   headers: TestCase['headers']
   bodyType: string
@@ -180,6 +181,7 @@ async function runDrawerPayload(payload: {
     ...drawerCase.value,
     method: payload.method as TestCase['method'],
     url_path: payload.urlPath,
+    path_variables: payload.pathVariables,
     params: payload.params,
     headers: payload.headers,
     body_type: payload.bodyType,
@@ -194,6 +196,7 @@ async function saveDrawerPayload(payload: {
   category: TestCaseCategory
   method: string
   urlPath: string
+  pathVariables: TestCase['path_variables']
   params: TestCase['params']
   headers: TestCase['headers']
   bodyType: string
@@ -205,6 +208,7 @@ async function saveDrawerPayload(payload: {
   await store.updateTestCaseContent(d.id, c.id, {
     method: payload.method as TestCase['method'],
     urlPath: payload.urlPath,
+    pathVariables: payload.pathVariables,
     params: payload.params,
     headers: payload.headers,
     bodyType: payload.bodyType,

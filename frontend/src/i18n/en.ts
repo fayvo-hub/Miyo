@@ -1055,6 +1055,7 @@ export const en: Record<ZhKey, string> = {
   'casedrawer.url': 'Request URL',
   'casedrawer.urlPh': '/funds/transfer or https://…',
   'casedrawer.tabParams': 'Params',
+  'casedrawer.tabPath': 'Path Variables',
   'casedrawer.tabHeaders': 'Headers',
   'casedrawer.tabBody': 'Body',
   'casedrawer.reqConfig': 'Request config',

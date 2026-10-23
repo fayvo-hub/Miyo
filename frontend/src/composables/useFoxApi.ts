@@ -315,6 +315,7 @@ export function useFoxApi() {
     payload: {
       method: HttpMethod
       urlPath: string
+      pathVariables: KeyValue[]
       params: KeyValue[]
       headers: KeyValue[]
       bodyType: string
@@ -326,6 +327,7 @@ export function useFoxApi() {
         caseId,
         method: payload.method,
         urlPath: payload.urlPath,
+        pathVariables: payload.pathVariables,
         params: payload.params,
         headers: payload.headers,
         bodyType: payload.bodyType,

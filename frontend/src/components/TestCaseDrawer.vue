@@ -11,6 +11,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { AuthSpec, BodySpec, ExecuteResponse, HttpMethod, KeyValue, TestCase, TestCaseCategory } from '../types/foxApi'
 import { TEST_CASE_CATEGORIES, caseCategoryLabel, formatDuration, restoreBody, statusToneOf, statusTextOf } from '../utils/testCases'
+import { applyPathVars, extractPathVarNames } from '../utils/pathVariables'
 import { methodTextTone } from '../utils/methodTone'
 import { useLocaleStore } from '../stores/locale'
 import CodeExportMenu from './CodeExportMenu.vue'
@@ -32,6 +33,7 @@ const props = defineProps<{
   onRun: (payload: {
     method: HttpMethod
     urlPath: string
+    pathVariables: KeyValue[]
     params: KeyValue[]
     headers: KeyValue[]
     bodyType: string
@@ -42,6 +44,7 @@ const props = defineProps<{
     category: TestCaseCategory
     method: HttpMethod
     urlPath: string
+    pathVariables: KeyValue[]
     params: KeyValue[]
     headers: KeyValue[]
     bodyType: string
@@ -59,6 +62,8 @@ const name = ref('')
 const category = ref<TestCaseCategory>('正向')
 const method = ref<HttpMethod>('GET')
 const urlPath = ref('')
+/** 路径变量取值（`/users/{id}` 里的 id）；用例快照的一部分，随保存落库。 */
+const pathVariables = ref<KeyValue[]>([])
 const params = ref<KeyValue[]>([])
 const headers = ref<KeyValue[]>([])
 const bodyType = ref('none')
@@ -80,10 +85,13 @@ const bodyOptions = computed(() => [
 ])
 
 // ---------- 请求参数 Tab ----------
-type ReqTab = 'params' | 'headers' | 'body'
+type ReqTab = 'params' | 'path' | 'headers' | 'body'
 const activeTab = ref<ReqTab>('params')
+/** 路径变量页签只在 Path 含 `{var}` 时出现，避免无谓噪音。 */
+const hasPathVars = computed(() => extractPathVarNames(urlPath.value).length > 0)
 const reqTabs = computed<{ key: ReqTab; label: string }[]>(() => [
   { key: 'params', label: t('casedrawer.tabParams') },
+  ...(hasPathVars.value ? [{ key: 'path' as ReqTab, label: t('casedrawer.tabPath') }] : []),
   { key: 'headers', label: t('casedrawer.tabHeaders') },
   { key: 'body', label: t('casedrawer.tabBody') },
 ])
@@ -225,11 +233,13 @@ watch(
     category.value = testCase.category
     method.value = testCase.method
     urlPath.value = testCase.url_path
+    pathVariables.value = (testCase.path_variables ?? []).map((p) => ({ ...p }))
     params.value = testCase.params.map((p) => ({ ...p }))
     headers.value = testCase.headers.map((h) => ({ ...h }))
     bodyType.value = testCase.body_type
     bodyContent.value = testCase.body_content
     activeTab.value = 'params'
+    syncPathVars()
     result.value = null
     runError.value = ''
     closeBodyFind()
@@ -251,6 +261,28 @@ const headerRows = computed({
     headers.value = rows as KeyValue[]
   },
 })
+const pathVarRows = computed({
+  get: () => pathVariables.value,
+  set: (rows: KVRow[]) => {
+    pathVariables.value = rows as KeyValue[]
+  },
+})
+
+/**
+ * 路径变量补齐：用例可能存于「模型无 path_variables」的旧版本，或 URL 后来
+ * 才加上 `{id}`——按 URL 模板补出缺失行（保留已有取值，不删用户手写的行）。
+ */
+function syncPathVars(): void {
+  const names = extractPathVarNames(urlPath.value)
+  if (!names.length) return
+  const existing = new Set(pathVariables.value.map((p) => p.key))
+  for (const n of names) {
+    if (!existing.has(n)) {
+      pathVariables.value.push({ key: n, value: '', enabled: true, description: '' })
+    }
+  }
+}
+watch(urlPath, syncPathVars)
 
 // ---------- 请求参数 Tab ----------
 const bodyLabel = computed(() => bodyOptions.value.find((o) => o.value === bodyType.value)?.label ?? bodyType.value)
@@ -259,8 +291,11 @@ const bodyEditable = computed(() => bodyType.value !== 'none')
 // ---------- 导出代码（复用调试页 CodeExportMenu） ----------
 /** 用例没有独立鉴权配置（运行时 auth 固定 none），导出与实际执行一致。 */
 const NO_AUTH: AuthSpec = { type: 'none' }
-/** 导出用 URL：Path 非空时经父级解析（Base URL + 变量），空则置灰导出。 */
-const exportUrl = computed(() => (urlPath.value.trim() ? props.resolveUrl(urlPath.value.trim()) : ''))
+/** 导出用 URL：Path 非空时先代入路径变量，再经父级解析（Base URL + 环境变量）。 */
+const exportUrl = computed(() => {
+  const rendered = applyPathVars(urlPath.value.trim(), pathVariables.value)
+  return rendered ? props.resolveUrl(rendered) : ''
+})
 /** body_type + 内容 → BodySpec（JSON 非法时降级 raw 文本，与运行时 restoreBody 同源）。 */
 const exportBody = computed<BodySpec>(() => restoreBody(bodyType.value, bodyContent.value))
 
@@ -272,6 +307,7 @@ function payload() {
   return {
     method: method.value,
     urlPath: urlPath.value,
+    pathVariables: pathVariables.value.filter((p) => p.key || p.value),
     params: params.value.filter((p) => p.key || p.value),
     headers: headers.value.filter((h) => h.key || h.value),
     bodyType: bodyType.value,
@@ -506,6 +542,11 @@ function onSplitterDblClick(): void {
                 <KeyValueTable
                   v-if="activeTab === 'params'"
                   v-model="paramRows"
+                  :column-widths="['30%', '50%', '20%']"
+                />
+                <KeyValueTable
+                  v-else-if="activeTab === 'path'"
+                  v-model="pathVarRows"
                   :column-widths="['30%', '50%', '20%']"
                 />
                 <KeyValueTable

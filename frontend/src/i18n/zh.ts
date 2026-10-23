@@ -1051,6 +1051,7 @@ export const zh = {
   'casedrawer.url': '请求地址',
   'casedrawer.urlPh': '/funds/transfer 或 https://…',
   'casedrawer.tabParams': 'Params',
+  'casedrawer.tabPath': 'Path 变量',
   'casedrawer.tabHeaders': 'Headers',
   'casedrawer.tabBody': 'Body',
   'casedrawer.reqConfig': '请求参数配置',

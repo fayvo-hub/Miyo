@@ -59,6 +59,7 @@ function makeCase(id: string, name: string, category: TestCase['category'], body
     category,
     method: 'POST',
     url_path: '/funds/transfer',
+    path_variables: [],
     params: [],
     headers: [],
     body_type: 'json',

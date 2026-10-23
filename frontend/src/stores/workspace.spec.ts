@@ -6,7 +6,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
-import type { CurlParsed, Endpoint, Environment, Project } from '../types/foxApi'
+import type { CurlParsed, Endpoint, Environment, Project, TestCase } from '../types/foxApi'
 
 function makeProject(id: string, name: string): Project {
   const now = new Date().toISOString()
@@ -48,6 +48,8 @@ const backend = vi.hoisted(() => {
   /** 历史接口行为控制（分页 / 失败提示用例）。 */
   const historyRows: { id: string }[] = []
   const historyCalls: (number | undefined)[] = []
+  /** executeRequest 收到的调用参数（断言向后端送出的 URL）。 */
+  const execCalls: { url: string; spec: unknown }[] = []
   let historyImpl:
     | ((projectId: string, limit?: number, endpointId?: string | null) => Promise<{ id: string }[]>)
     | null = null
@@ -61,6 +63,7 @@ const backend = vi.hoisted(() => {
     active: () => activeId,
     historyRows,
     historyCalls,
+    execCalls,
     setHistoryImpl: (
       fn: ((projectId: string, limit?: number, endpointId?: string | null) => Promise<{ id: string }[]>) | null,
     ) => {
@@ -114,6 +117,20 @@ vi.mock('../composables/useFoxApi', () => ({
       if (idx === -1) list.push(ep)
       else list[idx] = ep
       return ep
+    }),
+    /** 记录 executeRequest 收到的 url/spec，供「用例运行是否代入路径变量」断言。 */
+    executeRequest: vi.fn().mockImplementation(async (args: { url: string; spec: unknown }) => {
+      backend.execCalls.push(args)
+      return {
+        status: 200,
+        status_text: 'OK',
+        headers: {},
+        body: '{}',
+        duration_ms: 1,
+        size_bytes: 2,
+        content_type: 'application/json',
+        received_at: new Date().toISOString(),
+      }
     }),
   }),
 }))
@@ -553,5 +570,63 @@ describe('全局请求超时：未配置时回退后端内置默认', () => {
     await vi.waitFor(() => {
       expect(store.globalTimeoutMs).toBe(FALLBACK_GLOBAL_TIMEOUT_MS)
     })
+  })
+})
+
+/**
+ * 用例运行代入路径变量（回归）。
+ *
+ * 旧 bug：`TestCase` 没有 `path_variables` 字段，`buildCaseRequest` 写死
+ * `path_variables: []` 且不代入 URL，于是 `/users/{id}` 这种带路径传参的用例
+ * 单跑时把字面量 `{id}` 原样发给后端。此处断言真正送到 executeRequest 的 URL。
+ */
+describe('用例运行：URL 路径变量代入', () => {
+  const baseCase = (over: Partial<TestCase>): TestCase => ({
+    id: 'c1',
+    request_id: 'ep-1',
+    name: '用例',
+    category: '正向',
+    method: 'GET',
+    url_path: '/users/{id}',
+    path_variables: [],
+    params: [],
+    headers: [],
+    body_type: 'none',
+    body_content: '',
+    last_run_status: 'Untested',
+    created_at: '2026-01-01T00:00:00.000Z',
+    ...over,
+  })
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useLocaleStore().setMode('zh')
+    backend.projects.length = 0
+    backend.execCalls.length = 0
+    backend.setActive(null)
+    backend.projects.push(makeProject('p-a', '项目A'))
+    backend.endpointsByProject.set('p-a', [makeEndpoint('ep-1', 'p-a', 'users')])
+    backend.envsByProject.set('p-a', [])
+  })
+
+  it('已填值的路径变量在发出前代入 URL', async () => {
+    const store = useWorkspaceStore()
+    backend.setActive('p-a')
+    await store.init()
+    await store.runTestCase(
+      'ep-1',
+      baseCase({ path_variables: [{ key: 'id', value: '42', enabled: true, description: '' }] }),
+      null,
+    )
+    expect(backend.execCalls.at(-1)?.url).toContain('/users/42')
+    expect(backend.execCalls.at(-1)?.url).not.toContain('{id}')
+  })
+
+  it('未填值时路径原样发出（保持历史行为）', async () => {
+    const store = useWorkspaceStore()
+    backend.setActive('p-a')
+    await store.init()
+    await store.runTestCase('ep-1', baseCase({ path_variables: [] }), null)
+    expect(backend.execCalls.at(-1)?.url).toContain('/users/{id}')
   })
 })

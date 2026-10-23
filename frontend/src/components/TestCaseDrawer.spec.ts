@@ -20,6 +20,7 @@ function makeCase(): TestCase {
     category: '正向',
     method: 'POST',
     url_path: '/funds/transfer',
+    path_variables: [],
     params: [{ key: 'env', value: 'prod', enabled: true, description: '' }],
     headers: [{ key: 'X-Trace', value: 'on', enabled: true, description: '' }],
     body_type: 'json',
@@ -138,6 +139,74 @@ describe('TestCaseDrawer', () => {
       )
     })
     expect(wrapper.emitted('update:open')).toBeTruthy()
+  })
+
+  /**
+   * 路径变量回归：旧的 TestCase 没有 path_variables 字段，抽屉里既没有入口，
+   * 保存/运行也不会带上它——`/users/{id}` 的用例只能把字面量 `{id}` 发出去。
+   */
+  it('Path 含占位符时出现「Path 变量」Tab，且保存携带 pathVariables', async () => {
+    const { onSave } = mountDrawer({
+      testCase: {
+        ...makeCase(),
+        method: 'GET',
+        url_path: '/users/{id}',
+        path_variables: [{ key: 'id', value: '42', enabled: true, description: '' }],
+      },
+    })
+    const tabs = Array.from(document.querySelectorAll('.drw-tab')).map((b) => b.textContent)
+    expect(tabs).toContain('Path 变量')
+
+    const saveBtn = Array.from(document.querySelectorAll('.drw-foot button')).find(
+      (b) => b.textContent?.trim() === '保存修改',
+    ) as HTMLButtonElement
+    saveBtn.click()
+    await vi.waitFor(() => {
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          urlPath: '/users/{id}',
+          pathVariables: [expect.objectContaining({ key: 'id', value: '42' })],
+        }),
+      )
+    })
+  })
+
+  it('Path 含占位符时「立即运行」携带 pathVariables', async () => {
+    const { onRun } = mountDrawer({
+      testCase: {
+        ...makeCase(),
+        method: 'GET',
+        url_path: '/users/{id}',
+        path_variables: [{ key: 'id', value: '42', enabled: true, description: '' }],
+      },
+    })
+    onRun.mockResolvedValue({
+      status: 200,
+      headers: [],
+      body: '{}',
+      content_type: 'application/json',
+      duration_ms: 1,
+      size_bytes: 2,
+      truncated: false,
+    })
+    const runBtn = Array.from(document.querySelectorAll('.drw-foot button')).find((b) =>
+      b.textContent?.includes('立即运行'),
+    ) as HTMLButtonElement
+    runBtn.click()
+    await vi.waitFor(() => {
+      expect(onRun).toHaveBeenCalledWith(
+        expect.objectContaining({
+          urlPath: '/users/{id}',
+          pathVariables: [expect.objectContaining({ key: 'id', value: '42' })],
+        }),
+      )
+    })
+  })
+
+  it('Path 无占位符时不出现「Path 变量」Tab', async () => {
+    mountDrawer()
+    const tabs = Array.from(document.querySelectorAll('.drw-tab')).map((b) => b.textContent)
+    expect(tabs).not.toContain('Path 变量')
   })
 
   it('「立即运行」调用 onRun 并展示响应状态与 Body（Success）', async () => {

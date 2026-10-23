@@ -166,6 +166,7 @@ fn ipc_models_serialize_snake_case_keys() {
             category: "正向".into(),
             method: HttpMethod::POST,
             url_path: "/pets".into(),
+            path_variables: vec![kv("id", "1")],
             params: vec![kv("page", "1")],
             headers: vec![],
             body_type: "json".into(),

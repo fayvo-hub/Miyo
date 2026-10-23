@@ -540,6 +540,8 @@ export interface TestCase {
   category: TestCaseCategory
   method: HttpMethod
   url_path: string
+  /** URL 路径变量取值（`/users/{id}` 里的 id）；随用例快照保存，否则单跑会发字面量 `{id}`。 */
+  path_variables: KeyValue[]
   params: KeyValue[]
   headers: KeyValue[]
   /** body 类型标识：json / form-data / raw / urlencoded / graphql / binary / none。 */

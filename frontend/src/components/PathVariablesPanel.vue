@@ -13,6 +13,7 @@ import { useLocaleStore } from '../stores/locale'
 import { useToast } from '../composables/useToast'
 import KeyValueTable, { type KVRow } from './ui/KeyValueTable.vue'
 import type { Endpoint, KeyValue } from '../types/foxApi'
+import { extractPathVarNames } from '../utils/pathVariables'
 
 const props = defineProps<{ draft: Endpoint | null }>()
 
@@ -30,43 +31,11 @@ function apply(next: KVRow[]): void {
   request.path_variables = next as KeyValue[]
 }
 
-const NAME = '[A-Za-z_$][\\w$-]*'
-
 /**
- * 从路径抽取占位名（按出现顺序去重）：`{{id}}`、`{id}`、`:id`（OpenAPI 风格）。
- * 先剥掉 origin 与 query/hash，避免 `https://x:8080` 的端口、`user:pass@`
- * 的口令被当成 `:name` 占位；跳过 `{{...}}` 时用等长空白替换以保住字符下标，
- * 保证三类写法混排时仍按路径里的真实先后排序。
+ * 从路径抽取占位名：委托 `utils/pathVariables.extractPathVarNames`
+ * （与后端 `fox_core::util::extract_path_variables` 同源的单一实现）。
  */
-function extractNames(path: string): string[] {
-  const cleaned = path
-    .replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^/?#]*/, '')
-    .replace(/[?#].*$/, '')
-  const found: { i: number; name: string }[] = []
-  for (const m of cleaned.matchAll(new RegExp(`\\{\\{\\s*(${NAME})\\s*\\}\\}`, 'g'))) {
-    found.push({ i: m.index ?? 0, name: m[1] })
-  }
-  const noDouble = cleaned.replace(
-    new RegExp(`\\{\\{\\s*${NAME}\\s*\\}\\}`, 'g'),
-    (s) => ' '.repeat(s.length),
-  )
-  for (const m of noDouble.matchAll(new RegExp(`\\{\\s*(${NAME})\\s*\\}`, 'g'))) {
-    found.push({ i: m.index ?? 0, name: m[1] })
-  }
-  for (const m of noDouble.matchAll(new RegExp(`(?<![\\w]):(${NAME})`, 'g'))) {
-    found.push({ i: m.index ?? 0, name: m[1] })
-  }
-  found.sort((a, b) => a.i - b.i)
-  const out: string[] = []
-  const seen = new Set<string>()
-  for (const f of found) {
-    if (f.name && !seen.has(f.name)) {
-      seen.add(f.name)
-      out.push(f.name)
-    }
-  }
-  return out
-}
+const extractNames = extractPathVarNames
 
 /** 抽取：已有同名行保留取值，缺失的补空行（不删除用户手写的行）。 */
 function extract(): void {

@@ -1905,6 +1905,8 @@ fn test_case(
         category: category.to_string(),
         method,
         url_path: url_path.to_string(),
+        // 种子用例跟随主接口的路径变量，保证 `/alerts/{id}` 单跑时能替换。
+        path_variables: endpoint.request.path_variables.clone(),
         params,
         headers,
         body_type: body_type.to_string(),

@@ -25,6 +25,7 @@ import {
 } from '../utils/environment'
 import { isCurlCommand } from '../utils/url'
 import { methodBadgeTone, methodTextTone } from '../utils/methodTone'
+import { applyPathVars } from '../utils/pathVariables'
 import { useVarCandidates } from '../composables/useVarCandidates'
 import { useVarAutocomplete } from '../composables/useVarAutocomplete'
 import { lazyComponent } from '../composables/lazyComponent'
@@ -756,32 +757,19 @@ function commitUrlPath(): void {
 }
 
 /**
- * 路径变量代入（镜像 fox-core util::replace_path_variables：`{key}` 与
- * `{{key}}` 两种写法，长 key 先替换避免前缀冲突）。
+ * 请求地址（与 send / 代码生成 / 压测共用）；有环境时按环境 Base URL 拼接，变量由 resolveRequestUrl 解析。
  *
- * 后端 execute_request 直接使用前端拼好的完整 URL，不会消费
- * request.path_variables（该字段目前仅在 OpenAPI 导出与文档预览中读取），
- * 故代入放在前端 buildUrl：仅替换「已启用且取值非空」的行，
- * 未配置时路径原样发送（历史行为不变）。
+ * 路径变量代入见 `utils/pathVariables.applyPathVars`（镜像 fox-core
+ * `util::replace_path_variables`）：后端 execute_request 直接使用前端拼好的
+ * 完整 URL，不消费 request.path_variables（该字段只被 OpenAPI 导出与文档预览
+ * 读取），故代入必须在前端完成；未配置的行不替换，路径原样发送。
  */
-function applyPathVariables(path: string, pathVars: RequestSpec['path_variables']): string {
-  const rows = (pathVars ?? [])
-    .filter((r) => r.enabled !== false && r.key && r.value)
-    .sort((a, b) => b.key.length - a.key.length)
-  let out = path
-  for (const row of rows) {
-    out = out.split(`{{${row.key}}}`).join(row.value).split(`{${row.key}}`).join(row.value)
-  }
-  return out
-}
-
-/** 请求地址（与 send / 代码生成 / 压测共用）；有环境时按环境 Base URL 拼接，变量由 resolveRequestUrl 解析。 */
 function buildUrl(): string {
   const d = draft.value
   if (!d) return ''
   // gRPC：path 即完整地址（host:port，可含 {{变量}}），不拼 Base URL
   if (d.method === 'GRPC') return d.path
-  const path = applyPathVariables(d.path, d.request.path_variables)
+  const path = applyPathVars(d.path, d.request.path_variables)
   if (isAbsolutePath(path)) return path
   if (activeEnv.value && envBaseUrl(activeEnv.value)) {
     return resolveRequestUrl(activeEnv.value, path, envVars.value).url

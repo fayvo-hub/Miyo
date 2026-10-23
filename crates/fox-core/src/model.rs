@@ -872,8 +872,8 @@ impl TestCaseStatus {
 
 /// 测试用例（Apifox 风格用例管理）。
 ///
-/// 每个用例保存一次调用的独立快照：URL 路径 + Query 参数 + 请求头 + Body，
-/// 可单独运行、一键回填调试页重新调用。`request_id` 关联主接口（`endpoints`）。
+/// 每个用例保存一次调用的独立快照：URL 路径 + 路径变量 + Query 参数 + 请求头 +
+/// Body，可单独运行、一键回填调试页重新调用。`request_id` 关联主接口（`endpoints`）。
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TestCase {
     pub id: Uuid,
@@ -884,6 +884,10 @@ pub struct TestCase {
     pub category: String,
     pub method: HttpMethod,
     pub url_path: String,
+    /// URL 路径变量取值（`/users/{id}` 里的 id）。缺了它单跑会把字面量
+    /// `{id}` 发出去，故与 params 同级随用例快照保存。
+    #[serde(default)]
+    pub path_variables: Vec<KeyValue>,
     pub params: Vec<KeyValue>,
     pub headers: Vec<KeyValue>,
     /// body 类型标识：json / form-data / raw / urlencoded / graphql / binary / none。

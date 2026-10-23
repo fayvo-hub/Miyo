@@ -10,9 +10,9 @@ use fox_core::Result;
 pub async fn create_test_case(db: &SqlitePool, case: &TestCase) -> Result<TestCase> {
     sqlx::query(
         "INSERT INTO test_cases
-             (id, request_id, name, category, method, url_path, params, headers,
+             (id, request_id, name, category, method, url_path, path_variables, params, headers,
               body_type, body_content, last_run_status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(case.id.to_string())
     .bind(case.request_id.to_string())
@@ -20,6 +20,7 @@ pub async fn create_test_case(db: &SqlitePool, case: &TestCase) -> Result<TestCa
     .bind(&case.category)
     .bind(case.method.as_str())
     .bind(&case.url_path)
+    .bind(serde_json::to_string(&case.path_variables).map_err(fox_core::AppError::Json)?)
     .bind(serde_json::to_string(&case.params).map_err(fox_core::AppError::Json)?)
     .bind(serde_json::to_string(&case.headers).map_err(fox_core::AppError::Json)?)
     .bind(&case.body_type)
@@ -34,7 +35,7 @@ pub async fn create_test_case(db: &SqlitePool, case: &TestCase) -> Result<TestCa
 /// 列出接口的全部测试用例（按创建时间排序）。
 pub async fn list_test_cases(db: &SqlitePool, request_id: Uuid) -> Result<Vec<TestCase>> {
     let rows: Vec<TestCaseRow> = sqlx::query_as(
-        "SELECT id, request_id, name, category, method, url_path, params, headers,
+        "SELECT id, request_id, name, category, method, url_path, path_variables, params, headers,
                 body_type, body_content, last_run_status, created_at
          FROM test_cases WHERE request_id = ? ORDER BY created_at",
     )
@@ -59,7 +60,7 @@ pub async fn list_test_cases_by_endpoints(
             continue;
         }
         let mut qb = QueryBuilder::new(
-            "SELECT id, request_id, name, category, method, url_path, params, headers,
+            "SELECT id, request_id, name, category, method, url_path, path_variables, params, headers,
                     body_type, body_content, last_run_status, created_at
              FROM test_cases WHERE request_id IN (",
         );
@@ -115,13 +116,14 @@ pub async fn update_test_case_status(
     Ok(())
 }
 
-/// 更新用例完整请求内容（方法 / 路径 / Params / Headers / Body，抽屉「保存修改」）。
+/// 更新用例完整请求内容（方法 / 路径 / 路径变量 / Params / Headers / Body，抽屉「保存修改」）。
 #[allow(clippy::too_many_arguments)]
 pub async fn update_test_case_content(
     db: &SqlitePool,
     case_id: Uuid,
     method: HttpMethod,
     url_path: &str,
+    path_variables: &[KeyValue],
     params: &[KeyValue],
     headers: &[KeyValue],
     body_type: &str,
@@ -129,11 +131,13 @@ pub async fn update_test_case_content(
 ) -> Result<()> {
     sqlx::query(
         "UPDATE test_cases
-         SET method = ?, url_path = ?, params = ?, headers = ?, body_type = ?, body_content = ?
+         SET method = ?, url_path = ?, path_variables = ?, params = ?, headers = ?,
+             body_type = ?, body_content = ?
          WHERE id = ?",
     )
     .bind(method.as_str())
     .bind(url_path)
+    .bind(serde_json::to_string(path_variables).map_err(fox_core::AppError::Json)?)
     .bind(serde_json::to_string(params).map_err(fox_core::AppError::Json)?)
     .bind(serde_json::to_string(headers).map_err(fox_core::AppError::Json)?)
     .bind(body_type)
@@ -152,6 +156,7 @@ struct TestCaseRow {
     category: String,
     method: String,
     url_path: String,
+    path_variables: Option<String>,
     params: Option<String>,
     headers: Option<String>,
     body_type: String,
@@ -171,6 +176,8 @@ impl TestCaseRow {
             category: self.category,
             method: self.method.parse()?,
             url_path: self.url_path,
+            path_variables: serde_json::from_str(self.path_variables.as_deref().unwrap_or("[]"))
+                .map_err(fox_core::AppError::Json)?,
             params: serde_json::from_str(self.params.as_deref().unwrap_or("[]"))
                 .map_err(fox_core::AppError::Json)?,
             headers: serde_json::from_str(self.headers.as_deref().unwrap_or("[]"))

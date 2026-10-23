@@ -26,6 +26,7 @@ import {
   variableListToMap,
 } from '../utils/environment'
 import { applyCaseToRequest, restoreBody, snapshotRequest } from '../utils/testCases'
+import { applyPathVars } from '../utils/pathVariables'
 import type {
   AuthSpec,
   CurlParsed,
@@ -727,6 +728,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       category,
       method,
       url_path: path,
+      path_variables: snap.path_variables,
       params: snap.params,
       headers: snap.headers,
       body_type: snap.body_type,
@@ -832,12 +834,16 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   function buildCaseRequest(testCase: TestCase): { url: string; spec: Endpoint['request'] } {
     const isAbs = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(testCase.url_path)
     const path = testCase.url_path.startsWith('/') ? testCase.url_path : `/${testCase.url_path}`
+    // 路径变量必须在拼 URL 时替换掉，否则 `/users/{id}` 会被原样发出去。
+    const vars = testCase.path_variables ?? []
     return {
-      url: isAbs ? testCase.url_path : `${urlDomain.value}${path}`,
+      url: isAbs
+        ? applyPathVars(testCase.url_path, vars)
+        : `${urlDomain.value}${applyPathVars(path, vars)}`,
       spec: {
         params: testCase.params,
         headers: testCase.headers,
-        path_variables: [] as KeyValue[],
+        path_variables: vars,
         auth: { type: 'none' } as AuthSpec,
         body: restoreBody(testCase.body_type, testCase.body_content),
         active_tab: null,
@@ -922,6 +928,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     payload: {
       method: HttpMethod
       urlPath: string
+      pathVariables: KeyValue[]
       params: KeyValue[]
       headers: KeyValue[]
       bodyType: string
@@ -934,6 +941,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     if (target) {
       target.method = payload.method
       target.url_path = payload.urlPath
+      target.path_variables = payload.pathVariables
       target.params = payload.params
       target.headers = payload.headers
       target.body_type = payload.bodyType

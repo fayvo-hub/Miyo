@@ -144,10 +144,17 @@ export function bodyContentOf(body: BodySpec): string {
 }
 
 /** 从请求提取用例快照（不含 path：path 由调用方单独传）。 */
-export function snapshotRequest(
-  request: RequestSpec,
-): { params: KeyValue[]; headers: KeyValue[]; body_type: string; body_content: string } {
+export function snapshotRequest(request: RequestSpec): {
+  path_variables: KeyValue[]
+  params: KeyValue[]
+  headers: KeyValue[]
+  body_type: string
+  body_content: string
+} {
   return {
+    // 路径变量必须随快照走：用例 url_path 里可能含 `/users/{id}`，
+    // 缺了它单跑就只能把字面量 `{id}` 发出去。
+    path_variables: deepClone(request.path_variables ?? []),
     params: deepClone(request.params),
     headers: deepClone(request.headers),
     body_type: bodyTypeOf(request.body),
@@ -155,16 +162,18 @@ export function snapshotRequest(
   }
 }
 
-/** 把用例快照回填到请求：params / headers 整体替换，body 按 body_type 还原。 */
+/** 把用例快照回填到请求：path_variables / params / headers 整体替换，body 按 body_type 还原。 */
 export function applyCaseToRequest(
   request: RequestSpec,
   snapshot: {
+    path_variables?: KeyValue[]
     params: KeyValue[]
     headers: KeyValue[]
     body_type: string
     body_content: string
   },
 ): void {
+  request.path_variables = deepClone(snapshot.path_variables ?? [])
   request.params = deepClone(snapshot.params)
   request.headers = deepClone(snapshot.headers)
   request.body = restoreBody(snapshot.body_type, snapshot.body_content)

@@ -75,7 +75,7 @@ pub async fn update_test_case_status(
         .map_err(Into::into)
 }
 
-/// 更新用例完整请求内容（方法 / 路径 / Params / Headers / Body，抽屉「保存修改」）。
+/// 更新用例完整请求内容（方法 / 路径 / 路径变量 / Params / Headers / Body，抽屉「保存修改」）。
 #[tauri::command(rename_all = "camelCase")]
 #[allow(clippy::too_many_arguments)]
 pub async fn update_test_case_content(
@@ -83,6 +83,7 @@ pub async fn update_test_case_content(
     case_id: Uuid,
     method: HttpMethod,
     url_path: String,
+    path_variables: Vec<KeyValue>,
     params: Vec<KeyValue>,
     headers: Vec<KeyValue>,
     body_type: String,
@@ -96,6 +97,7 @@ pub async fn update_test_case_content(
         case_id,
         method,
         &url_path,
+        &path_variables,
         &params,
         &headers,
         &body_type,

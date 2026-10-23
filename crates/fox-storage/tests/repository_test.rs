@@ -7,8 +7,8 @@ use fox_storage::repository as repo;
 use uuid::Uuid;
 
 use fox_core::model::{
-    EnvironmentVariable, HttpMethod, MockRule, RequestExample, RequestHistory, RequestSpec,
-    ResponseExample, TestCase, TestCaseStatus, WsMessageType,
+    EnvironmentVariable, HttpMethod, KeyValue, MockRule, RequestExample, RequestHistory,
+    RequestSpec, ResponseExample, TestCase, TestCaseStatus, WsMessageType,
 };
 
 async fn pool() -> SqlitePool {
@@ -707,6 +707,7 @@ async fn list_test_cases_by_endpoints_groups_and_orders() {
         category: "正向".into(),
         method: HttpMethod::GET,
         url_path: "/users".into(),
+        path_variables: Vec::new(),
         params: Vec::new(),
         headers: Vec::new(),
         body_type: "none".into(),
@@ -748,6 +749,66 @@ async fn list_test_cases_by_endpoints_groups_and_orders() {
         .await
         .unwrap()
         .is_empty());
+}
+
+/// 测试用例路径变量落库与回读（回归）。
+///
+/// 旧 schema 没有 `path_variables` 列，用例里的 `/users/{id}` 取值无处安放，
+/// 单跑只能把字面量 `{id}` 发出去。此测试覆盖 create / list / update 三条链路。
+#[tokio::test]
+async fn test_case_path_variables_persist_and_update() {
+    let db = pool().await;
+    let project = repo::create_project(&db, "P", "").await.unwrap();
+    let ep = repo::create_endpoint(&db, project.id, None, "A")
+        .await
+        .unwrap();
+
+    let vars = vec![KeyValue::new("id", "42")];
+    let case = TestCase {
+        id: Uuid::new_v4(),
+        request_id: ep.id,
+        name: "详情".into(),
+        category: "正向".into(),
+        method: HttpMethod::GET,
+        url_path: "/users/{id}".into(),
+        path_variables: vars.clone(),
+        params: Vec::new(),
+        headers: Vec::new(),
+        body_type: "none".into(),
+        body_content: String::new(),
+        last_run_status: TestCaseStatus::Untested,
+        created_at: chrono::Utc::now(),
+    };
+    repo::create_test_case(&db, &case).await.unwrap();
+
+    // 单接口查询回读
+    let listed = repo::list_test_cases(&db, ep.id).await.unwrap();
+    assert_eq!(listed.len(), 1);
+    assert_eq!(listed[0].path_variables, vars, "创建后应能回读到路径变量");
+
+    // 批量查询同样带上
+    let batch = repo::list_test_cases_by_endpoints(&db, &[ep.id])
+        .await
+        .unwrap();
+    assert_eq!(batch[0].path_variables, vars);
+
+    // 「保存修改」更新路径变量
+    let next = vec![KeyValue::new("id", "99")];
+    repo::update_test_case_content(
+        &db,
+        case.id,
+        HttpMethod::GET,
+        "/users/{id}",
+        &next,
+        &[],
+        &[],
+        "none",
+        "",
+    )
+    .await
+    .unwrap();
+    let after = repo::list_test_cases(&db, ep.id).await.unwrap();
+    assert_eq!(after[0].path_variables, next, "更新后应回读到新取值");
 }
 
 fn history_row(project: Uuid, endpoint: Option<Uuid>, i: usize) -> RequestHistory {

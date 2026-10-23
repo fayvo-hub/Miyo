@@ -175,6 +175,7 @@ describe('matchTestCaseKeyword', () => {
       category: '正向',
       method: 'POST',
       url_path: '/funds/transfer',
+      path_variables: [],
       params: [{ key: 'debug', value: '0', enabled: true, description: '' }],
       headers: [{ key: 'X-Trace', value: 'on', enabled: true, description: '' }],
       body_type: 'json',
