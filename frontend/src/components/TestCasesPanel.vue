@@ -11,7 +11,7 @@ import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
 import { CATEGORY_TONE, TEST_CASE_CATEGORIES, caseCategoryLabel, formatDuration, matchTestCaseKeyword, statusTextOf, statusToneOf } from '../utils/testCases'
 import { methodTextTone } from '../utils/methodTone'
-import type { Endpoint, TestCase, TestCaseCategory } from '../types/foxApi'
+import type { Endpoint, TestCase, TestCaseCategory } from '../types/miyoApi'
 import EmptyState from './ui/EmptyState.vue'
 import EnvBadge from './ui/EnvBadge.vue'
 import Icon from './ui/Icon.vue'
@@ -174,7 +174,7 @@ async function runDrawerPayload(payload: {
   headers: TestCase['headers']
   bodyType: string
   bodyContent: string
-}): Promise<import('../types/foxApi').ExecuteResponse | null> {
+}): Promise<import('../types/miyoApi').ExecuteResponse | null> {
   const d = props.draft
   if (!d || !drawerCase.value) return null
   const snapshot: TestCase = {
@@ -353,7 +353,7 @@ watch(
         <!-- 运行环境上下文：全部运行 / 行内运行均走 store.activeEnvId，此处同源可见 -->
         <EnvBadge />
         <button
-          class="rf-btn rf-btn-sm"
+          class="miyo-btn miyo-btn-sm"
           type="button"
           :disabled="!cases.length"
           :title="t('cases.exportSmokeHint')"
@@ -361,11 +361,11 @@ watch(
         >
           <Icon name="download" :size="13" /> {{ t('cases.exportSmoke') }}
         </button>
-        <button class="rf-btn rf-btn-sm" type="button" @click="openCreate">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="openCreate">
           <Icon name="plus" :size="13" /> {{ t('cases.addCase') }}
         </button>
         <button
-          class="rf-btn rf-btn-sm rf-btn-primary"
+          class="miyo-btn miyo-btn-sm miyo-btn-primary"
           type="button"
           :disabled="!cases.length || runningAll"
           @click="runAll"
@@ -381,7 +381,7 @@ watch(
         </button>
         <button
           v-if="runningAll && activeCollectionRunId"
-          class="rf-btn rf-btn-sm rf-btn-danger"
+          class="miyo-btn miyo-btn-sm miyo-btn-danger"
           type="button"
           @click="cancelRunAll"
         >
@@ -757,7 +757,7 @@ watch(
   color: var(--danger);
 }
 .tcp-status-meta.tone-info {
-  color: var(--rf-info, #38bdf8);
+  color: var(--miyo-info, #38bdf8);
 }
 
 .tcp-dot {

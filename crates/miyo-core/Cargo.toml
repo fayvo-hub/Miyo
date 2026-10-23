@@ -1,0 +1,24 @@
+[package]
+name = "miyo-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "领域模型与共享类型：端点、环境、用例、历史等核心数据结构"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+dirs = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }
+regex = { workspace = true }
+rand = { workspace = true }
+sqlx = { workspace = true }
+reqwest = { workspace = true }
+shell-words = { workspace = true }

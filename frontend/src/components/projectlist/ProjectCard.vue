@@ -9,7 +9,7 @@
 import Icon from '../ui/Icon.vue'
 import IconButton from '../ui/IconButton.vue'
 import { useLocaleStore } from '../../stores/locale'
-import type { Project } from '../../types/foxApi'
+import type { Project } from '../../types/miyoApi'
 import { avatarStyle, initials, timeAgo } from './projectMeta'
 
 const locale = useLocaleStore()

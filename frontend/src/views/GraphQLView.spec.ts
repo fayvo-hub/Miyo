@@ -24,7 +24,7 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 
 /** 测试环境的 localStorage 为残缺对象（真机 WebView 才有完整实现），stub 一个内存版。 */
 beforeAll(() => {
@@ -56,7 +56,7 @@ function urlInput(wrapper: ReturnType<typeof mountView>): HTMLInputElement {
 
 describe('GraphQLView 初始地址', () => {
   it('route.query.url 优先（覆盖 localStorage 记忆）', () => {
-    localStorage.setItem('rustfox_graphql_last_url', 'https://cached.example.com/graphql')
+    localStorage.setItem('miyo_graphql_last_url', 'https://cached.example.com/graphql')
     routeMock.query = { url: 'https://from-query.example.com/graphql' }
 
     const wrapper = mountView()
@@ -79,7 +79,7 @@ describe('GraphQLView 初始地址', () => {
     expect(urlInput(wrapper).value).toBe('http://localhost/graphql')
     wrapper.unmount()
 
-    localStorage.setItem('rustfox_graphql_last_url', 'https://cached.example.com/graphql')
+    localStorage.setItem('miyo_graphql_last_url', 'https://cached.example.com/graphql')
     wrapper = mountView()
     expect(urlInput(wrapper).value).toBe('https://cached.example.com/graphql')
     wrapper.unmount()
@@ -94,11 +94,11 @@ describe('GraphQLView 地址记忆', () => {
     await input.trigger('input')
 
     await wrapper.findAll('textarea.hl-ta')[0]!.setValue('query { hi }')
-    await wrapper.find('.row.rf-mb-2 button.rf-btn-primary').trigger('click')
+    await wrapper.find('.row.miyo-mb-2 button.miyo-btn-primary').trigger('click')
     await flushPromises()
 
     expect(apiMock.executeRequest).toHaveBeenCalledTimes(1)
-    expect(localStorage.getItem('rustfox_graphql_last_url')).toBe('https://api.example.com/gql')
+    expect(localStorage.getItem('miyo_graphql_last_url')).toBe('https://api.example.com/gql')
     wrapper.unmount()
   })
 })

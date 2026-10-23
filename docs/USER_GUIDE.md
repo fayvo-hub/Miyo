@@ -39,8 +39,8 @@
 
 ### 1.3 Linux
 
-1. 下载 `rustfox-<版本>-amd64.deb`（Debian/Ubuntu）或 `.AppImage` 直接运行
-2. Debian 系安装：`sudo apt install ./rustfox-<版本>-amd64.deb`
+1. 下载 `miyo-<版本>-amd64.deb`（Debian/Ubuntu）或 `.AppImage` 直接运行
+2. Debian 系安装：`sudo apt install ./miyo-<版本>-amd64.deb`
 
 > Linux 运行依赖系统的 WebKit/GTK 库（webkit2gtk-4.1、gtk-3）。启动报 `libwebkit2gtk` 缺失时，按发行版安装对应软件包。
 
@@ -144,7 +144,7 @@
 - 输入接口地址（支持 `{{变量}}`）、Query、Variables、OperationName，一键发送。
 - 响应按 GraphQL 语义区分 `data` 与 `errors`（有 `errors` 即按业务失败优先展示）。
 - 可保存为目录树接口（Body 模式 `graphql`），也可生成 cURL / JavaScript(fetch) 代码。
-- 历史记录保存在本机浏览器存储（`rustfox_graphql_history`），与请求历史相互独立。
+- 历史记录保存在本机浏览器存储（`miyo_graphql_history`），与请求历史相互独立。
 
 ### 4.3 实时调试（WebSocket / SSE）
 
@@ -254,7 +254,7 @@ Tests 页「测试用例」区（`TestCasesPanel` + `TestCaseDrawer`）：
 | macOS | `~/Library/Application Support/Miyo/` |
 | Windows | `%APPDATA%\Miyo\` |
 
-- `rustfox.db`：主数据库（项目/接口/环境/Mock 规则/历史）
+- `miyo.db`：主数据库（项目/接口/环境/Mock 规则/历史）
 - `master.key`：环境变量加密密钥（**勿删**）
 - `backups/`、`exports/`：备份与导出目录
 - `sync/`：团队同步的远端本地缓存仓库；`sync/backups/` 为拉取覆盖前的自动留档
@@ -264,7 +264,7 @@ Tests 页「测试用例」区（`TestCasesPanel` + `TestCaseDrawer`）：
 
 > **更改数据目录**：设置页「数据」Tab 可查看/更改目录、恢复默认、打开目录。
 > 新目录从空数据启动（旧数据请先导出备份再导入）；改完需重启生效。
-> 也可用环境变量 `RUSTFOX_DATA_DIR`（绝对路径）覆盖，优先级高于设置页配置。
+> 也可用环境变量 `MIYO_DATA_DIR`（绝对路径）覆盖，优先级高于设置页配置。
 
 > 一键备份建议：复制整个 Miyo 数据目录到外部存储即可完整迁移。
 > 开发/正式隔离：`tauri dev` 开发构建使用 `Miyo-dev` 目录，与正式版数据互不干扰。
@@ -279,7 +279,7 @@ Tests 页「测试用例」区（`TestCasesPanel` + `TestCaseDrawer`）：
 ## 10.2 AI Agent 集成
 
 把 cURL / 后端 Controller 代码一句话存为接口，无需手粘：详见 [AGENT.md](AGENT.md)。
-MCP 客户端配一次 `rustfox-mcp`（v0.0.10+ 安装包内置），或任意能发 HTTP 的工具直接调
+MCP 客户端配一次 `miyo-mcp`（v0.0.10+ 安装包内置），或任意能发 HTTP 的工具直接调
 `127.0.0.1:4110` 控制面（token 在数据目录 `agent-token`）。
 
 ## 11. 常见问题（FAQ）
@@ -292,7 +292,7 @@ MCP 客户端配一次 `rustfox-mcp`（v0.0.10+ 安装包内置），或任意�
 | 环境变量显示乱码/密文 | `master.key` 丢失导致，用备份 JSON 恢复（第 9 节） |
 | Mock 端口被占用 | 自动 +1 换端口；或先停掉占用方 |
 | 导入 OpenAPI 失败 | 支持 OpenAPI 3.0 / 3.1 / Swagger 2.0 / Postman 集合 v2.1（JSON 或 YAML）；3.1 自动归一化，`webhooks` 会被丢弃 |
-| 数据库损坏？ | 启动时自动 `integrity_check`，异常会弹窗指引；迁移前已自动快照（数据目录 `snapshots/` 保留 5 份），复制快照回 `rustfox.db` 即可回滚，或用 `backups/` JSON 重建 |
+| 数据库损坏？ | 启动时自动 `integrity_check`，异常会弹窗指引；迁移前已自动快照（数据目录 `snapshots/` 保留 5 份），复制快照回 `miyo.db` 即可回滚，或用 `backups/` JSON 重建 |
 | 浅色主题下编辑器看不清 | 设置页切回「深色」或「跟随系统」；如仍异常，反馈时注明主题模式与系统版本 |
 | 请求总是超时 | 设置页调大请求超时；压测/大文件下载场景建议再放宽一档 |
 | dev 构建看不到正式版数据 | 符合预期：dev 用 `Miyo-dev` 目录隔离；用备份 JSON 在两侧互导 |

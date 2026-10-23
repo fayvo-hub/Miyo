@@ -623,282 +623,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fox-agent"
-version = "0.0.1"
-dependencies = [
- "axum",
- "chrono",
- "fox-core",
- "fox-storage",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "tracing",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "fox-backup"
-version = "0.0.1"
-dependencies = [
- "bytes",
- "chrono",
- "fox-core",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "fox-codegen"
-version = "0.0.1"
-dependencies = [
- "base64 0.23.1",
- "fox-core",
- "fox-sign",
- "serde",
- "serde_json",
- "thiserror",
- "url",
-]
-
-[[package]]
-name = "fox-core"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "chrono",
- "dirs",
- "rand 0.10.3",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "shell-words",
- "sqlx",
- "thiserror",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "fox-grpc"
-version = "0.0.1"
-dependencies = [
- "base64 0.23.1",
- "fox-core",
- "futures",
- "prost",
- "prost-reflect",
- "prost-types",
- "protox",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "tonic",
- "tonic-reflection",
- "tracing",
-]
-
-[[package]]
-name = "fox-http"
-version = "0.0.1"
-dependencies = [
- "base64 0.23.1",
- "bytes",
- "chrono",
- "fox-core",
- "fox-oauth",
- "fox-sign",
- "fox-storage",
- "futures",
- "hmac 0.13.0",
- "md-5 0.11.0",
- "reqwest",
- "rquickjs",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sha2 0.11.0",
- "sqlx",
- "thiserror",
- "tokio",
- "tokio-tungstenite",
- "tokio-util",
- "tracing",
- "url",
- "uuid",
-]
-
-[[package]]
-name = "fox-mcp"
-version = "0.0.1"
-dependencies = [
- "axum",
- "fox-agent",
- "fox-core",
- "fox-storage",
- "serde_json",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "fox-mock"
-version = "0.0.1"
-dependencies = [
- "axum",
- "chrono",
- "fox-core",
- "rand 0.10.3",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "fox-oauth"
-version = "0.0.1"
-dependencies = [
- "axum",
- "chrono",
- "fox-core",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "url",
- "uuid",
- "webbrowser",
-]
-
-[[package]]
-name = "fox-openapi"
-version = "0.0.1"
-dependencies = [
- "chrono",
- "fox-core",
- "indexmap",
- "openapiv3",
- "serde",
- "serde_json",
- "serde_norway",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "fox-secret"
-version = "0.0.1"
-dependencies = [
- "aes-gcm",
- "base64 0.23.1",
- "dirs",
- "fox-core",
- "rand 0.10.3",
- "thiserror",
-]
-
-[[package]]
-name = "fox-sign"
-version = "0.0.1"
-dependencies = [
- "base64 0.23.1",
- "chrono",
- "hex",
- "hmac 0.13.0",
- "md5",
- "rand 0.10.3",
- "serde",
- "sha2 0.11.0",
- "thiserror",
- "url",
-]
-
-[[package]]
-name = "fox-smoke"
-version = "0.0.1"
-dependencies = [
- "chrono",
- "fox-backup",
- "fox-core",
- "fox-http",
- "fox-mock",
- "fox-openapi",
- "fox-storage",
- "fox-test",
- "serde_json",
- "sqlx",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "fox-storage"
-version = "0.0.1"
-dependencies = [
- "chrono",
- "dirs",
- "fox-core",
- "fox-secret",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "fox-sync"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "chrono",
- "fox-backup",
- "fox-core",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "fox-test"
-version = "0.0.1"
-dependencies = [
- "axum",
- "bytes",
- "chrono",
- "fox-core",
- "fox-http",
- "jsonpath-rust",
- "regex",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-util",
- "tracing",
- "uuid",
-]
-
-[[package]]
 name = "futures"
 version = "0.3.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1706,6 +1430,282 @@ dependencies = [
  "libc",
  "wasi",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "miyo-agent"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "chrono",
+ "miyo-core",
+ "miyo-storage",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-backup"
+version = "0.0.1"
+dependencies = [
+ "bytes",
+ "chrono",
+ "miyo-core",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-codegen"
+version = "0.0.1"
+dependencies = [
+ "base64 0.23.1",
+ "miyo-core",
+ "miyo-sign",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "url",
+]
+
+[[package]]
+name = "miyo-core"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "dirs",
+ "rand 0.10.3",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "sqlx",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-grpc"
+version = "0.0.1"
+dependencies = [
+ "base64 0.23.1",
+ "futures",
+ "miyo-core",
+ "prost",
+ "prost-reflect",
+ "prost-types",
+ "protox",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "tonic",
+ "tonic-reflection",
+ "tracing",
+]
+
+[[package]]
+name = "miyo-http"
+version = "0.0.1"
+dependencies = [
+ "base64 0.23.1",
+ "bytes",
+ "chrono",
+ "futures",
+ "hmac 0.13.0",
+ "md-5 0.11.0",
+ "miyo-core",
+ "miyo-oauth",
+ "miyo-sign",
+ "miyo-storage",
+ "reqwest",
+ "rquickjs",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "sha2 0.11.0",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tokio-tungstenite",
+ "tokio-util",
+ "tracing",
+ "url",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-mcp"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "miyo-agent",
+ "miyo-core",
+ "miyo-storage",
+ "serde_json",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-mock"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "chrono",
+ "miyo-core",
+ "rand 0.10.3",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-oauth"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "chrono",
+ "miyo-core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+ "webbrowser",
+]
+
+[[package]]
+name = "miyo-openapi"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "indexmap",
+ "miyo-core",
+ "openapiv3",
+ "serde",
+ "serde_json",
+ "serde_norway",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-secret"
+version = "0.0.1"
+dependencies = [
+ "aes-gcm",
+ "base64 0.23.1",
+ "dirs",
+ "miyo-core",
+ "rand 0.10.3",
+ "thiserror",
+]
+
+[[package]]
+name = "miyo-sign"
+version = "0.0.1"
+dependencies = [
+ "base64 0.23.1",
+ "chrono",
+ "hex",
+ "hmac 0.13.0",
+ "md5",
+ "rand 0.10.3",
+ "serde",
+ "sha2 0.11.0",
+ "thiserror",
+ "url",
+]
+
+[[package]]
+name = "miyo-smoke"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "miyo-backup",
+ "miyo-core",
+ "miyo-http",
+ "miyo-mock",
+ "miyo-openapi",
+ "miyo-storage",
+ "miyo-test",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-storage"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "dirs",
+ "miyo-core",
+ "miyo-secret",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-sync"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "miyo-backup",
+ "miyo-core",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "miyo-test"
+version = "0.0.1"
+dependencies = [
+ "axum",
+ "bytes",
+ "chrono",
+ "jsonpath-rust",
+ "miyo-core",
+ "miyo-http",
+ "regex",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

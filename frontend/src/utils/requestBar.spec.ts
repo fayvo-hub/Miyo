@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { RequestSpec } from '../types/foxApi'
+import type { RequestSpec } from '../types/miyoApi'
 import { applyMethodDefaults, envBadgeLabel, envBadgeTooltip, methodNeedsBody, smartTabFor } from './requestBar'
 
 function req(overrides: Partial<RequestSpec> = {}): RequestSpec {

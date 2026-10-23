@@ -15,7 +15,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
 import EnvironmentManager from './EnvironmentManager.vue'
 import { useLocaleStore } from '../stores/locale'
-import type { Environment } from '../types/foxApi'
+import type { Environment } from '../types/miyoApi'
 
 const ENVS: Environment[] = [
   {
@@ -46,8 +46,8 @@ vi.mock('../composables/useToast', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() }),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => new Proxy({}, { get: () => vi.fn() }),
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => new Proxy({}, { get: () => vi.fn() }),
 }))
 
 function $(sel: string): Element | null {
@@ -136,7 +136,7 @@ describe('EnvironmentManager 新建环境未保存确认', () => {
     await clickAddEnv()
     await settled()
 
-    const save = document.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')
+    const save = document.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')
     expect(save).toBeTruthy()
     ;(save as HTMLButtonElement).click()
     await flushPromises()
@@ -271,7 +271,7 @@ describe('EnvironmentManager 未保存三选确认', () => {
     await clickRow(1)
     expect(confirmShown()).toBe(true)
 
-    const saveBtn = document.querySelector<HTMLButtonElement>('.em-confirm .rf-btn-primary')
+    const saveBtn = document.querySelector<HTMLButtonElement>('.em-confirm .miyo-btn-primary')
     expect(saveBtn?.textContent).toContain('保存并继续')
     saveBtn!.click()
     await flushPromises()
@@ -290,7 +290,7 @@ describe('EnvironmentManager 未保存三选确认', () => {
     await clickRow(1)
     expect(confirmShown()).toBe(true)
 
-    const discardBtn = document.querySelector<HTMLButtonElement>('.em-confirm .rf-btn-danger')!
+    const discardBtn = document.querySelector<HTMLButtonElement>('.em-confirm .miyo-btn-danger')!
     discardBtn.click()
     await nextTick()
 
@@ -305,7 +305,7 @@ describe('EnvironmentManager 未保存三选确认', () => {
     await editName('改过的环境')
     await clickRow(1)
 
-    const keepBtn = document.querySelector<HTMLButtonElement>('.em-confirm-actions .rf-btn:last-child')!
+    const keepBtn = document.querySelector<HTMLButtonElement>('.em-confirm-actions .miyo-btn:last-child')!
     keepBtn.click()
     await nextTick()
 

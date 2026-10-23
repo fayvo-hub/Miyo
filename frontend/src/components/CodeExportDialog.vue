@@ -8,7 +8,7 @@
 import CodePanel from './CodePanel.vue'
 import Modal from './ui/Modal.vue'
 import { useLocaleStore } from '../stores/locale'
-import type { AuthSpec, BodySpec, HttpMethod, KeyValue } from '../types/foxApi'
+import type { AuthSpec, BodySpec, HttpMethod, KeyValue } from '../types/miyoApi'
 
 defineProps<{
   method: HttpMethod
@@ -37,7 +37,7 @@ const t = locale.t
       auto-generate
     />
     <template #footer>
-      <button class="rf-btn rf-btn-primary" type="button" @click="emit('close')">{{ t('common.close') }}</button>
+      <button class="miyo-btn miyo-btn-primary" type="button" @click="emit('close')">{{ t('common.close') }}</button>
     </template>
   </Modal>
 </template>

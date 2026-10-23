@@ -16,10 +16,10 @@ import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { stubScrollIntoView } from '../testUtils/componentTest'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Folder } from '../types/foxApi'
+import type { Folder } from '../types/miyoApi'
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     listExamples: vi.fn().mockResolvedValue([]),
     listRequestExamples: vi.fn().mockResolvedValue([]),
     listTestCases: vi.fn().mockResolvedValue([]),
@@ -153,7 +153,7 @@ describe('EndpointTree：整行可点击（文本外空白也响应）', () => {
       const { wrapper, store } = await mountWithEndpoint()
       await wrapper.find('.tree-row[data-dnd-id="ep-1"] .tree-actions button').trigger('click')
       expect(store.activeTabId).toBeNull()
-      expect(document.querySelector('.rf-menu')).toBeTruthy()
+      expect(document.querySelector('.miyo-menu')).toBeTruthy()
       wrapper.unmount()
     } finally {
       restore()

@@ -8,7 +8,7 @@ import { reactive } from 'vue'
 import BodyPanel from './BodyPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
 function jsonDraft(raw: string): Endpoint {
   const d = makeDraft()
@@ -112,7 +112,7 @@ describe('BodyPanel：raw JSON 编辑与格式化', () => {
   })
 
   it('在请求体中查找：打开 FindBar 并高亮与计数', async () => {
-    const draft = jsonDraft('{"user":"fox","name":"fox"}')
+    const draft = jsonDraft('{"user":"miyo","name":"miyo"}')
     const wrapper = mountPanel(draft)
 
     // 点击搜索图标按钮打开 FindBar
@@ -124,7 +124,7 @@ describe('BodyPanel：raw JSON 编辑与格式化', () => {
 
     // 输入查找词
     const findInput = wrapper.find('.findbar-input')
-    await findInput.setValue('fox')
+    await findInput.setValue('miyo')
 
     // 等待防抖
     await new Promise((r) => setTimeout(r, 200))

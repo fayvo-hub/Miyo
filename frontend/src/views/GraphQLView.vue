@@ -7,15 +7,15 @@
  * - 顶栏：保存 / 发送 / 历史 / 生成代码
  * - 发送走后端 execute_request（POST + application/json），
  *   响应区分 data 与 errors（GraphQL 语义，errors 优先渲染）
- * - 生成代码在浏览器端完成，算法与 fox-codegen 的 render_graphql_curl /
+ * - 生成代码在浏览器端完成，算法与 miyo-codegen 的 render_graphql_curl /
  *   render_graphql_js 保持一致
  *
- * 样式沿用项目 rf- 设计系统（深色 slate 主题，变量名与
- * crates/fox-desktop/src/styles.rs 的 DESIGN_SYSTEM_CSS 对齐）。
+ * 样式沿用项目 miyo- 设计系统（深色 slate 主题，变量名与
+ * crates/miyo-desktop/src/styles.rs 的 DESIGN_SYSTEM_CSS 对齐）。
  */
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
@@ -30,7 +30,7 @@ import { escapeHtml, highlightGraphQL, highlightJSON } from '../utils/highlight'
 import { handleTextareaTab } from '../utils/textareaIndent'
 import Modal from '../components/ui/Modal.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
-import type { BodySpec, ExecuteRequestArgs, ExecuteResponse, GraphQLSpec } from '../types/foxApi'
+import type { BodySpec, ExecuteRequestArgs, ExecuteResponse, GraphQLSpec } from '../types/miyoApi'
 
 const router = useRouter()
 const route = useRoute()
@@ -53,7 +53,7 @@ const store = useWorkspaceStore()
 const locale = useLocaleStore()
 const t = locale.t
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 
 // ---------- 编辑器状态 ----------
@@ -67,7 +67,7 @@ function initSpec(): GraphQLSpec {
 const gql = ref<GraphQLSpec>(initSpec())
 // ---------- 初始地址（/graphql 可脱离工作台单独进入，必须自带兜底） ----------
 /** 上次成功发送的地址（跨会话记忆）。 */
-const URL_STORAGE_KEY = 'rustfox_graphql_last_url'
+const URL_STORAGE_KEY = 'miyo_graphql_last_url'
 
 const activeEnv = computed(() => store.environments.find((e) => e.id === store.activeEnvId) ?? null)
 
@@ -367,7 +367,7 @@ interface HistoryEntry {
   when: string
 }
 
-const HISTORY_KEY = 'rustfox_graphql_history'
+const HISTORY_KEY = 'miyo_graphql_history'
 const MAX_HISTORY = 20
 
 function loadHistory(): HistoryEntry[] {
@@ -412,7 +412,7 @@ function clearHistory() {
   history.value = []
 }
 
-// ---------- 生成代码（与 fox-codegen 保持一致） ----------
+// ---------- 生成代码（与 miyo-codegen 保持一致） ----------
 const codegenOpen = ref(false)
 const codegenTab = ref<'curl' | 'apollo'>('curl')
 const copied = ref(false)
@@ -479,23 +479,23 @@ async function copyCode() {
 
 <template>
   <div class="gql-root">
-    <div class="row rf-mb-2">
-      <button class="rf-btn rf-btn-sm" type="button" @click="router.push('/workspace')">← {{ t('graphql.backToWorkspace') }}</button>
-      <input v-model="gqlUrl" class="rf-input gql-url" :placeholder="t('graphql.urlPh')" spellcheck="false" />
-      <button class="rf-btn rf-btn-sm" :disabled="saving" @click="save">{{ t('common.save') }}</button>
-      <button class="rf-btn rf-btn-sm rf-btn-primary" :disabled="sending" @click="send">
+    <div class="row miyo-mb-2">
+      <button class="miyo-btn miyo-btn-sm" type="button" @click="router.push('/workspace')">← {{ t('graphql.backToWorkspace') }}</button>
+      <input v-model="gqlUrl" class="miyo-input gql-url" :placeholder="t('graphql.urlPh')" spellcheck="false" />
+      <button class="miyo-btn miyo-btn-sm" :disabled="saving" @click="save">{{ t('common.save') }}</button>
+      <button class="miyo-btn miyo-btn-sm miyo-btn-primary" :disabled="sending" @click="send">
         {{ sending ? t('graphql.sending') : t('editor.send') }}
       </button>
       <button
         v-if="sendFailed"
-        class="rf-btn rf-btn-sm rf-btn-ghost"
+        class="miyo-btn miyo-btn-sm miyo-btn-ghost"
         :disabled="sending"
         @click="retrySend"
       >
         {{ sending ? t('common.retrying') : t('common.retry') }}
       </button>
-      <button class="rf-btn rf-btn-sm rf-btn-ghost" @click="openHistory">{{ t('graphql.historyBtn') }}</button>
-      <button class="rf-btn rf-btn-sm rf-btn-ghost" @click="openCodegen">{{ t('graphql.codegen') }}</button>
+      <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" @click="openHistory">{{ t('graphql.historyBtn') }}</button>
+      <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" @click="openCodegen">{{ t('graphql.codegen') }}</button>
     </div>
 
     <div class="gql-grid">
@@ -543,7 +543,7 @@ async function copyCode() {
           operationName
           <input
             v-model="gql.operation_name"
-            class="rf-input rf-input-sm"
+            class="miyo-input miyo-input-sm"
             :placeholder="t('graphql.opNamePh')"
             spellcheck="false"
           />
@@ -555,7 +555,7 @@ async function copyCode() {
       <div class="hint-inline" :class="statusClass">
         {{ statusText || (response ? `${response.status} · ${response.durationMs}ms` : '') }}
       </div>
-      <button v-if="response" class="rf-btn rf-btn-sm rf-btn-ghost" @click="responseRaw = !responseRaw">
+      <button v-if="response" class="miyo-btn miyo-btn-sm miyo-btn-ghost" @click="responseRaw = !responseRaw">
         {{ responseRaw ? t('response.pretty') : t('response.raw') }}
       </button>
     </div>
@@ -589,45 +589,45 @@ async function copyCode() {
         </li>
       </ul>
       <template #footer>
-        <button class="rf-btn rf-btn-sm rf-btn-danger-solid" @click="clearHistory">{{ t('graphql.clearHistory') }}</button>
+        <button class="miyo-btn miyo-btn-sm miyo-btn-danger-solid" @click="clearHistory">{{ t('graphql.clearHistory') }}</button>
       </template>
     </Modal>
 
     <!-- 生成代码 -->
     <Modal v-model:open="codegenOpen" :title="t('graphql.codegen')" width="640px">
-      <div class="rf-tabs">
-        <button class="rf-tab" :class="{ active: codegenTab === 'curl' }" @click="codegenTab = 'curl'">curl</button>
-        <button class="rf-tab" :class="{ active: codegenTab === 'apollo' }" @click="codegenTab = 'apollo'">JavaScript (Apollo Client)</button>
+      <div class="miyo-tabs">
+        <button class="miyo-tab" :class="{ active: codegenTab === 'curl' }" @click="codegenTab = 'curl'">curl</button>
+        <button class="miyo-tab" :class="{ active: codegenTab === 'apollo' }" @click="codegenTab = 'apollo'">JavaScript (Apollo Client)</button>
       </div>
       <pre class="codegen-out">{{ codegenTab === 'curl' ? curlCode : apolloCode }}</pre>
       <template #footer>
-        <button class="rf-btn rf-btn-sm rf-btn-primary" @click="copyCode">{{ copied ? t('codegen.copied') : t('common.copy') }}</button>
+        <button class="miyo-btn miyo-btn-sm miyo-btn-primary" @click="copyCode">{{ copied ? t('codegen.copied') : t('common.copy') }}</button>
       </template>
     </Modal>
   </div>
 </template>
 
 <style scoped>
-/* 私有色板映射到全局 rf-* 令牌，随主题联动 */
+/* 私有色板映射到全局 miyo-* 令牌，随主题联动 */
 .gql-root {
-  --bg: var(--rf-bg);
-  --panel: var(--rf-bg-panel);
-  --panel-2: var(--rf-bg-panel-2);
-  --border: var(--rf-border);
-  --border-2: var(--rf-text-muted);
-  --text: var(--rf-text);
-  --text-2: var(--rf-text-secondary);
-  --muted: var(--rf-text-muted);
-  --accent: var(--rf-info);
-  --accent-2: var(--rf-accent-weak);
-  --accent-soft: var(--rf-info-tint);
+  --bg: var(--miyo-bg);
+  --panel: var(--miyo-bg-panel);
+  --panel-2: var(--miyo-bg-panel-2);
+  --border: var(--miyo-border);
+  --border-2: var(--miyo-text-muted);
+  --text: var(--miyo-text);
+  --text-2: var(--miyo-text-secondary);
+  --muted: var(--miyo-text-muted);
+  --accent: var(--miyo-info);
+  --accent-2: var(--miyo-accent-weak);
+  --accent-soft: var(--miyo-info-tint);
   --accent-line: color-mix(in srgb, var(--info) 45%, transparent);
-  --success: var(--rf-success);
-  --warning: var(--rf-warning);
-  --danger: var(--rf-danger);
-  --danger-weak: var(--rf-danger-tint);
+  --success: var(--miyo-success);
+  --warning: var(--miyo-warning);
+  --danger: var(--miyo-danger);
+  --danger-weak: var(--miyo-danger-tint);
   --mono: var(--font-mono);
-  --r-s: var(--rf-radius-sm);
+  --r-s: var(--miyo-radius-sm);
   --s-2: 8px;
   --s-3: 12px;
   --s-4: 16px;
@@ -643,36 +643,36 @@ async function copyCode() {
   gap: var(--s-2);
 }
 
-.rf-mb-2 {
+.miyo-mb-2 {
   margin-bottom: var(--s-2);
 }
 
-.rf-input-sm {
+.miyo-input-sm {
   flex: 1;
   min-width: 0;
   padding: 4px 8px;
 }
 
-.rf-btn-ghost {
+.miyo-btn-ghost {
   background: transparent;
   border-color: var(--border);
   color: var(--text-2);
 }
 
-.rf-btn-ghost:hover:not(:disabled) {
+.miyo-btn-ghost:hover:not(:disabled) {
   background: var(--panel-2);
   color: var(--text);
   border-color: var(--border-2);
 }
 
-.rf-tabs {
+.miyo-tabs {
   display: flex;
   gap: 4px;
   margin-bottom: var(--s-3);
   border-bottom: 1px solid var(--border);
 }
 
-.rf-tab {
+.miyo-tab {
   padding: 6px 12px;
   background: transparent;
   border: none;
@@ -682,11 +682,11 @@ async function copyCode() {
   font-size: 13px;
 }
 
-.rf-tab:hover {
+.miyo-tab:hover {
   color: var(--text);
 }
 
-.rf-tab.active {
+.miyo-tab.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
@@ -746,7 +746,7 @@ async function copyCode() {
 /* ---------- 高亮编辑器（透明 textarea + pre 覆盖层） ---------- */
 .hl-wrap {
   position: relative;
-  background: var(--rf-input-bg);
+  background: var(--miyo-input-bg);
   border: 1px solid var(--border);
   border-radius: var(--r-s);
   height: 300px;
@@ -881,7 +881,7 @@ async function copyCode() {
 
 .resp-body {
   margin-top: var(--s-2);
-  background: var(--rf-input-bg);
+  background: var(--miyo-input-bg);
   border: 1px solid var(--border);
   border-radius: var(--r-s);
   max-height: 320px;
@@ -963,7 +963,7 @@ async function copyCode() {
 .codegen-out {
   margin: 0;
   padding: 12px;
-  background: var(--rf-input-bg);
+  background: var(--miyo-input-bg);
   border: 1px solid var(--border);
   border-radius: var(--r-s);
   font-family: var(--mono);

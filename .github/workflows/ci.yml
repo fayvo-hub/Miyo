@@ -32,15 +32,15 @@ jobs:
       - name: Test
         run: cargo test --workspace
 
-  fox-tauri:
-    name: Check & Test (fox-tauri 插件)
+  miyo-tauri:
+    name: Check & Test (miyo-tauri 插件)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: crates/fox-tauri
+          workspaces: crates/miyo-tauri
       - name: 规避 Azure Ubuntu 镜像不可达（CI 偶发 apt-get update 卡死）
         run: |
           sudo sed -i 's|http://azure\.archive\.ubuntu\.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources
@@ -54,10 +54,10 @@ jobs:
             librsvg2-dev \
             libxdo-dev
       - name: Check
-        working-directory: crates/fox-tauri
+        working-directory: crates/miyo-tauri
         run: cargo check
       - name: Test
-        working-directory: crates/fox-tauri
+        working-directory: crates/miyo-tauri
         run: cargo test
 
   frontend:
@@ -90,7 +90,7 @@ jobs:
         working-directory: frontend
         run: npm ci
       # tauri-build 在编译期校验 bundle.externalBin 文件存在，须先预置侧载二进制
-      - name: Ensure rustfox-mcp sidecar (bundle.externalBin)
+      - name: Ensure miyo-mcp sidecar (bundle.externalBin)
         run: bash scripts/ensure-mcp-bin.sh
       # 复刻 tauri-cli 的版本一致性校验（npm 与 Rust 插件 major.minor 必须一致），
       # 否则 CI 的 cargo check 全绿、但 tauri build 打包时直接 exit 1（v0.0.32 踩过）。

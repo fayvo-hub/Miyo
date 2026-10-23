@@ -10,7 +10,7 @@ import { useLocaleStore } from '../stores/locale'
 import { useVarCandidates } from '../composables/useVarCandidates'
 import { handleTextareaTab } from '../utils/textareaIndent'
 import KeyValueTable, { type KVRow } from './ui/KeyValueTable.vue'
-import type { Endpoint, KeyValue } from '../types/foxApi'
+import type { Endpoint, KeyValue } from '../types/miyoApi'
 
 const props = defineProps<{ draft: Endpoint | null }>()
 
@@ -94,7 +94,7 @@ function onBulkKeydown(e: KeyboardEvent): void {
       <textarea
         ref="bulkArea"
         v-model="bulkText"
-        class="bulk-area rf-mono"
+        class="bulk-area miyo-mono"
         autofocus
         spellcheck="false"
         :placeholder="t('params.bulkPh')"

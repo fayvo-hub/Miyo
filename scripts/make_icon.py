@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Miyo icons from rustfox-source.png.
+"""Generate Miyo icons from miyo-source.png.
 
 Crops to square, generates all PNG sizes, ICO, iconset, and icns.
 
@@ -17,10 +17,12 @@ except ImportError:
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "assets", "icons")
-SRC = os.path.join(OUT, "rustfox-source.png")
+SRC = os.path.join(OUT, "miyo-source.png")
 
-# How much of the source to crop (fraction from center)
-CROP_RATIO = 0.85
+# How much of the source to crop (fraction from center).
+# 1.0：现源图（SVG 渲出的满幅圆角方块）本身就是成品画布，无需裁切；
+# 若换回带留白的插画源图再调小。
+CROP_RATIO = 1.0
 
 
 def crop_to_square():
@@ -57,12 +59,12 @@ def main():
     print(f"cropped to {square.size}")
 
     for size in (16, 32, 64, 128, 256, 512, 1024):
-        write_png(square, os.path.join(OUT, f"rustfox-{size}.png"), size)
+        write_png(square, os.path.join(OUT, f"miyo-{size}.png"), size)
 
-    write_ico(square, os.path.join(OUT, "rustfox.ico"))
+    write_ico(square, os.path.join(OUT, "miyo.ico"))
 
     if sys.platform == "darwin":
-        setdir = os.path.join(OUT, "rustfox.iconset")
+        setdir = os.path.join(OUT, "miyo.iconset")
         os.makedirs(setdir, exist_ok=True)
         mapping = [
             (16, "icon_16x16.png"),
@@ -77,14 +79,14 @@ def main():
             (1024, "icon_512x512@2x.png"),
         ]
         for size, name in mapping:
-            with open(os.path.join(OUT, f"rustfox-{size}.png"), "rb") as f, \
+            with open(os.path.join(OUT, f"miyo-{size}.png"), "rb") as f, \
                  open(os.path.join(setdir, name), "wb") as g:
                 g.write(f.read())
         subprocess.run(
-            ["iconutil", "-c", "icns", setdir, "-o", os.path.join(OUT, "rustfox.icns")],
+            ["iconutil", "-c", "icns", setdir, "-o", os.path.join(OUT, "miyo.icns")],
             check=True,
         )
-        print("wrote", os.path.join(OUT, "rustfox.icns"))
+        print("wrote", os.path.join(OUT, "miyo.icns"))
     else:
         print("skip icns (not on macOS)")
 

@@ -9,13 +9,13 @@ import { ref, watch } from 'vue'
 import Modal from '../ui/Modal.vue'
 import CustomSelect from '../ui/CustomSelect.vue'
 import Icon from '../ui/Icon.vue'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
 import { formatBytes, formatDuration } from '../../utils/format'
-import type { BodySpec, ExecuteResponse, HttpMethod } from '../../types/foxApi'
+import type { BodySpec, ExecuteResponse, HttpMethod } from '../../types/miyoApi'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -97,13 +97,13 @@ async function sendScratch(): Promise<void> {
       />
       <input
         v-model="scratchUrl"
-        class="rf-input scratch-url"
+        class="miyo-input scratch-url"
         placeholder="https://api.example.com/posts"
         spellcheck="false"
         @keyup.enter="sendScratch"
       />
       <button
-        class="rf-btn rf-btn-primary"
+        class="miyo-btn miyo-btn-primary"
         type="button"
         :disabled="scratchSending"
         @click="sendScratch"
@@ -114,7 +114,7 @@ async function sendScratch(): Promise<void> {
     <textarea
       v-if="scratchMethod !== 'GET'"
       v-model="scratchBody"
-      class="rf-input scratch-ta"
+      class="miyo-input scratch-ta"
       :placeholder="t('scratch.bodyPh')"
       spellcheck="false"
     ></textarea>
@@ -128,7 +128,7 @@ async function sendScratch(): Promise<void> {
       </div>
       <pre class="sr-body">{{ scratchRes.body }}</pre>
     </div>
-    <p v-else class="rf-hint scratch-hint">{{ t('scratch.resHint') }}</p>
+    <p v-else class="miyo-hint scratch-hint">{{ t('scratch.resHint') }}</p>
   </Modal>
 </template>
 

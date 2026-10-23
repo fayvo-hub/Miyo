@@ -9,7 +9,7 @@ import { reactive } from 'vue'
 import TestCasesPanel from './TestCasesPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, TestCase } from '../types/foxApi'
+import type { Endpoint, TestCase } from '../types/miyoApi'
 
 const store = vi.hoisted(() => ({
   map: new Map<string, TestCase[]>(),
@@ -187,7 +187,7 @@ describe('TestCasesPanel', () => {
   it('...菜单：直接运行 / 编辑用例 / 在调试页打开 / 克隆 / 删除', async () => {
     const wrapper = mountPanel(draft())
     await wrapper.findAll('.tcp-col-ops button')[0].trigger('click')
-    const menuItems = Array.from(document.querySelectorAll('.rf-menu-item'))
+    const menuItems = Array.from(document.querySelectorAll('.miyo-menu-item'))
     expect(menuItems.map((m) => m.textContent)).toEqual(
       expect.arrayContaining(['直接运行', '编辑用例', '在调试页打开', '克隆', '删除']),
     )
@@ -197,17 +197,17 @@ describe('TestCasesPanel', () => {
     expect(store.openTestCaseInDebug).not.toHaveBeenCalled()
     // 在调试页打开：显式回填 + 切 Tab
     await wrapper.findAll('.tcp-col-ops button')[0].trigger('click')
-    const items2 = Array.from(document.querySelectorAll('.rf-menu-item'))
+    const items2 = Array.from(document.querySelectorAll('.miyo-menu-item'))
     ;(items2.find((m) => m.textContent === '在调试页打开') as HTMLButtonElement).click()
     expect(store.openTestCaseInDebug).toHaveBeenCalledWith('ep-1', expect.objectContaining({ name: '内部划转-SGB' }))
     // 编辑用例：打开抽屉
     await wrapper.findAll('.tcp-col-ops button')[0].trigger('click')
-    const items3 = Array.from(document.querySelectorAll('.rf-menu-item'))
+    const items3 = Array.from(document.querySelectorAll('.miyo-menu-item'))
     ;(items3.find((m) => m.textContent === '编辑用例') as HTMLButtonElement).click()
     expect(document.querySelectorAll('.drw').length).toBeGreaterThan(0)
     // 克隆
     await wrapper.findAll('.tcp-col-ops button')[0].trigger('click')
-    const items4 = Array.from(document.querySelectorAll('.rf-menu-item'))
+    const items4 = Array.from(document.querySelectorAll('.miyo-menu-item'))
     ;(items4.find((m) => m.textContent === '克隆') as HTMLButtonElement).click()
     expect(store.cloneTestCase).toHaveBeenCalledWith('ep-1', expect.objectContaining({ name: '内部划转-SGB' }))
   })
@@ -217,7 +217,7 @@ describe('TestCasesPanel', () => {
     store.runTestCase.mockReturnValueOnce(new Promise((res) => (release = res)))
     const wrapper = mountPanel(draft())
     await wrapper.findAll('.tcp-col-ops button')[0].trigger('click')
-    const runItem = Array.from(document.querySelectorAll('.rf-menu-item')).find(
+    const runItem = Array.from(document.querySelectorAll('.miyo-menu-item')).find(
       (m) => m.textContent === '直接运行',
     )!
     ;(runItem as HTMLButtonElement).click()

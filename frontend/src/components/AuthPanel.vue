@@ -5,7 +5,7 @@
  * 签名类（Hawk/AWS SigV4/HMAC/Digest/动态签名）：由后端实时计算注入请求头。
  */
 import { computed, ref } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { handleTextareaTab } from '../utils/textareaIndent'
@@ -18,11 +18,11 @@ import type {
   OAuth2Token,
   SignatureAlgorithm,
   SignatureEncoding,
-} from '../types/foxApi'
+} from '../types/miyoApi'
 
 const props = defineProps<{ draft: Endpoint | null }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -249,7 +249,7 @@ function setAuthType(type: string): void {
     <div v-if="authAny?.type === 'bearer'" class="kv-row">
       <input
         v-model="authAny.token"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.tokenPh')"
         spellcheck="false"
       />
@@ -257,12 +257,12 @@ function setAuthType(type: string): void {
     <div v-else-if="authAny?.type === 'basic'" class="kv-row">
       <input
         v-model="authAny.username"
-        class="rf-input rf-input-sm kv-key"
+        class="miyo-input miyo-input-sm kv-key"
         :placeholder="t('auth.username')"
       />
       <input
         v-model="authAny.password"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.password')"
         type="password"
       />
@@ -271,7 +271,7 @@ function setAuthType(type: string): void {
       <p class="oauth-hint">
         <span class="oauth-status" :class="{ ok: oauthStatus !== t('auth.unauthorized') }">{{ oauthStatus }}</span>
         <button
-          class="rf-btn rf-btn-sm"
+          class="miyo-btn miyo-btn-sm"
           type="button"
           :disabled="authorizing"
           @click="oauthAuthorize"
@@ -280,23 +280,23 @@ function setAuthType(type: string): void {
         </button>
       </p>
       <div class="kv-row">
-        <input v-model="authAny.client_id" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.clientIdPh')" />
-        <input v-model="authAny.client_secret" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.clientSecretPh')" type="password" />
+        <input v-model="authAny.client_id" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.clientIdPh')" />
+        <input v-model="authAny.client_secret" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.clientSecretPh')" type="password" />
       </div>
       <div class="kv-row">
-        <input v-model="authAny.auth_url" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.authUrlPh')" />
-        <input v-model="authAny.token_url" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.tokenUrlPh')" />
+        <input v-model="authAny.auth_url" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.authUrlPh')" />
+        <input v-model="authAny.token_url" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.tokenUrlPh')" />
       </div>
       <div class="kv-row">
-        <input v-model="authAny.scope" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.scopePh')" />
-        <input v-model="authAny.redirect_uri" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.redirectUriPh')" />
+        <input v-model="authAny.scope" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.scopePh')" />
+        <input v-model="authAny.redirect_uri" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.redirectUriPh')" />
       </div>
     </div>
     <div v-else-if="authAny?.type === 'apikey'" class="kv-row">
-      <input v-model="authAny.key" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.keyPh')" />
+      <input v-model="authAny.key" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.keyPh')" />
       <input
         v-model="authAny.value"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.valuePh')"
         spellcheck="false"
       />
@@ -305,21 +305,21 @@ function setAuthType(type: string): void {
     <div v-else-if="authAny?.type === 'digest'" class="kv-row">
       <input
         v-model="authAny.username"
-        class="rf-input rf-input-sm kv-key"
+        class="miyo-input miyo-input-sm kv-key"
         :placeholder="t('auth.username')"
       />
       <input
         v-model="authAny.password"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.password')"
         type="password"
       />
     </div>
     <div v-else-if="authAny?.type === 'hawk'" class="kv-row">
-      <input v-model="authAny.key_id" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.keyIdPh')" spellcheck="false" />
+      <input v-model="authAny.key_id" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.keyIdPh')" spellcheck="false" />
       <input
         v-model="authAny.key"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.keyPh')"
         type="password"
         spellcheck="false"
@@ -327,22 +327,22 @@ function setAuthType(type: string): void {
     </div>
     <div v-else-if="authAny?.type === 'awsv4'" class="sign-form">
       <div class="kv-row">
-        <input v-model="authAny.access_key" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.accessKeyPh')" spellcheck="false" />
-        <input v-model="authAny.secret_key" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.secretKeyPh')" type="password" spellcheck="false" />
+        <input v-model="authAny.access_key" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.accessKeyPh')" spellcheck="false" />
+        <input v-model="authAny.secret_key" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.secretKeyPh')" type="password" spellcheck="false" />
       </div>
       <div class="kv-row">
-        <input v-model="authAny.region" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.regionPh')" spellcheck="false" />
-        <input v-model="authAny.service" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.servicePh')" spellcheck="false" />
+        <input v-model="authAny.region" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.regionPh')" spellcheck="false" />
+        <input v-model="authAny.service" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.servicePh')" spellcheck="false" />
       </div>
       <div class="kv-row">
-        <input v-model="authAny.session_token" class="rf-input rf-input-sm kv-value" :placeholder="t('auth.sessionTokenPh')" spellcheck="false" />
+        <input v-model="authAny.session_token" class="miyo-input miyo-input-sm kv-value" :placeholder="t('auth.sessionTokenPh')" spellcheck="false" />
       </div>
     </div>
     <div v-else-if="authAny?.type === 'hmac'" class="kv-row">
-      <input v-model="authAny.access_key" class="rf-input rf-input-sm kv-key" :placeholder="t('auth.accessKeyPh')" spellcheck="false" />
+      <input v-model="authAny.access_key" class="miyo-input miyo-input-sm kv-key" :placeholder="t('auth.accessKeyPh')" spellcheck="false" />
       <input
         v-model="authAny.secret_key"
-        class="rf-input rf-input-sm kv-value"
+        class="miyo-input miyo-input-sm kv-value"
         :placeholder="t('auth.secretKeyPh')"
         type="password"
         spellcheck="false"
@@ -355,39 +355,39 @@ function setAuthType(type: string): void {
       <div class="kv-row">
         <input
           v-model="sigConfig.app_key"
-          class="rf-input rf-input-sm kv-key"
+          class="miyo-input miyo-input-sm kv-key"
           :placeholder="t('auth.appKeyPh')"
           spellcheck="false"
         />
         <input
           v-model="sigConfig.app_secret"
-          class="rf-input rf-input-sm kv-value"
+          class="miyo-input miyo-input-sm kv-value"
           :placeholder="t('auth.appSecretPh')"
           type="password"
           spellcheck="false"
         />
       </div>
       <div class="sig-adv">
-        <button class="rf-btn rf-btn-sm sig-toggle" type="button" @click="advancedOpen = !advancedOpen">
+        <button class="miyo-btn miyo-btn-sm sig-toggle" type="button" @click="advancedOpen = !advancedOpen">
           {{ advancedOpen ? t('auth.collapseAdv') : t('auth.expandAdv') }}
         </button>
         <div v-if="advancedOpen" class="sig-adv-body">
           <div class="kv-row">
             <input
               v-model="sigConfig.key_header"
-              class="rf-input rf-input-sm kv-key"
+              class="miyo-input miyo-input-sm kv-key"
               :placeholder="t('auth.keyHeaderPh')"
               spellcheck="false"
             />
             <input
               v-model="sigConfig.timestamp_header"
-              class="rf-input rf-input-sm kv-key"
+              class="miyo-input miyo-input-sm kv-key"
               :placeholder="t('auth.tsHeaderPh')"
               spellcheck="false"
             />
             <input
               v-model="sigConfig.sig_header"
-              class="rf-input rf-input-sm kv-value"
+              class="miyo-input miyo-input-sm kv-value"
               :placeholder="t('auth.sigHeaderPh')"
               spellcheck="false"
             />
@@ -412,7 +412,7 @@ function setAuthType(type: string): void {
           </div>
           <textarea
             v-model="sigConfig.payload_template"
-            class="rf-input rf-input-sm sig-template"
+            class="miyo-input miyo-input-sm sig-template"
             placeholder="{{$key}}{{$secret}}{{$timestamp}}"
             spellcheck="false"
             @keydown="onTemplateKeydown"

@@ -8,7 +8,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { hasPendingUpdate, pendingUpdateVersion } from '../composables/useAutoUpdate'
@@ -48,7 +48,7 @@ const SyncDialog = lazyComponent(() => import('../components/SyncDialog.vue'))
 const store = useWorkspaceStore()
 const router = useRouter()
 const route = useRoute()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -425,7 +425,7 @@ function onMenuSelect(item: MenuItem): void {
   else onMockSelect(item)
 }
 
-/** Agent 控制面事件载荷（fox-agent::server::AgentEvent，字段 snake_case）。 */
+/** Agent 控制面事件载荷（miyo-agent::server::AgentEvent，字段 snake_case）。 */
 interface AgentEventPayload {
   type: string
   endpoint_id?: string
@@ -449,7 +449,7 @@ onMounted(() => {
   void store.loadHistories()
   // AI Agent 经控制面导入接口后刷新侧栏并提示（仅当前激活项目时）
   if ('__TAURI_INTERNALS__' in window) {
-    void listen<AgentEventPayload>('fox:agent-event', async (event) => {
+    void listen<AgentEventPayload>('miyo:agent-event', async (event) => {
       const payload = event.payload
       if (payload.type !== 'endpoint-imported') return
       if (!store.project || payload.project_id !== store.project.id) return
@@ -493,10 +493,10 @@ onBeforeUnmount(() => {
       <span class="tb-divider" aria-hidden="true"></span>
 
       <div class="tb-region tb-right">
-        <button ref="docsBtn" class="rf-btn rf-btn-sm tb-action" type="button" @click="openDocsMenu">
+        <button ref="docsBtn" class="miyo-btn miyo-btn-sm tb-action" type="button" @click="openDocsMenu">
           <Icon name="file" :size="13" /> {{ t('workspace.docs') }} <Icon name="chevron-down" :size="12" />
         </button>
-        <button ref="mockBtn" class="rf-btn rf-btn-sm tb-action" type="button" @click="openMockMenu">
+        <button ref="mockBtn" class="miyo-btn miyo-btn-sm tb-action" type="button" @click="openMockMenu">
           <span class="mock-dot" :class="{ on: mockAddress }"></span>
           Mock <Icon name="chevron-down" :size="12" />
         </button>
@@ -515,7 +515,7 @@ onBeforeUnmount(() => {
             <Icon name="more-horizontal" :size="15" :stroke-width="1.5" />
           </button>
           <HeaderUpdateTag />
-          <span class="rf-update-wrap">
+          <span class="miyo-update-wrap">
             <IconButton
               class="tb-tool"
               name="settings"
@@ -530,7 +530,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="workspace-body">
-      <aside class="rf-sidebar" :style="{ width: `${sidebarWidth}px` }">
+      <aside class="miyo-sidebar" :style="{ width: `${sidebarWidth}px` }">
         <div data-tauri-drag-region class="sidebar-drag" aria-hidden="true"></div>
         <Tabs v-model="sidebarTab" :tabs="sidebarTabs" size="sm" class="sidebar-tabs" />
         <div v-show="sidebarTab === 'collections'" class="sidebar-collections">
@@ -575,9 +575,9 @@ onBeforeUnmount(() => {
               </Tooltip>
             </div>
           </div>
-          <div v-if="store.loadError" class="rf-inline-error" role="alert">
-            <span class="rf-inline-error-text">{{ t('workspace.loadFail', { v: store.loadError }) }}</span>
-            <button class="rf-btn rf-btn-sm" type="button" :disabled="loading" @click="load">
+          <div v-if="store.loadError" class="miyo-inline-error" role="alert">
+            <span class="miyo-inline-error-text">{{ t('workspace.loadFail', { v: store.loadError }) }}</span>
+            <button class="miyo-btn miyo-btn-sm" type="button" :disabled="loading" @click="load">
               {{ loading ? t('common.retrying') : t('common.retry') }}
             </button>
           </div>
@@ -621,7 +621,7 @@ onBeforeUnmount(() => {
         @dblclick="sidebarWidth = SIDEBAR_DEFAULT"
         @keydown="onSidebarKeydown"
       ></div>
-      <main class="rf-main">
+      <main class="miyo-main">
         <TabBar
           v-if="store.openTabs.length"
           @create="store.openCreateTab()"
@@ -648,8 +648,8 @@ onBeforeUnmount(() => {
         <label class="form-label">{{ t('workspace.projectName') }}</label>
         <input
           v-model="newProjectName"
-          class="rf-input"
-          :class="{ 'rf-input-error': projectFormError }"
+          class="miyo-input"
+          :class="{ 'miyo-input-error': projectFormError }"
           :placeholder="t('workspace.projectNamePh')"
           maxlength="60"
           spellcheck="false"
@@ -661,16 +661,16 @@ onBeforeUnmount(() => {
         <label class="form-label">{{ t('workspace.projectDesc') }}</label>
         <textarea
           v-model="newProjectDesc"
-          class="rf-textarea"
+          class="miyo-textarea"
           :maxlength="200"
           :placeholder="t('workspace.projectDescPh')"
           rows="3"
         ></textarea>
       </div>
-      <p v-if="projectFormError" class="rf-field-error" role="alert">{{ projectFormError }}</p>
+      <p v-if="projectFormError" class="miyo-field-error" role="alert">{{ projectFormError }}</p>
       <template #footer>
-        <button class="rf-btn" type="button" @click="showCreateProject = false">{{ t('common.cancel') }}</button>
-        <button class="rf-btn rf-btn-primary" type="button" :disabled="api.pending.value" @click="confirmCreateProject">
+        <button class="miyo-btn" type="button" @click="showCreateProject = false">{{ t('common.cancel') }}</button>
+        <button class="miyo-btn miyo-btn-primary" type="button" :disabled="api.pending.value" @click="confirmCreateProject">
           {{ t('workspace.create') }}
         </button>
       </template>
@@ -681,9 +681,9 @@ onBeforeUnmount(() => {
         <label class="form-label">{{ t('workspace.projectName') }}</label>
         <input
           v-model="renameProjectName"
-          class="rf-input"
+          class="miyo-input"
           v-focus-end
-          :class="{ 'rf-input-error': projectFormError }"
+          :class="{ 'miyo-input-error': projectFormError }"
           :placeholder="t('workspace.projectName')"
           maxlength="60"
           spellcheck="false"
@@ -691,10 +691,10 @@ onBeforeUnmount(() => {
           @keyup.enter="confirmRenameProject"
         />
       </div>
-      <p v-if="projectFormError" class="rf-field-error" role="alert">{{ projectFormError }}</p>
+      <p v-if="projectFormError" class="miyo-field-error" role="alert">{{ projectFormError }}</p>
       <template #footer>
-        <button class="rf-btn" type="button" @click="renamingProject = false">{{ t('common.cancel') }}</button>
-        <button class="rf-btn rf-btn-primary" type="button" :disabled="api.pending.value" @click="confirmRenameProject">
+        <button class="miyo-btn" type="button" @click="renamingProject = false">{{ t('common.cancel') }}</button>
+        <button class="miyo-btn miyo-btn-primary" type="button" :disabled="api.pending.value" @click="confirmRenameProject">
           {{ t('common.save') }}
         </button>
       </template>
@@ -743,8 +743,8 @@ onBeforeUnmount(() => {
   padding: 0 12px;
   gap: 12px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--rf-border);
-  background: var(--rf-bg-panel);
+  border-bottom: 1px solid var(--miyo-border);
+  background: var(--miyo-bg-panel);
   cursor: grab;
   user-select: none;
 }
@@ -752,7 +752,7 @@ onBeforeUnmount(() => {
 /* ---- 窄窗回退（<1080px）：侧栏随视口收窄，把宽度让给右侧请求/响应编辑区；
    顶栏允许换行，避免 Docs/Mock/环境/工具组横向溢出（≥1080px 布局不变） ---- */
 @media (max-width: 1080px) {
-  .rf-sidebar {
+  .miyo-sidebar {
     max-width: 34vw;
   }
   .top-bar {
@@ -796,7 +796,7 @@ onBeforeUnmount(() => {
   width: 1px;
   height: 20px;
   flex-shrink: 0;
-  background: var(--rf-border);
+  background: var(--miyo-border);
   opacity: 0.55;
 }
 
@@ -810,7 +810,7 @@ onBeforeUnmount(() => {
   height: 20px;
   flex-shrink: 0;
   margin: 0 2px;
-  background: var(--rf-border);
+  background: var(--miyo-border);
   opacity: 0.55;
 }
 
@@ -880,15 +880,15 @@ onBeforeUnmount(() => {
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: var(--rf-text-muted);
+  background: var(--miyo-text-muted);
 }
 
 .mock-dot.on {
-  background: var(--rf-success);
-  box-shadow: 0 0 0 3px var(--rf-success-tint);
+  background: var(--miyo-success);
+  box-shadow: 0 0 0 3px var(--miyo-success-tint);
 }
 
-.rf-sidebar {
+.miyo-sidebar {
   /* 宽度由内联 style 驱动（拖拽分割条），保留 min/max 约束兜底 */
   flex-shrink: 0;
   display: flex;
@@ -923,7 +923,7 @@ onBeforeUnmount(() => {
   outline-offset: -1px;
 }
 
-.rf-heading {
+.miyo-heading {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
@@ -1101,29 +1101,29 @@ onBeforeUnmount(() => {
   min-height: 0;
 }
 
-.rf-main {
+.miyo-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--rf-bg);
+  background: var(--miyo-bg);
   overflow: hidden;
 }
 
-.rf-inline-error {
+.miyo-inline-error {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
-  border-radius: var(--rf-radius-sm);
-  background: var(--rf-danger-tint);
+  border-radius: var(--miyo-radius-sm);
+  background: var(--miyo-danger-tint);
   border: 1px solid var(--danger-border);
 }
 
-.rf-inline-error-text {
+.miyo-inline-error-text {
   font-size: 12.5px;
-  color: var(--rf-danger);
+  color: var(--miyo-danger);
   word-break: break-all;
 }
 
@@ -1140,10 +1140,10 @@ onBeforeUnmount(() => {
   color: var(--text-2);
 }
 
-.rf-input-error {
+.miyo-input-error {
   border-color: var(--danger) !important;
 }
-.rf-input-error:focus {
+.miyo-input-error:focus {
   border-color: var(--danger) !important;
   box-shadow: 0 0 0 2px var(--danger-tint) !important;
 }

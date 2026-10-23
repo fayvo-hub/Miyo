@@ -8,7 +8,7 @@ import { nextTick } from 'vue'
 import HistoryPanel from './HistoryPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
-import type { RequestHistory } from '../types/foxApi'
+import type { RequestHistory } from '../types/miyoApi'
 
 function history(partial: Partial<RequestHistory> & { id: string }): RequestHistory {
   return {

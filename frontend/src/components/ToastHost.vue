@@ -6,8 +6,8 @@
  * ```html
  * <ToastHost />
  * ```
- * 样式为 rf- 设计系统的 Vue 侧镜像（scoped + 变量对齐 styles.rs：
- * --rf-bg-panel / --rf-border / --rf-text / 语义色）。
+ * 样式为 miyo- 设计系统的 Vue 侧镜像（scoped + 变量对齐 styles.rs：
+ * --miyo-bg-panel / --miyo-border / --miyo-text / 语义色）。
  *
  * 播报策略：容器整体 aria-live="polite"（成功 / 信息 / 警告排队播报），
  * error 条目单独 role="alert" + aria-live="assertive"，插入即打断播报。
@@ -46,31 +46,31 @@ function onAction(item: ToastItem): void {
 </script>
 
 <template>
-  <div class="rf-toast-wrap" aria-live="polite">
-    <TransitionGroup name="rf-toast">
+  <div class="miyo-toast-wrap" aria-live="polite">
+    <TransitionGroup name="miyo-toast">
       <div
         v-for="item in toasts"
         :key="item.id"
-        class="rf-toast"
-        :class="`rf-toast-${item.type}`"
+        class="miyo-toast"
+        :class="`miyo-toast-${item.type}`"
         :role="item.type === 'error' ? 'alert' : undefined"
         :aria-live="item.type === 'error' ? 'assertive' : undefined"
         aria-atomic="true"
       >
         <span
-          class="rf-toast-icon"
+          class="miyo-toast-icon"
           :style="{ color: meta(item.type).color }"
           v-html="ICONS[item.type]"
         ></span>
-        <div class="rf-toast-body">
-          <div class="rf-toast-title">{{ item.title }}</div>
-          <div v-if="item.message" class="rf-toast-message">{{ item.message }}</div>
+        <div class="miyo-toast-body">
+          <div class="miyo-toast-title">{{ item.title }}</div>
+          <div v-if="item.message" class="miyo-toast-message">{{ item.message }}</div>
         </div>
-        <button v-if="item.action" class="rf-toast-action" type="button" @click="onAction(item)">
+        <button v-if="item.action" class="miyo-toast-action" type="button" @click="onAction(item)">
           {{ item.action.label }}
         </button>
         <button
-          class="rf-toast-close"
+          class="miyo-toast-close"
           type="button"
           :aria-label="t('toast.dismiss', { v: item.title })"
           @click="onClose(item)"
@@ -90,7 +90,7 @@ function onAction(item: ToastItem): void {
 </template>
 
 <style scoped>
-.rf-toast-wrap {
+.miyo-toast-wrap {
   position: fixed;
   top: 12px;
   left: 50%;
@@ -105,7 +105,7 @@ function onAction(item: ToastItem): void {
   pointer-events: none;
 }
 
-.rf-toast {
+.miyo-toast {
   pointer-events: auto;
   display: flex;
   align-items: flex-start;
@@ -119,63 +119,63 @@ function onAction(item: ToastItem): void {
   box-shadow: var(--shadow-lg);
 }
 
-.rf-toast-success {
-  border-left-color: var(--rf-success);
+.miyo-toast-success {
+  border-left-color: var(--miyo-success);
 }
-.rf-toast-info {
-  border-left-color: var(--rf-info);
+.miyo-toast-info {
+  border-left-color: var(--miyo-info);
 }
-.rf-toast-warning {
-  border-left-color: var(--rf-warning);
+.miyo-toast-warning {
+  border-left-color: var(--miyo-warning);
 }
-.rf-toast-error {
-  border-left-color: var(--rf-danger);
+.miyo-toast-error {
+  border-left-color: var(--miyo-danger);
 }
 
-.rf-toast-icon {
+.miyo-toast-icon {
   flex: none;
   margin-top: 2px;
   display: inline-flex;
 }
 
-.rf-toast-body {
+.miyo-toast-body {
   flex: 1;
   min-width: 0;
 }
 
-.rf-toast-title {
+.miyo-toast-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--rf-text);
+  color: var(--miyo-text);
   line-height: 1.4;
 }
 
-.rf-toast-message {
+.miyo-toast-message {
   margin-top: 2px;
   font-size: 12px;
-  color: var(--rf-text-secondary);
+  color: var(--miyo-text-secondary);
   line-height: 1.45;
   word-break: break-all;
 }
 
-.rf-toast-close {
+.miyo-toast-close {
   flex: none;
   border: none;
   background: none;
   padding: 2px;
   margin-top: 1px;
   cursor: pointer;
-  color: var(--rf-text-muted);
+  color: var(--miyo-text-muted);
   border-radius: var(--radius-sm);
   line-height: 1.2;
 }
 
-.rf-toast-close:hover {
-  color: var(--rf-text);
-  background: var(--rf-hover);
+.miyo-toast-close:hover {
+  color: var(--miyo-text);
+  background: var(--miyo-hover);
 }
 
-.rf-toast-action {
+.miyo-toast-action {
   flex: none;
   align-self: center;
   padding: 4px 10px;
@@ -191,24 +191,24 @@ function onAction(item: ToastItem): void {
     background var(--dur) var(--ease),
     border-color var(--dur) var(--ease);
 }
-.rf-toast-action:hover {
+.miyo-toast-action:hover {
   background: var(--accent-tint);
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
-.rf-toast-enter-active,
-.rf-toast-leave-active {
+.miyo-toast-enter-active,
+.miyo-toast-leave-active {
   transition:
     opacity 0.2s ease,
     transform 0.2s var(--ease);
 }
 
-.rf-toast-enter-from {
+.miyo-toast-enter-from {
   opacity: 0;
   transform: translateY(-12px) scale(0.98);
 }
 
-.rf-toast-leave-to {
+.miyo-toast-leave-to {
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
 }

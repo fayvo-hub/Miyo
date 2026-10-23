@@ -1,7 +1,7 @@
-//! Miyo Tauri 2 应用入口：装配 fox-tauri 插件（数据库初始化 + 全部 Command）。
+//! Miyo Tauri 2 应用入口：装配 miyo-tauri 插件（数据库初始化 + 全部 Command）。
 //!
 //! 原生菜单仅 macOS：应用菜单「About Miyo」（点击后向 WebView 广播
-//! `rustfox://about` 事件以打开自定义关于弹窗）/「Hide Miyo」/「Quit Miyo」，
+//! `miyo://about` 事件以打开自定义关于弹窗）/「Hide Miyo」/「Quit Miyo」，
 //! 另保留 Edit / View / Window 标准菜单（撤消/重做/剪切/复制/粘贴/全屏/最小化等）。
 //! Windows 下隐藏原生装饰（标题栏 + 菜单栏），由前端自绘顶栏 + WindowControls 承担。
 
@@ -11,7 +11,7 @@
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{Emitter, Manager};
 
-const ABOUT_EVENT: &str = "rustfox://about";
+const ABOUT_EVENT: &str = "miyo://about";
 
 #[cfg(target_os = "macos")]
 fn build_menu(app: &tauri::App) -> tauri::Result<Menu<tauri::Wry>> {
@@ -80,7 +80,7 @@ fn build_menu(app: &tauri::App) -> tauri::Result<Menu<tauri::Wry>> {
 
 fn main() {
     tauri::Builder::default()
-        .plugin(fox_tauri::plugin::init())
+        .plugin(miyo_tauri::plugin::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())

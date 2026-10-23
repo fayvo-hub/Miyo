@@ -6,7 +6,7 @@ import { computed } from 'vue'
 import { useLocaleStore } from '../stores/locale'
 import { useVarCandidates } from '../composables/useVarCandidates'
 import KeyValueTable, { type KVRow } from './ui/KeyValueTable.vue'
-import type { Endpoint, KeyValue } from '../types/foxApi'
+import type { Endpoint, KeyValue } from '../types/miyoApi'
 
 const props = defineProps<{ draft: Endpoint | null }>()
 

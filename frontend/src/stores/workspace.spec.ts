@@ -1,12 +1,12 @@
 /**
  * workspace store 多项目快照切换单测：
  * 项目 A 的草稿/标签在切到 B 再切回后必须原样恢复；B 首次进入为全新态。
- * useFoxApi 以模块级 mock 替换（内存假后端）。
+ * useMiyoApi 以模块级 mock 替换（内存假后端）。
  */
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { nextTick } from 'vue'
-import type { CurlParsed, Endpoint, Environment, Project, TestCase } from '../types/foxApi'
+import type { CurlParsed, Endpoint, Environment, Project, TestCase } from '../types/miyoApi'
 
 function makeProject(id: string, name: string): Project {
   const now = new Date().toISOString()
@@ -81,8 +81,8 @@ const toastMock = vi.hoisted(() => ({
   warning: vi.fn(),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     getProjects: vi.fn().mockResolvedValue(backend.projects),
     getActiveProject: vi.fn().mockImplementation(async () => backend.projects.find((p) => p.id === backend.active()) ?? null),
     setActiveProject: vi.fn().mockImplementation(async (id: string | null) => {
@@ -214,7 +214,7 @@ describe('workspace store 多项目快照切换', () => {
 
   it('重启后从项目列表直进（不经过 init）：持久化的标签仍恢复', async () => {
     // 模拟上次会话打开过 A、B 两个标签
-    localStorage.setItem('rustfox.open-projects', JSON.stringify(['p-a', 'p-b']))
+    localStorage.setItem('miyo.open-projects', JSON.stringify(['p-a', 'p-b']))
     const store = useWorkspaceStore()
 
     // 用户在项目列表页点 B 进入（store 全新，未调 init）
@@ -322,7 +322,7 @@ describe('moveEndpoint：移动后打开草稿的 folder_id / sort_order 同步'
     store.openEndpoint(ep)
 
     const draft = store.draftOf('ep-a')!
-    draft.request.body = { mode: 'json', raw: '{"name":"fox","added":"s"}' }
+    draft.request.body = { mode: 'json', raw: '{"name":"miyo","added":"s"}' }
 
     expect(store.isDirty('ep-a')).toBe(true)
     expect(await store.saveActiveDraft()).toBe(true)
@@ -330,7 +330,7 @@ describe('moveEndpoint：移动后打开草稿的 folder_id / sort_order 同步'
     // 保存后草稿保持最新内容
     expect(store.draftOf('ep-a')?.request.body).toEqual({
       mode: 'json',
-      raw: '{"name":"fox","added":"s"}',
+      raw: '{"name":"miyo","added":"s"}',
     })
     expect(store.isDirty('ep-a')).toBe(false)
   })
@@ -446,7 +446,7 @@ describe('无环境前缀按项目持久化（回归：重启丢自定义域名�
     backend.envsByProject.set('p-prefix', [])
     backend.setActive('p-prefix')
     // 隔离：内存 localStorage 跨用例共享，清掉本项目可能残留的前缀记录
-    localStorage.removeItem('rustfox.base-url.p-prefix')
+    localStorage.removeItem('miyo.base-url.p-prefix')
   })
 
   it('导入 cURL 后整个 app 重启（新 store 重新 init）：自定义前缀恢复，不回 localhost', async () => {
@@ -465,7 +465,7 @@ describe('无环境前缀按项目持久化（回归：重启丢自定义域名�
     expect(reopened.sessionBaseUrl).toBe('https://api.example.com')
     expect(reopened.urlDomain).toBe('https://api.example.com')
 
-    localStorage.removeItem('rustfox.base-url.p-prefix')
+    localStorage.removeItem('miyo.base-url.p-prefix')
   })
 
   it('从未导入过的项目：回退默认 localhost', async () => {

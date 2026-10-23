@@ -6,15 +6,15 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import CookiePanel from './CookiePanel.vue'
 import { useLocaleStore } from '../stores/locale'
-import type { CookieEntry } from '../types/foxApi'
+import type { CookieEntry } from '../types/miyoApi'
 
 const apiMocks = {
   cookieList: vi.fn(),
   cookieClear: vi.fn().mockResolvedValue(1),
 }
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => apiMocks,
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => apiMocks,
 }))
 
 vi.mock('../composables/useToast', () => ({

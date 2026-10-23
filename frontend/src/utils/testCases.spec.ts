@@ -3,7 +3,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import type { RequestSpec, TestCase } from '../types/foxApi'
+import type { RequestSpec, TestCase } from '../types/miyoApi'
 import { useLocaleStore } from '../stores/locale'
 import {
   applyCaseToRequest,

@@ -6,7 +6,7 @@
  * （utils/codeImport.ts）；语言默认自动检测，可手动指定。
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
@@ -14,12 +14,12 @@ import Modal from './ui/Modal.vue'
 import CustomSelect from './ui/CustomSelect.vue'
 import { SNIPPET_LANGS, detectLang, parseCodeSnippet } from '../utils/codeImport'
 import type { SnippetLang } from '../utils/codeImport'
-import type { CurlParsed } from '../types/foxApi'
+import type { CurlParsed } from '../types/miyoApi'
 
 const props = defineProps<{ folderId: string | null }>()
 const emit = defineEmits<{ close: [] }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const store = useWorkspaceStore()
 const toast = useToast()
 const locale = useLocaleStore()
@@ -130,12 +130,12 @@ function importToEditor(): void {
     </div>
     <textarea
       v-model="command"
-      class="rf-input code-input"
+      class="miyo-input code-input"
       spellcheck="false"
       :placeholder="placeholder"
     ></textarea>
     <div class="modal-actions">
-      <button class="rf-btn" type="button" :disabled="parsing || !command.trim()" @click="parse">
+      <button class="miyo-btn" type="button" :disabled="parsing || !command.trim()" @click="parse">
         {{ parsing ? t('importdlg.parsing') : t('codedlg.reparse') }}
       </button>
     </div>
@@ -163,9 +163,9 @@ function importToEditor(): void {
     </div>
 
     <template #footer>
-      <button class="rf-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
       <button
-        class="rf-btn rf-btn-primary"
+        class="miyo-btn miyo-btn-primary"
         type="button"
         :disabled="!parsed"
         @click="importToEditor"

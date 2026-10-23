@@ -23,7 +23,7 @@ import {
   type JsonTreeNode,
   type JsonTreeType,
 } from '../../utils/jsonTree'
-import type { FieldDoc } from '../../types/foxApi'
+import type { FieldDoc } from '../../types/miyoApi'
 
 const props = defineProps<{
   raw: string

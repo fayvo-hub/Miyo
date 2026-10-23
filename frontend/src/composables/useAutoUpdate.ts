@@ -22,10 +22,10 @@ export const AUTO_UPDATE_RETRY_INTERVAL_MS = 30 * 60 * 1000
 /** 同版本重复提醒间隔（替代永久锁存）。 */
 export const AUTO_UPDATE_RENOTIFY_INTERVAL_MS = 24 * 60 * 60 * 1000
 
-const LAST_CHECK_KEY = 'rustfox:update:last-check'
-const NOTIFIED_VERSION_KEY = 'rustfox:update:notified-version'
-const NOTIFIED_AT_KEY = 'rustfox:update:notified-at'
-const SKIPPED_VERSION_KEY = 'rustfox:update:skipped-version'
+const LAST_CHECK_KEY = 'miyo:update:last-check'
+const NOTIFIED_VERSION_KEY = 'miyo:update:notified-version'
+const NOTIFIED_AT_KEY = 'miyo:update:notified-at'
+const SKIPPED_VERSION_KEY = 'miyo:update:skipped-version'
 
 function readNumber(key: string): number {
   try {

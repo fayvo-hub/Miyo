@@ -6,7 +6,7 @@
  * - 格式卡片单选：OpenAPI 3.0 (JSON/YAML) / Postman v2.1 / Markdown /
  *   HTML 离线单页 / cURL 脚本；
 *  - 流程：export_docs 生成内容 → @tauri-apps/plugin-dialog 目录选择框（NSOpenPanel）
- *   （选目录后拼接默认文件名 rustfox-api-{项目}-{日期}.{ext}）→ save_text_file 落盘
+ *   （选目录后拼接默认文件名 miyo-api-{项目}-{日期}.{ext}）→ save_text_file 落盘
  *   → 成功 Toast 附「打开文件位置」（opener.revealItemInDir）。
  */
 import { computed, ref } from 'vue'
@@ -17,9 +17,9 @@ import Modal from '../ui/Modal.vue'
 import Icon from '../ui/Icon.vue'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useLocaleStore } from '../../stores/locale'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
-import type { Endpoint, ExportFormat, ExportedDoc } from '../../types/foxApi'
+import type { Endpoint, ExportFormat, ExportedDoc } from '../../types/miyoApi'
 
 const props = defineProps<{
   /** 仅导出当前接口时使用。 */
@@ -29,7 +29,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -234,8 +234,8 @@ async function startExport(): Promise<void> {
     </div>
 
     <template #footer>
-      <button type="button" class="rf-btn" @click="emit('close')">{{ t('common.cancel') }}</button>
-      <button type="button" class="rf-btn rf-btn-primary" :disabled="exporting" @click="startExport">
+      <button type="button" class="miyo-btn" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button type="button" class="miyo-btn miyo-btn-primary" :disabled="exporting" @click="startExport">
         <Icon name="download" :size="13" />
         {{ exporting ? t('exportdocs.generating') : t('exportdocs.start') }}
       </button>

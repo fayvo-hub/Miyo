@@ -11,12 +11,12 @@ import Icon from '../ui/Icon.vue'
 import Tabs from '../ui/Tabs.vue'
 import type { TabItem } from '../ui/Tabs.vue'
 import { useLocaleStore } from '../../stores/locale'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { copyText } from '../../utils/clipboard'
 import { dedupeJsonKeys } from '../../utils/jsonFormat'
 import { highlightCode } from '../../utils/highlight'
-import type { BodySpec, CodeLang, Endpoint } from '../../types/foxApi'
+import type { BodySpec, CodeLang, Endpoint } from '../../types/miyoApi'
 
 const props = defineProps<{
   draft: Endpoint
@@ -29,7 +29,7 @@ onBeforeUnmount(() => {
   disposed = true
 })
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -111,7 +111,7 @@ watch(
   <section class="csp doc-card">
     <header class="csp-head">
       <h4 class="doc-sec-title">{{ t('docs.secCode') }}</h4>
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="!code" @click="copyCode">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="!code" @click="copyCode">
         <Icon name="copy" :size="12" /> {{ t('snippets.copyCode') }}
       </button>
     </header>

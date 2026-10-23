@@ -14,14 +14,14 @@ import { nextTick, reactive } from 'vue'
 import GrpcResponsePanel from './GrpcResponsePanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
-import type { GrpcResponse } from '../types/foxApi'
+import type { GrpcResponse } from '../types/miyoApi'
 import type { GrpcStreamState } from '../stores/workspace'
 
 const apiMock = vi.hoisted(() => ({
   grpcStreamClose: vi.fn(async () => true),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 
 function unaryResponse(overrides: Partial<GrpcResponse> = {}): GrpcResponse {
   return {
@@ -106,7 +106,7 @@ describe('GrpcResponsePanel：服务端流', () => {
     // 停止按钮存在且调用关闭 + 清理 store 运行态
     const store = useWorkspaceStore()
     store.grpcStreams.set('st-1', streamState())
-    await wrapper.find('button.rf-btn-danger').trigger('click')
+    await wrapper.find('button.miyo-btn-danger').trigger('click')
     await flushPromises()
     expect(apiMock.grpcStreamClose).toHaveBeenCalledWith('st-1')
     expect(store.grpcStreams.has('st-1')).toBe(false)
@@ -129,7 +129,7 @@ describe('GrpcResponsePanel：服务端流', () => {
     const pill = wrapper.find('.status-pill')
     expect(pill.classes()).toContain('ok')
     expect(pill.text()).toContain('OK')
-    expect(wrapper.find('button.rf-btn-danger').exists()).toBe(false)
+    expect(wrapper.find('button.miyo-btn-danger').exists()).toBe(false)
     expect(wrapper.findAll('.meta-row').length).toBe(2)
   })
 

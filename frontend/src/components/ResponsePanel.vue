@@ -21,7 +21,7 @@ import JsonTree from './JsonTree.vue'
 import SegmentedControl, { type SegmentOption } from './ui/SegmentedControl.vue'
 import Tabs, { type TabItem } from './ui/Tabs.vue'
 import Tooltip from './ui/Tooltip.vue'
-import type { ExecuteResponse } from '../types/foxApi'
+import type { ExecuteResponse } from '../types/miyoApi'
 
 const props = defineProps<{
   response: ExecuteResponse

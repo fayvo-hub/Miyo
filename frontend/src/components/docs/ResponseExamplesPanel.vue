@@ -17,18 +17,18 @@ import Tabs from '../ui/Tabs.vue'
 import type { TabItem } from '../ui/Tabs.vue'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useLocaleStore } from '../../stores/locale'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { copyText } from '../../utils/clipboard'
 import { prettyJson } from '../../utils/jsonFormat'
 import { statusTextOf } from '../../utils/testCases'
 import { inferSchema, mockJsonFromSchema } from '../../utils/schemaInfer'
-import type { Endpoint, ResponseExample } from '../../types/foxApi'
+import type { Endpoint, ResponseExample } from '../../types/miyoApi'
 
 const props = defineProps<{ examples: ResponseExample[]; draft?: Endpoint | null }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -168,7 +168,7 @@ async function fillFromMock(): Promise<void> {
       <span v-if="examples.length" class="rep-count">{{ t('respex.count', { n: examples.length }) }}</span>
       <button
         v-if="activeExample"
-        class="rf-btn rf-btn-sm"
+        class="miyo-btn miyo-btn-sm"
         type="button"
         @click="copyBody"
       >
@@ -237,7 +237,7 @@ async function fillFromMock(): Promise<void> {
   color: var(--text-3);
 }
 
-.rep-head .rf-btn {
+.rep-head .miyo-btn {
   margin-left: auto;
 }
 

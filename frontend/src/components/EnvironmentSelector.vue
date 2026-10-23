@@ -24,7 +24,7 @@ import { lazyComponent } from '../composables/lazyComponent'
 import CustomSelect from './ui/CustomSelect.vue'
 import Icon from './ui/Icon.vue'
 import Tooltip from './ui/Tooltip.vue'
-import type { Environment } from '../types/foxApi'
+import type { Environment } from '../types/miyoApi'
 
 withDefaults(
   defineProps<{

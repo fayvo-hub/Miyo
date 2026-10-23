@@ -9,7 +9,7 @@
  *   左对齐向右展开，弹出层不越出抽屉）+「立即运行」、右侧「取消 / 保存修改」。
  */
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import type { AuthSpec, BodySpec, ExecuteResponse, HttpMethod, KeyValue, TestCase, TestCaseCategory } from '../types/foxApi'
+import type { AuthSpec, BodySpec, ExecuteResponse, HttpMethod, KeyValue, TestCase, TestCaseCategory } from '../types/miyoApi'
 import { TEST_CASE_CATEGORIES, caseCategoryLabel, formatDuration, restoreBody, statusToneOf, statusTextOf } from '../utils/testCases'
 import { applyPathVars, extractPathVarNames } from '../utils/pathVariables'
 import { methodTextTone } from '../utils/methodTone'
@@ -679,7 +679,7 @@ function onSplitterDblClick(): void {
               :disabled="!urlPath.trim()"
             />
             <button
-              class="rf-btn drw-run-btn"
+              class="miyo-btn drw-run-btn"
               type="button"
               :disabled="running || !urlPath.trim()"
               @click="run"
@@ -688,11 +688,11 @@ function onSplitterDblClick(): void {
               <Icon v-else name="play" :size="13" /> {{ running ? t('cases.running') : t('casedrawer.runNow') }}
             </button>
             <span class="drw-spacer"></span>
-            <button class="rf-btn" type="button" :disabled="saving || running" @click="emit('update:open', false)">
+            <button class="miyo-btn" type="button" :disabled="saving || running" @click="emit('update:open', false)">
               {{ t('common.cancel') }}
             </button>
             <button
-              class="rf-btn rf-btn-primary"
+              class="miyo-btn miyo-btn-primary"
               type="button"
               :disabled="saving || running || !name.trim() || !urlPath.trim()"
               @click="save"

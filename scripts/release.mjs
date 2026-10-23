@@ -7,7 +7,7 @@
  *
  *   1. frontend/src-tauri/tauri.conf.json
  *   2. frontend/package.json            （+ package-lock.json 经 npm 同步）
- *   3. frontend/src-tauri/Cargo.toml    （仅 rustfox 包自身的 version 行）
+ *   3. frontend/src-tauri/Cargo.toml    （仅 miyo 包自身的 version 行）
  *
  * 用法：
  *   node scripts/release.mjs release patch [--skip-checks] [--publish]   # ⭐ 一条命令发版

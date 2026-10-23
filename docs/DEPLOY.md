@@ -39,7 +39,7 @@ scripts/package-tauri.sh
 
 | 路径 | 内容 |
 | --- | --- |
-| `~/.local/share/Miyo/rustfox.db`（Linux/macOS 类似） | 主数据库（项目/接口/环境/Mock 规则/响应示例/测试历史/请求历史） |
+| `~/.local/share/Miyo/miyo.db`（Linux/macOS 类似） | 主数据库（项目/接口/环境/Mock 规则/响应示例/测试历史/请求历史） |
 | `~/.local/share/Miyo/master.key` | 环境变量加密主密钥（AES-256-GCM，权限 0600） |
 | `~/.local/share/Miyo/backups/` | 「备份当前项目」导出的 JSON |
 | `~/.local/share/Miyo/exports/` | 「导出项目 Markdown」生成的文档 |
@@ -129,7 +129,7 @@ Tests Tab 的 JSON 配置（写入接口 `request_json.tests`，保存后生效�
 | Mock 端口被占用 | 工具自动 +1；如需固定端口，先停止占用方 |
 | 导入 OpenAPI 报「无法识别」 | 支持 OpenAPI 3.0 / 3.1（3.1 自动归一化）/ Swagger 2.0 / Postman v2.1（JSON+YAML）；检查是否为有效 JSON/YAML |
 | 环境变量显示为密文 | 见上文「环境变量加密」，用备份恢复找回 |
-| 数据库损坏 | 全部数据在 `rustfox.db`，备份目录中的 JSON 可完整恢复 |
+| 数据库损坏 | 全部数据在 `miyo.db`，备份目录中的 JSON 可完整恢复 |
 
 ## 开发
 
@@ -142,7 +142,7 @@ cargo fmt
 cargo clippy --workspace --all-targets -- -D warnings
 
 # 单 crate 测试
-cargo test -p fox-backup -p fox-secret
+cargo test -p miyo-backup -p miyo-secret
 ```
 
 里程碑规划见 [PROGRESS.md](PROGRESS.md)。

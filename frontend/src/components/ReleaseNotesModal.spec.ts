@@ -2,7 +2,7 @@
  * ReleaseNotesModal 单测：独立更新详情弹窗。
  * 锁定：打开接管暂存（标题 + Markdown 日志渲染）/ 稍后再说放回暂存 /
  * 下载进度与下载中禁关（Esc 被守卫拦截）/ 成功自动关闭 + 延迟重启 /
- * 浅色主题适配（主题化包裹框 + rf-btn 按钮族，无恒深底覆写）。
+ * 浅色主题适配（主题化包裹框 + miyo-btn 按钮族，无恒深底覆写）。
  * 注：本地 flush 走纯微任务（VTU flushPromises 走 setTimeout，与假时钟组合会挂起）。
  */
 import { readFileSync } from 'node:fs'
@@ -194,7 +194,7 @@ describe('ReleaseNotesModal：更新详情弹窗', () => {
     wrapper.unmount()
   })
 
-  it('浅色主题适配：日志框主题化，按钮走 rf-btn 族，源码无恒深底覆写与写死深色类', async () => {
+  it('浅色主题适配：日志框主题化，按钮走 miyo-btn 族，源码无恒深底覆写与写死深色类', async () => {
     const wrapper = await openModal(fakeUpdate(vi.fn()))
 
     // 日志包裹框走主题化类（--bg-code 井底），不带写死的深色字面量类
@@ -203,10 +203,10 @@ describe('ReleaseNotesModal：更新详情弹窗', () => {
     expect(box!.className).not.toContain('bg-zinc-950/80')
     expect(box!.className).not.toContain('border-white/5')
     expect(box!.className).not.toContain('text-zinc-300')
-    // 两个按钮走仓规按钮族：次要 rf-btn + 主 rf-btn-primary（统一高度/配色/禁用态）
-    expect(actionButtons()[0].classList.contains('rf-btn')).toBe(true)
-    expect(actionButtons()[0].classList.contains('rf-btn-primary')).toBe(false)
-    expect(actionButtons()[1].classList.contains('rf-btn-primary')).toBe(true)
+    // 两个按钮走仓规按钮族：次要 miyo-btn + 主 miyo-btn-primary（统一高度/配色/禁用态）
+    expect(actionButtons()[0].classList.contains('miyo-btn')).toBe(true)
+    expect(actionButtons()[0].classList.contains('miyo-btn-primary')).toBe(false)
+    expect(actionButtons()[1].classList.contains('miyo-btn-primary')).toBe(true)
 
     wrapper.unmount()
 

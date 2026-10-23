@@ -8,7 +8,7 @@ Two integration options:
 
 | Option | Applies to | Prerequisite |
 | --- | --- | --- |
-| MCP server (recommended) | MCP-capable clients such as Claude Code, Cursor | The `rustfox-mcp` binary |
+| MCP server (recommended) | MCP-capable clients such as Claude Code, Cursor | The `miyo-mcp` binary |
 | Direct HTTP | Any agent that can send HTTP / run commands | None |
 
 ---
@@ -16,7 +16,7 @@ Two integration options:
 ## 1. How it works
 
 ```
-AI Agent ──(stdio MCP)──→ rustfox-mcp ──┐
+AI Agent ──(stdio MCP)──→ miyo-mcp ──┐
                                         ├──→ Agent control plane (127.0.0.1:4110~4129)
 AI Agent ──(HTTP + Bearer token)────────┘         │
                                              SQLite → UI refreshes live
@@ -35,45 +35,45 @@ The token is the control-plane credential, generated automatically on first app 
   - Windows: `%APPDATA%\Miyo\agent-token`
   - Linux: `~/.local/share/Miyo/agent-token`
 - You can also confirm it in-app: open DevTools Console and run
-  `await __TAURI_INTERNALS__.invoke('plugin:fox|agent_status')` to see `tokenPath`.
+  `await __TAURI_INTERNALS__.invoke('plugin:miyo|agent_status')` to see `tokenPath`.
 
 > Development builds (`tauri dev`) use the `Miyo-dev` directory, isolated from the release install.
 
 ## 3. Option one: MCP server
 
-### 3.1 Get rustfox-mcp
+### 3.1 Get miyo-mcp
 
-**Since v0.0.10 the installer bundles `rustfox-mcp`** — use the per-platform path:
+**Since v0.0.10 the installer bundles `miyo-mcp`** — use the per-platform path:
 
 | Platform / install | Path |
 | --- | --- |
-| macOS (/Applications install) | `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` |
-| Windows (NSIS default) | `C:\Program Files\Miyo\rustfox-mcp.exe` |
-| Linux (.deb) | `/usr/bin/rustfox-mcp` (already on PATH — configure as `rustfox-mcp`) |
-| Linux (.AppImage) | `rustfox-mcp` inside the mounted image |
-| Dev mode (tauri dev) | `frontend/src-tauri/binaries/rustfox-mcp-<triple>` in the repo |
+| macOS (/Applications install) | `/Applications/Miyo.app/Contents/MacOS/miyo-mcp` |
+| Windows (NSIS default) | `C:\Program Files\Miyo\miyo-mcp.exe` |
+| Linux (.deb) | `/usr/bin/miyo-mcp` (already on PATH — configure as `miyo-mcp`) |
+| Linux (.AppImage) | `miyo-mcp` inside the mounted image |
+| Dev mode (tauri dev) | `frontend/src-tauri/binaries/miyo-mcp-<triple>` in the repo |
 
 <details>
 <summary>Older versions (&lt; v0.0.10) or building from source</summary>
 
 ```bash
-git clone https://github.com/weihubeats/RustFox.git
-cd Miyo && cargo build --release -p fox-mcp
-# Output: target/release/rustfox-mcp
-sudo cp target/release/rustfox-mcp /usr/local/bin/   # optional: put on PATH
+git clone https://github.com/weihubeats/Miyo.git
+cd Miyo && cargo build --release -p miyo-mcp
+# Output: target/release/miyo-mcp
+sudo cp target/release/miyo-mcp /usr/local/bin/   # optional: put on PATH
 ```
 </details>
 
 ### 3.2 Configure your client
 
-For v0.0.10+ installs the binary is **not on PATH** — prefer the absolute paths from §3.1 (classic macOS pitfall: a bare `rustfox-mcp` fails with `spawn ... ENOENT`). A bare command works only once it is on PATH.
+For v0.0.10+ installs the binary is **not on PATH** — prefer the absolute paths from §3.1 (classic macOS pitfall: a bare `miyo-mcp` fails with `spawn ... ENOENT`). A bare command works only once it is on PATH.
 
 **Claude Code** — project root `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
+    "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" }
   }
 }
 ```
@@ -81,10 +81,10 @@ For v0.0.10+ installs the binary is **not on PATH** — prefer the absolute path
 In dev mode (tauri dev), or once on PATH:
 
 ```json
-{ "command": "rustfox-mcp" }
+{ "command": "miyo-mcp" }
 ```
 
-**Cursor** — Settings → MCP → Add Server; set Command to the absolute path `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` (macOS) or your platform's path.
+**Cursor** — Settings → MCP → Add Server; set Command to the absolute path `/Applications/Miyo.app/Contents/MacOS/miyo-mcp` (macOS) or your platform's path.
 
 Restart the client / reload the session; when the tool list shows 4 tools you're done:
 
@@ -177,9 +177,9 @@ Errors are always `{code, message}`: `VALIDATION`(400) / `NOT_FOUND`(404) / `UNA
 
 | Symptom | Fix |
 | --- | --- |
-| `spawn rustfox-mcp ENOENT` | Binary not on PATH: for v0.0.10+ use the absolute path from §3.1, or build the old way and put it on PATH |
-| `rustfox-mcp` says "no running control plane" | Start the Miyo desktop app first; make sure the local loopback 4110~4129 is not blocked by a firewall |
+| `spawn miyo-mcp ENOENT` | Binary not on PATH: for v0.0.10+ use the absolute path from §3.1, or build the old way and put it on PATH |
+| `miyo-mcp` says "no running control plane" | Start the Miyo desktop app first; make sure the local loopback 4110~4129 is not blocked by a firewall |
 | 401 UNAUTHORIZED | The token file belongs to a different install (e.g. mixing dev/release directories); delete `agent-token` and restart the app, then reconfigure |
 | VALIDATION with multiple projects | Have the agent call `list_projects` first and retry with a projectId |
-| MCP tool list missing | Check `.mcp.json` syntax and the execute permission on rustfox-mcp (`chmod +x`); check the client's MCP logs |
+| MCP tool list missing | Check `.mcp.json` syntax and the execute permission on miyo-mcp (`chmod +x`); check the client's MCP logs |
 | UI doesn't refresh after import | Live refresh only happens when the desktop app has the same project open; switch projects or re-enter the workspace to see it |

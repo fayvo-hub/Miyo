@@ -28,8 +28,8 @@ import { marked } from 'marked'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const SITE = path.join(ROOT, 'website')
-const SITE_BASE = 'https://weihubeats.github.io/RustFox'
-const GH_BLOB = 'https://github.com/weihubeats/RustFox/blob/main/'
+const SITE_BASE = 'https://weihubeats.github.io/Miyo'
+const GH_BLOB = 'https://github.com/weihubeats/Miyo/blob/main/'
 
 /** 站内文档页注册表：src 为相对仓库根的 markdown 路径。 */
 const PAGES = [
@@ -293,7 +293,7 @@ function buildPage(page, md) {
         publisher: {
           '@type': 'Organization',
           name: 'Miyo',
-          url: 'https://github.com/weihubeats/RustFox',
+          url: 'https://github.com/weihubeats/Miyo',
         },
       },
       {
@@ -351,7 +351,7 @@ ${CSS}
     <div class="nav-links">
       <a class="active" href="${docsAnchor}">${page.lang === 'zh' ? '文档' : 'Docs'}</a>
       ${pairHref ? `<a href="${pairHref}">${page.lang === 'zh' ? 'English' : '中文'}</a>` : `<a href="${page.lang === 'en' ? homeZh : homeEn}">${page.lang === 'zh' ? 'English' : '中文'}</a>`}
-      <a href="https://github.com/weihubeats/RustFox">GitHub</a>
+      <a href="https://github.com/weihubeats/Miyo">GitHub</a>
     </div>
   </div>
 </nav>
@@ -370,7 +370,7 @@ ${html}
 
 <footer>
   <div class="container">
-    <p><a href="https://github.com/weihubeats/RustFox">GitHub</a> · <a href="https://github.com/weihubeats/RustFox/releases">Releases</a> · <a href="https://github.com/weihubeats/RustFox/blob/main/LICENSE">Apache-2.0 License</a></p>
+    <p><a href="https://github.com/weihubeats/Miyo">GitHub</a> · <a href="https://github.com/weihubeats/Miyo/releases">Releases</a> · <a href="https://github.com/weihubeats/Miyo/blob/main/LICENSE">Apache-2.0 License</a></p>
     <p>Built with 🦊 &amp; Rust</p>
   </div>
 </footer>

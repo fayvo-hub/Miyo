@@ -3,7 +3,7 @@
  * ReleaseNotesModal：独立版本更新详情弹窗（顶部更新 Tag / 设置更新卡片的统一落地页）。
  * - Header：🚀 发现新版本 vX（加粗等宽，样式在文末非 scoped 段覆写 Modal 容器/标题）；
  * - Body：Markdown 更新日志（ReleaseNotesBody：markdownLite 转义渲染，主题化井底包裹框可滚动）；
- * - Footer：稍后再说（rf-btn 次要按钮）+ 立即下载并重启（rf-btn-primary 主按钮），下载中就地展示进度条；
+ * - Footer：稍后再说（miyo-btn 次要按钮）+ 立即下载并重启（miyo-btn-primary 主按钮），下载中就地展示进度条；
  * - 打开时接管共享暂存的 Update；未安装关闭（Esc / 遮罩 / ✕ / 稍后再说）放回暂存，
  *   顶部 Tag 复亮；下载/安装中禁止关闭，成功后自动关闭并延迟重启。
  */
@@ -114,10 +114,10 @@ function guardClose(): boolean {
         </div>
         <p v-else-if="failMsg" class="rn-error" role="alert">{{ failMsg }}</p>
         <div class="rn-actions">
-          <button class="rf-btn" type="button" :disabled="downloading" @click="later">
+          <button class="miyo-btn" type="button" :disabled="downloading" @click="later">
             {{ t('release.later') }}
           </button>
-          <button class="rf-btn rf-btn-primary" type="button" :disabled="downloading" @click="install">
+          <button class="miyo-btn miyo-btn-primary" type="button" :disabled="downloading" @click="install">
             {{ t('release.install') }}
           </button>
         </div>

@@ -1,0 +1,17 @@
+[package]
+name = "miyo-secret"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "环境变量密文存储：AES-256-GCM 主密钥与加解密"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+
+[dependencies]
+aes-gcm = { workspace = true }
+rand = { workspace = true }
+base64 = { workspace = true }
+dirs = { workspace = true }
+miyo-core = { path = "../miyo-core" }
+thiserror = { workspace = true }

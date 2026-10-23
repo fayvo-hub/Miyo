@@ -4,7 +4,7 @@
  * 标题支持省略号截断，深/浅双主题，hover/focus 五态。
  */
 import { useRouter } from 'vue-router'
-import logo from '../assets/rustfox-logo.png'
+import logo from '../assets/miyo-logo.svg'
 import { useLocaleStore } from '../stores/locale'
 
 withDefaults(defineProps<{ title: string; subtitle?: string }>(), { subtitle: '' })

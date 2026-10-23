@@ -27,7 +27,7 @@ import { RAW_SUBTYPES, applyBodyTab, applyRawSubtype, rawSubtypeOf, removeConten
 import { handleTextareaTab } from '../utils/textareaIndent'
 import { deepClone } from '../utils/clone'
 import type { BodyTab, RawSubtype } from '../utils/bodyMode'
-import type { BodySpec, Endpoint, GraphQLSpec, KeyValue, MultipartField, RequestSpec } from '../types/foxApi'
+import type { BodySpec, Endpoint, GraphQLSpec, KeyValue, MultipartField, RequestSpec } from '../types/miyoApi'
 
 const props = defineProps<{
   draft: Endpoint | null
@@ -488,7 +488,7 @@ const binPath = useDebouncedField(
       v-else-if="activeTab === 'raw'"
       :value="rawText.local.value"
       ref="rawTextareaRef"
-      class="rf-input body-input"
+      class="miyo-input body-input"
       spellcheck="false"
       :placeholder="RAW_PLACEHOLDER[rawSubtype as RawSubtype] ?? t('body.textPh')"
       @input="rawText.onInput(($event.target as HTMLTextAreaElement).value)"
@@ -500,7 +500,7 @@ const binPath = useDebouncedField(
       <textarea
         :value="gqlQuery.local.value"
         ref="gqlTextareaRef"
-        class="rf-input body-input"
+        class="miyo-input body-input"
         spellcheck="false"
         placeholder="query Hero($id: ID!) { hero(id: $id) { name } }"
         @input="gqlQuery.onInput(($event.target as HTMLTextAreaElement).value)"
@@ -518,7 +518,7 @@ const binPath = useDebouncedField(
       />
       <input
         :value="gqlOp.local.value"
-        class="rf-input rf-input-sm"
+        class="miyo-input miyo-input-sm"
         :placeholder="t('body.operationNamePh')"
         @input="gqlOp.onInput(($event.target as HTMLInputElement).value)"
         @blur="gqlOp.flush()"
@@ -534,9 +534,9 @@ const binPath = useDebouncedField(
     <div v-else-if="activeTab === 'form-data'" class="mp-table">
       <div class="mp-head">
         <span class="mp-col mp-check"></span>
-        <span class="mp-col mp-key rf-mono">{{ t('kv.colKey') }}</span>
-        <span class="mp-col mp-type rf-mono">{{ t('body.colType') }}</span>
-        <span class="mp-col mp-value rf-mono">{{ t('kv.colValue') }}</span>
+        <span class="mp-col mp-key miyo-mono">{{ t('kv.colKey') }}</span>
+        <span class="mp-col mp-type miyo-mono">{{ t('body.colType') }}</span>
+        <span class="mp-col mp-value miyo-mono">{{ t('kv.colValue') }}</span>
         <span class="mp-col mp-actions"></span>
       </div>
       <div
@@ -582,7 +582,7 @@ const binPath = useDebouncedField(
       </label>
       <input
         :value="binPath.local.value"
-        class="rf-input rf-input-sm binary-input"
+        class="miyo-input miyo-input-sm binary-input"
         spellcheck="false"
         :placeholder="t('body.filePathPh')"
         @input="binPath.onInput(($event.target as HTMLInputElement).value)"

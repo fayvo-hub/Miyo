@@ -9,7 +9,7 @@ AI Agent 可以直接把 cURL 命令保存为 Miyo 接口，也可以查询项�
 
 | 方式 | 适用 | 前置 |
 | --- | --- | --- |
-| MCP Server（推荐） | Claude Code、Cursor 等支持 MCP 的客户端 | 额外获取 `rustfox-mcp` 二进制 |
+| MCP Server（推荐） | Claude Code、Cursor 等支持 MCP 的客户端 | 额外获取 `miyo-mcp` 二进制 |
 | 直接 HTTP | 任意能发 HTTP 请求 / 执行命令的 Agent | 无 |
 
 ---
@@ -17,7 +17,7 @@ AI Agent 可以直接把 cURL 命令保存为 Miyo 接口，也可以查询项�
 ## 1. 工作原理
 
 ```
-AI Agent ──(stdio MCP)──→ rustfox-mcp ──┐
+AI Agent ──(stdio MCP)──→ miyo-mcp ──┐
                                         ├──→ Agent 控制面 (127.0.0.1:4110~4129)
 AI Agent ──(HTTP + Bearer token)────────┘         │
                                              SQLite 落库 → UI 实时刷新
@@ -36,45 +36,45 @@ Token 是控制面的访问凭证，首次启动应用时自动生成：
   - Windows：`%APPDATA%\Miyo\agent-token`
   - Linux：`~/.local/share/Miyo/agent-token`
 - 应用内也可确认：顶栏「设置」旁无入口时，可在 DevTools Console 执行
-  `await __TAURI_INTERNALS__.invoke('plugin:fox|agent_status')` 查看 `tokenPath`。
+  `await __TAURI_INTERNALS__.invoke('plugin:miyo|agent_status')` 查看 `tokenPath`。
 
 > 开发构建（tauri dev）使用 `Miyo-dev` 目录，与正式版隔离。
 
 ## 3. 方式一：MCP Server
 
-### 3.1 获取 rustfox-mcp
+### 3.1 获取 miyo-mcp
 
-**v0.0.10 起，安装包已内置 `rustfox-mcp`**，按平台取对应路径即可：
+**v0.0.10 起，安装包已内置 `miyo-mcp`**，按平台取对应路径即可：
 
 | 平台 / 安装方式 | 路径 |
 | --- | --- |
-| macOS（/Applications 安装） | `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp` |
-| Windows（NSIS 默认目录） | `C:\Program Files\Miyo\rustfox-mcp.exe` |
-| Linux（.deb） | `/usr/bin/rustfox-mcp`（已在 PATH，配置直接写 `rustfox-mcp`） |
-| Linux（.AppImage） | 挂载镜像内的 `rustfox-mcp` |
-| 开发模式（tauri dev） | 仓库内 `frontend/src-tauri/binaries/rustfox-mcp-<三元组>` |
+| macOS（/Applications 安装） | `/Applications/Miyo.app/Contents/MacOS/miyo-mcp` |
+| Windows（NSIS 默认目录） | `C:\Program Files\Miyo\miyo-mcp.exe` |
+| Linux（.deb） | `/usr/bin/miyo-mcp`（已在 PATH，配置直接写 `miyo-mcp`） |
+| Linux（.AppImage） | 挂载镜像内的 `miyo-mcp` |
+| 开发模式（tauri dev） | 仓库内 `frontend/src-tauri/binaries/miyo-mcp-<三元组>` |
 
 <details>
 <summary>旧版本（&lt; v0.0.10）或从源码构建</summary>
 
 ```bash
-git clone https://github.com/weihubeats/RustFox.git
-cd Miyo && cargo build --release -p fox-mcp
-# 产物：target/release/rustfox-mcp
-sudo cp target/release/rustfox-mcp /usr/local/bin/   # 可选：放进 PATH
+git clone https://github.com/weihubeats/Miyo.git
+cd Miyo && cargo build --release -p miyo-mcp
+# 产物：target/release/miyo-mcp
+sudo cp target/release/miyo-mcp /usr/local/bin/   # 可选：放进 PATH
 ```
 </details>
 
 ### 3.2 配置客户端
 
-v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝对路径（macOS 安装包常见坑：裸 `rustfox-mcp` 报 `spawn ... ENOENT`）。仅在已加入 PATH 时才能写裸命令。
+v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝对路径（macOS 安装包常见坑：裸 `miyo-mcp` 报 `spawn ... ENOENT`）。仅在已加入 PATH 时才能写裸命令。
 
 **Claude Code** — 项目根目录 `.mcp.json`：
 
 ```json
 {
   "mcpServers": {
-    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
+    "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" }
   }
 }
 ```
@@ -82,10 +82,10 @@ v0.0.10+ 安装包的二进制**不在 PATH**，推荐直接填 §3.1 表中绝�
 开发模式（tauri dev）或已在 PATH，则可写：
 
 ```json
-{ "command": "rustfox-mcp" }
+{ "command": "miyo-mcp" }
 ```
 
-**Cursor** — Settings → MCP → Add Server，Command 填绝对路径 `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`（macOS）或对应平台路径。
+**Cursor** — Settings → MCP → Add Server，Command 填绝对路径 `/Applications/Miyo.app/Contents/MacOS/miyo-mcp`（macOS）或对应平台路径。
 
 配置后重启客户端 / 重载会话，工具列表出现 4 个工具即成功：
 
@@ -180,9 +180,9 @@ curl -s http://127.0.0.1:4110/agent/curl \
 
 | 现象 | 处理 |
 | --- | --- |
-| `spawn rustfox-mcp ENOENT` | 二进制不在 PATH：v0.0.10+ 改用安装包内绝对路径（见 §3.1），或按旧版方式构建后放入 PATH |
-| `rustfox-mcp` 报「未发现运行中的控制面」 | 先启动 Miyo 桌面应用；确认端口 4110~4129 未被防火墙拦本机回环 |
+| `spawn miyo-mcp ENOENT` | 二进制不在 PATH：v0.0.10+ 改用安装包内绝对路径（见 §3.1），或按旧版方式构建后放入 PATH |
+| `miyo-mcp` 报「未发现运行中的控制面」 | 先启动 Miyo 桌面应用；确认端口 4110~4129 未被防火墙拦本机回环 |
 | 401 UNAUTHORIZED | token 文件与应用不一致（如混用了 dev/正式版目录）；删掉 `agent-token` 后重启应用重新配 |
 | 多项目时报 VALIDATION | 让 Agent 先调 `list_projects`，带上 projectId 重试 |
-| MCP 工具列表没出现 | 检查 `.mcp.json` 语法与 rustfox-mcp 可执行权限（`chmod +x`）；查看客户端 MCP 日志 |
+| MCP 工具列表没出现 | 检查 `.mcp.json` 语法与 miyo-mcp 可执行权限（`chmod +x`）；查看客户端 MCP 日志 |
 | 导入后 UI 没刷新 | 仅当桌面端正打开同一项目才实时刷新；切项目或重进工作区可见 |

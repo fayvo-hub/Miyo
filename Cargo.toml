@@ -1,22 +1,22 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/fox-core",
-    "crates/fox-storage",
-    "crates/fox-http",
-    "crates/fox-grpc",
-    "crates/fox-openapi",
-    "crates/fox-mock",
-    "crates/fox-test",
-    "crates/fox-backup",
-    "crates/fox-secret",
-    "crates/fox-codegen",
-    "crates/fox-oauth",
-    "crates/fox-smoke",
-    "crates/fox-agent",
-    "crates/fox-mcp",
-    "crates/fox-sign",
-    "crates/fox-sync",
+    "crates/miyo-core",
+    "crates/miyo-storage",
+    "crates/miyo-http",
+    "crates/miyo-grpc",
+    "crates/miyo-openapi",
+    "crates/miyo-mock",
+    "crates/miyo-test",
+    "crates/miyo-backup",
+    "crates/miyo-secret",
+    "crates/miyo-codegen",
+    "crates/miyo-oauth",
+    "crates/miyo-smoke",
+    "crates/miyo-agent",
+    "crates/miyo-mcp",
+    "crates/miyo-sign",
+    "crates/miyo-sync",
 ]
 
 [workspace.package]
@@ -24,8 +24,8 @@ version = "0.0.1"
 edition = "2021"
 rust-version = "1.85"
 license = "Apache-2.0"
-repository = "https://github.com/weihubeats/RustFox"
-homepage = "https://weihubeats.github.io/RustFox/"
+repository = "https://github.com/weihubeats/Miyo"
+homepage = "https://weihubeats.github.io/Miyo/"
 description = "Miyo — lightweight cross-platform API debugging client (backend crates)"
 
 [workspace.dependencies]
@@ -58,12 +58,12 @@ indexmap = { version = "2", features = ["serde"] }
 dirs = "7"
 aes-gcm = "0.11"
 base64 = "0.23"
-# 签名类认证（Digest / Hawk / AWS SigV4 / HMAC AK-SK）：fox-sign 专用
+# 签名类认证（Digest / Hawk / AWS SigV4 / HMAC AK-SK）：miyo-sign 专用
 hmac = "0.13"
 sha2 = "0.11"
 md5 = "0.8"
 hex = "0.4"
-# 动态签名（App-Key/Secret/Timestamp/Sig）：fox-http signature.rs 用（md-5 与 sha2/hmac 同步 digest 0.11）
+# 动态签名（App-Key/Secret/Timestamp/Sig）：miyo-http signature.rs 用（md-5 与 sha2/hmac 同步 digest 0.11）
 md-5 = "0.11"
 
 sqlx = { version = "0.8", features = [

@@ -4,17 +4,17 @@
  * 解析（parse_curl_command）→ 预览 → 导入为未命名草稿（保存时弹名称确认框）。
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import Modal from './ui/Modal.vue'
-import type { CurlParsed } from '../types/foxApi'
+import type { CurlParsed } from '../types/miyoApi'
 
 const props = defineProps<{ folderId: string | null }>()
 const emit = defineEmits<{ close: [] }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const store = useWorkspaceStore()
 const toast = useToast()
 const locale = useLocaleStore()
@@ -79,16 +79,16 @@ function importToEditor(): void {
 <template>
   <Modal :open="true" :title="t('curldlg.title')" width="560px" @close="emit('close')">
     <p class="modal-hint">
-      {{ t('curldlg.hintBefore') }}<code>fox-core::curl_parser</code>{{ t('curldlg.hintAfter') }}
+      {{ t('curldlg.hintBefore') }}<code>miyo-core::curl_parser</code>{{ t('curldlg.hintAfter') }}
     </p>
     <textarea
       v-model="command"
-      class="rf-input curl-input"
+      class="miyo-input curl-input"
       spellcheck="false"
       placeholder="curl -X POST 'https://api.example.com/users' -H 'Content-Type: application/json' -d '{&quot;name&quot;: &quot;alice&quot;}'"
     ></textarea>
     <div class="modal-actions">
-      <button class="rf-btn" type="button" :disabled="parsing || !command.trim()" @click="parse">
+      <button class="miyo-btn" type="button" :disabled="parsing || !command.trim()" @click="parse">
         {{ parsing ? t('importdlg.parsing') : t('importdlg.parse') }}
       </button>
     </div>
@@ -121,9 +121,9 @@ function importToEditor(): void {
     </div>
 
     <template #footer>
-      <button class="rf-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
       <button
-        class="rf-btn rf-btn-primary"
+        class="miyo-btn miyo-btn-primary"
         type="button"
         :disabled="!parsed"
         @click="importToEditor"

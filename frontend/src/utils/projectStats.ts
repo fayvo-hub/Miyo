@@ -1,12 +1,12 @@
 /**
  * projectStats：仪表板项目统计聚合（list_project_stats 载荷 → 计数 / 最近接口）。
  *
- * 输入为后端 snake_case 载荷（foxApi.d.ts ProjectStat）。曾因 Rust 侧
+ * 输入为后端 snake_case 载荷（miyoApi.d.ts ProjectStat）。曾因 Rust 侧
  * camelCase 序列化导致前端读取 undefined、统计显示异常——本模块对每条
  * 记录做显式字段校验：畸形条目（含 camelCase 键）直接跳过，宁显示 0
  * 不产出 NaN；Rust 侧由序列化契约测试锁死键名。
  */
-import type { HttpMethod, ProjectStat } from '../types/foxApi'
+import type { HttpMethod, ProjectStat } from '../types/miyoApi'
 
 export interface LatestEndpoint {
   method: HttpMethod

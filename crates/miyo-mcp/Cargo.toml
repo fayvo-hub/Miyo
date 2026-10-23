@@ -1,0 +1,23 @@
+[package]
+name = "miyo-mcp"
+version = "0.0.1"
+edition = "2021"
+description = "Miyo MCP Server：stdio JSON-RPC，把 AI Agent 接到 Miyo Agent 控制面"
+license = "Apache-2.0"
+repository = "https://github.com/weihubeats/Miyo"
+homepage = "https://weihubeats.github.io/Miyo/"
+
+[[bin]]
+name = "miyo-mcp"
+path = "src/main.rs"
+
+[dependencies]
+miyo-agent = { path = "../miyo-agent" }
+miyo-core = { path = "../miyo-core" }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+axum = { workspace = true }
+miyo-storage = { path = "../miyo-storage" }

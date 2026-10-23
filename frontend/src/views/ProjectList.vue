@@ -12,7 +12,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ensureSwapMounted } from '../utils/sortable'
 import Sortable from 'sortablejs'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
@@ -41,10 +41,10 @@ import { timeAgo } from '../components/projectlist/projectMeta'
 import { aggregateProjectStats, totalEndpointCount } from '../utils/projectStats'
 import { methodTone } from '../utils/methodTone'
 import { useWindowDrag } from '../composables/useWindowDrag'
-import logo from '../assets/rustfox-logo.png'
-import type { HttpMethod, Project, Team } from '../types/foxApi'
+import logo from '../assets/miyo-logo.svg'
+import type { HttpMethod, Project, Team } from '../types/miyoApi'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const router = useRouter()
 const workspace = useWorkspaceStore()
@@ -105,7 +105,7 @@ const filtered = computed(() => {
 })
 
 // ---------- 团队分组 ----------
-/** 默认团队固定 UUID（与迁移 0015 / fox_core::model::DEFAULT_TEAM_ID 一致）。 */
+/** 默认团队固定 UUID（与迁移 0015 / miyo_core::model::DEFAULT_TEAM_ID 一致）。 */
 const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000001'
 /** 团队筛选：全部分组哨兵值。 */
 const TEAM_ALL = '__all__'
@@ -496,7 +496,7 @@ useWindowDrag(topBarEl)
       <ProjectTabs class="top-tabs" @new-project="showCreate = true" />
       <div class="top-right">
         <HeaderUpdateTag />
-        <span class="rf-update-wrap">
+        <span class="miyo-update-wrap">
           <IconButton
             name="settings"
             :size="15"
@@ -512,9 +512,9 @@ useWindowDrag(topBarEl)
       <DashboardNav />
 
       <main class="dash-main">
-        <div v-if="loadError" class="rf-inline-error" role="alert">
-          <span class="rf-inline-error-text">{{ t('workspace.loadFail', { v: loadError }) }}</span>
-          <button class="rf-btn rf-btn-sm" type="button" :disabled="loading" @click="load">
+        <div v-if="loadError" class="miyo-inline-error" role="alert">
+          <span class="miyo-inline-error-text">{{ t('workspace.loadFail', { v: loadError }) }}</span>
+          <button class="miyo-btn miyo-btn-sm" type="button" :disabled="loading" @click="load">
             {{ loading ? t('common.retrying') : t('common.retry') }}
           </button>
         </div>
@@ -711,7 +711,7 @@ useWindowDrag(topBarEl)
             <p class="empty-hint">
               {{ search ? t('projectlist.noMatchHint') : t('projectlist.emptyHint') }}
             </p>
-            <button class="rf-btn rf-btn-primary" type="button" @click="showCreate = true">
+            <button class="miyo-btn miyo-btn-primary" type="button" @click="showCreate = true">
               <Icon name="plus" :size="14" /> {{ t('projectlist.newProject') }}
             </button>
           </div>
@@ -1128,7 +1128,7 @@ useWindowDrag(topBarEl)
   transform: translateY(1px);
 }
 
-/* 主 CTA：紫渐变光晕（与全局 rf-btn-primary 同语言） */
+/* 主 CTA：紫渐变光晕（与全局 miyo-btn-primary 同语言） */
 .quick-btn.primary {
   border: 1px solid transparent;
   background: var(--grad-primary);

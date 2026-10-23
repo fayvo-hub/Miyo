@@ -21,7 +21,7 @@ import ExportDocsDialog from './docs/ExportDocsDialog.vue'
 import ResponseExamplesPanel from './docs/ResponseExamplesPanel.vue'
 import SchemaTreeTable from './docs/SchemaTreeTable.vue'
 import Icon from './ui/Icon.vue'
-import type { AuthSpec, Endpoint, EndpointStatus } from '../types/foxApi'
+import type { AuthSpec, Endpoint, EndpointStatus } from '../types/miyoApi'
 
 const props = withDefaults(defineProps<{ draft: Endpoint | null; url?: string }>(), { url: '' })
 
@@ -203,10 +203,10 @@ const showExport = ref(false)
           <button class="head-export" type="button" @click="showExport = true">
             <Icon name="download" :size="13" /> {{ t('docs.exportDocs') }}
           </button>
-          <button class="rf-btn rf-btn-sm" type="button" @click="copyPath">
+          <button class="miyo-btn miyo-btn-sm" type="button" @click="copyPath">
             <Icon name="copy" :size="12" /> {{ t('docs.copyPath') }}
           </button>
-          <button class="rf-btn rf-btn-sm rf-btn-primary" type="button" @click="jumpToDebug">
+          <button class="miyo-btn miyo-btn-sm miyo-btn-primary" type="button" @click="jumpToDebug">
             <Icon name="send" :size="12" /> {{ t('docs.jumpToDebug') }}
           </button>
         </div>

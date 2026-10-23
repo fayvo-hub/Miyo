@@ -3,7 +3,7 @@ import Sortable, { Swap } from 'sortablejs'
 /** 模块标记键：HMR 重灌模块时 top-level 会再次执行，
  *  但 import 进来的 Sortable 对象是同一份实例（不在 HMR 里重建），
  *  所以用它作挂载标记的载体，能跨 HMR 稳定判断。 */
-const MARKER = '__rustfox_swap_mounted'
+const MARKER = '__miyo_swap_mounted'
 
 type AnySortable = typeof Sortable & { [MARKER]?: boolean }
 

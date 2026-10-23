@@ -63,4 +63,4 @@
 4. 备份一次（设置 → 备份 JSON），新环境恢复演练以它为准。
 
 遇到导入报错或字段丢失，提 Issue 时附上（脱敏后的）源文件片段即可复现：
-<https://github.com/weihubeats/RustFox/issues>。
+<https://github.com/weihubeats/Miyo/issues>。

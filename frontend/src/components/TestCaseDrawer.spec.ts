@@ -10,7 +10,7 @@ import TestCaseDrawer from './TestCaseDrawer.vue'
 import CodeExportMenu from './CodeExportMenu.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
-import type { Environment, TestCase } from '../types/foxApi'
+import type { Environment, TestCase } from '../types/miyoApi'
 
 function makeCase(): TestCase {
   return {

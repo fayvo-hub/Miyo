@@ -9,7 +9,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import RequestExamplesPanel from './RequestExamplesPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, RequestExample } from '../types/foxApi'
+import type { Endpoint, RequestExample } from '../types/miyoApi'
 
 const requestExamples = vi.hoisted(() => {
   const map = new Map<string, RequestExample[]>()

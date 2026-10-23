@@ -3,7 +3,7 @@
  *
  * 尝试顺序：
  * 1. `navigator.clipboard.writeText`（异步 Clipboard API，要求安全上下文 + 权限）；
- * 2. 原生系统剪贴板写命令（Tauri：`plugin:fox|clipboard_write_text`，arboard 直写，
+ * 2. 原生系统剪贴板写命令（Tauri：`plugin:miyo|clipboard_write_text`，arboard 直写，
  *    规避 WKWebView 等 WebView 的剪贴板限制）；
  * 3. 隐藏 textarea + `document.execCommand('copy')`（旧 WebView / 受限 iframe）。
  *
@@ -41,7 +41,7 @@ export async function copyText(text: string): Promise<boolean> {
   if (typeof window !== 'undefined' && inTauriWebview()) {
     try {
       const invoke = await getTauriInvoke()
-      await invoke?.('plugin:fox|clipboard_write_text', { text })
+      await invoke?.('plugin:miyo|clipboard_write_text', { text })
       return true
     } catch (err) {
       console.error('[clipboard] 原生剪贴板命令失败（请确认已重新编译应用）', err)

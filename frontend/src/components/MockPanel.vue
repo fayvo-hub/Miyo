@@ -6,11 +6,11 @@
  */
 import { onMounted, ref } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { methodTextTone } from '../utils/methodTone'
-import type { Endpoint, MockRule } from '../types/foxApi'
+import type { Endpoint, MockRule } from '../types/miyoApi'
 import EmptyState from './ui/EmptyState.vue'
 import Icon from './ui/Icon.vue'
 
@@ -18,7 +18,7 @@ const props = defineProps<{ draft: Endpoint | null }>()
 const emit = defineEmits<{ openManager: [] }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -65,7 +65,7 @@ const others = (): MockRule[] =>
       <span class="mkp-title">{{ t('mockpanel.title', { n: rules.length }) }}</span>
       <span class="mkp-actions">
         <button
-          class="rf-btn rf-btn-sm"
+          class="miyo-btn miyo-btn-sm"
           type="button"
           :disabled="reloading"
           :title="t('mockpanel.reloadHint')"
@@ -73,7 +73,7 @@ const others = (): MockRule[] =>
         >
           <Icon name="refresh" :size="13" /> {{ reloading ? t('mockpanel.reloading') : t('mockpanel.reload') }}
         </button>
-        <button class="rf-btn rf-btn-sm" type="button" @click="emit('openManager')">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="emit('openManager')">
           <Icon name="settings" :size="13" /> {{ t('mockpanel.openManager') }}
         </button>
       </span>

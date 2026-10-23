@@ -4,7 +4,7 @@
  * - themeMode：用户偏好（system | dark | light），持久化到 localStorage；
  * - resolved：实际生效主题（dark | light），由偏好 + 系统 `prefers-color-scheme` 推导；
  * - apply：把生效主题写入 <html> 的 `data-theme` 属性（全局 CSS 令牌唯一事实源），
- *   并广播 `rustfox:theme` 全局事件通知 JSON 编辑器等组件切换主题；
+ *   并广播 `miyo:theme` 全局事件通知 JSON 编辑器等组件切换主题；
  * - init：应用启动时同步读取持久化偏好并立即生效，避免首屏闪白/闪黑（FOUC）。
  */
 import { computed, ref } from 'vue'
@@ -13,11 +13,11 @@ import { defineStore } from 'pinia'
 export type ThemeMode = 'system' | 'dark' | 'light'
 export type ResolvedTheme = 'dark' | 'light'
 
-const STORAGE_KEY = 'rustfox.theme.mode'
+const STORAGE_KEY = 'miyo.theme.mode'
 const DEFAULT_MODE: ThemeMode = 'dark'
 
 /** 全局主题切换事件：detail.mode 为实际生效主题（CodeMirror 等编辑器监听）。 */
-export const THEME_EVENT = 'rustfox:theme'
+export const THEME_EVENT = 'miyo:theme'
 
 function isMode(v: string | null): v is ThemeMode {
   return v === 'system' || v === 'dark' || v === 'light'

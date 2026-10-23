@@ -34,7 +34,7 @@ const readOnlyCompartment = new Compartment()
 const themeCompartment = new Compartment()
 const searchCompartment = new Compartment()
 
-/** 当前主题：以 <html> 的 data-theme 为准，并监听 rustfox:theme 全局事件联动。 */
+/** 当前主题：以 <html> 的 data-theme 为准，并监听 miyo:theme 全局事件联动。 */
 const theme = ref<'dark' | 'light'>(readThemeFromDom())
 function readThemeFromDom(): 'dark' | 'light' {
   return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'

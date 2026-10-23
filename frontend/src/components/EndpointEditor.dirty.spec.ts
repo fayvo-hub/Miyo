@@ -13,10 +13,10 @@ import { createPinia, setActivePinia } from 'pinia'
 import EndpointEditor from './EndpointEditor.vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
 }))
 
 function endpoint(method: Endpoint['method']): Endpoint {

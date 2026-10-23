@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Environment } from '../types/foxApi'
+import type { Environment } from '../types/miyoApi'
 import {
   effectiveVariable,
   envBaseUrl,

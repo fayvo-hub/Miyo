@@ -5,7 +5,7 @@
  * - 名称 / 版本 / 副标题 + GitHub / 检查更新链接 + 版权行；
  * - 检查更新（tauri-plugin-updater）：发现新版本 → 展示版本号与更新说明 →
  *   下载（带进度）→ 安装 → 重启（tauri-plugin-process relaunch）。
- * 触发来源：macOS 原生菜单「About Miyo」→ rustfox://about 事件 → App.vue 打开。
+ * 触发来源：macOS 原生菜单「About Miyo」→ miyo://about 事件 → App.vue 打开。
  */
 import { check, type Update } from '@tauri-apps/plugin-updater'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -17,7 +17,7 @@ import { useUpdateDownload } from '../composables/useUpdateDownload'
 import { takePendingUpdate, restorePendingUpdate, skipUpdateVersion } from '../composables/useAutoUpdate'
 import Icon from './ui/Icon.vue'
 import Modal from './ui/Modal.vue'
-import logo from '../assets/rustfox-logo.png'
+import logo from '../assets/miyo-logo.svg'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [open: boolean] }>()
@@ -26,7 +26,7 @@ const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
 
-const GITHUB_URL = 'https://github.com/weihubeats/RustFox'
+const GITHUB_URL = 'https://github.com/weihubeats/Miyo'
 
 /** 打开系统浏览器访问仓库（WebView 内 target=_blank 无效果，须走 opener 插件）。 */
 async function openGitHub(): Promise<void> {

@@ -26,7 +26,7 @@ const emit = defineEmits<{
 
 const bodyEl = ref<HTMLElement | null>(null)
 
-const titleId = `rf-drawer-title-${Math.random().toString(36).slice(2, 9)}`
+const titleId = `miyo-drawer-title-${Math.random().toString(36).slice(2, 9)}`
 
 const locale = useLocaleStore()
 const t = locale.t

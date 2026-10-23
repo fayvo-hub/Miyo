@@ -14,8 +14,8 @@ vi.mock('../stores/workspace', () => ({
   }),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     listMockRules: vi.fn().mockResolvedValue([]),
     saveMockRule: vi.fn(),
     deleteMockRule: vi.fn(),

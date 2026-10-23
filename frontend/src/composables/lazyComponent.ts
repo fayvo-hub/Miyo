@@ -24,7 +24,7 @@ const Loading: Component = {
     return () =>
       h(
         'div',
-        { class: 'rf-lazy-loading', 'aria-busy': 'true', role: 'status' },
+        { class: 'miyo-lazy-loading', 'aria-busy': 'true', role: 'status' },
         h(Skeleton, { lines: 3 }),
       )
   },
@@ -37,13 +37,13 @@ const LoadError: Component = {
   setup(props) {
     const t = useLocaleStore().t
     return () =>
-      h('div', { class: 'rf-lazy-error', role: 'alert' }, [
-        h('span', { class: 'rf-lazy-error-text' }, t('common.panelLoadFail')),
+      h('div', { class: 'miyo-lazy-error', role: 'alert' }, [
+        h('span', { class: 'miyo-lazy-error-text' }, t('common.panelLoadFail')),
         h(
           'button',
           {
             type: 'button',
-            class: 'rf-btn rf-btn-sm',
+            class: 'miyo-btn miyo-btn-sm',
             onClick: () => {
               if (props.error) retryByError.get(props.error)?.()
             },

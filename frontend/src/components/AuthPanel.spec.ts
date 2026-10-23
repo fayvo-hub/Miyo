@@ -10,14 +10,14 @@ import AuthPanel from './AuthPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
 import { collectErrors } from '../testUtils/componentTest'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
 vi.mock('../composables/useToast', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), toast: vi.fn() }),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({ oauthAuthorize: vi.fn() }),
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({ oauthAuthorize: vi.fn() }),
 }))
 
 function draft(): Endpoint {

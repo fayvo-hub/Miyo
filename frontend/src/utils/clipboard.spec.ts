@@ -75,7 +75,7 @@ describe('copyText（Tauri 原生兜底）', () => {
     setInternals({})
     mockInvoke.mockResolvedValue(undefined)
     await expect(copyText('native-first')).resolves.toBe(true)
-    expect(mockInvoke).toHaveBeenCalledWith('plugin:fox|clipboard_write_text', {
+    expect(mockInvoke).toHaveBeenCalledWith('plugin:miyo|clipboard_write_text', {
       text: 'native-first',
     })
     expect(writeText).not.toHaveBeenCalled()
@@ -86,7 +86,7 @@ describe('copyText（Tauri 原生兜底）', () => {
     setInternals({})
     mockInvoke.mockResolvedValue(undefined)
     await expect(copyText('native')).resolves.toBe(true)
-    expect(mockInvoke).toHaveBeenCalledWith('plugin:fox|clipboard_write_text', { text: 'native' })
+    expect(mockInvoke).toHaveBeenCalledWith('plugin:miyo|clipboard_write_text', { text: 'native' })
   })
 
   it('Tauri 命令失败后继续降级 execCommand', async () => {
@@ -95,7 +95,7 @@ describe('copyText（Tauri 原生兜底）', () => {
     setExecCommand(vi.fn().mockReturnValue(true))
     mockInvoke.mockRejectedValue(new Error('ipc error'))
     await expect(copyText('fallback')).resolves.toBe(true)
-    expect(mockInvoke).toHaveBeenCalledWith('plugin:fox|clipboard_write_text', { text: 'fallback' })
+    expect(mockInvoke).toHaveBeenCalledWith('plugin:miyo|clipboard_write_text', { text: 'fallback' })
     expect(document.execCommand).toHaveBeenCalledWith('copy')
   })
 })

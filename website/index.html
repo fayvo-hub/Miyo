@@ -5,32 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miyo — Lightweight cross-platform API client</title>
 <meta name="description" content="A ~10 MB lightweight cross-platform API debugging client. Requests, mock server, automated testing and load testing in one installer. Local-first — your data stays yours.">
-<link rel="canonical" href="https://weihubeats.github.io/RustFox/">
-<link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/">
-<link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/">
-<link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/">
+<link rel="canonical" href="https://weihubeats.github.io/Miyo/">
+<link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/">
+<link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/zh/">
+<link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/">
 <meta name="theme-color" content="#0d1117">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Miyo">
 <meta property="og:locale" content="en_US">
-<meta property="og:url" content="https://weihubeats.github.io/RustFox/">
+<meta property="og:url" content="https://weihubeats.github.io/Miyo/">
 <meta property="og:title" content="Miyo — Lightweight cross-platform API client">
 <meta property="og:description" content="A ~10 MB lightweight cross-platform API debugging client. Requests, mock, testing and load testing in one installer.">
-<meta property="og:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
+<meta property="og:image" content="https://weihubeats.github.io/Miyo/assets/home.png">
 <meta property="og:image:width" content="2880">
 <meta property="og:image:height" content="1600">
 <meta property="og:image:alt" content="Miyo — lightweight cross-platform API client">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Miyo — Lightweight cross-platform API client">
 <meta name="twitter:description" content="A ~10 MB lightweight cross-platform API client, one installer and ready to run.">
-<meta name="twitter:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
+<meta name="twitter:image" content="https://weihubeats.github.io/Miyo/assets/home.png">
 <link rel="icon" type="image/png" href="./assets/favicon.png">
 <link rel="manifest" href="./manifest.json">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Miyo","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"en","url":"https://weihubeats.github.io/RustFox/","screenshot":"https://weihubeats.github.io/RustFox/assets/home.png","featureList":["~10 MB installer","Requests & mock server","Automated testing & load testing","Realtime WebSocket / SSE debugging","Cookie management, undo & shortcuts","Local-first AES-256-GCM encrypted storage","AI Agent / MCP integration"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/RustFox/blob/main/LICENSE"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Miyo","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"en","url":"https://weihubeats.github.io/Miyo/","screenshot":"https://weihubeats.github.io/Miyo/assets/home.png","featureList":["~10 MB installer","Requests & mock server","Automated testing & load testing","Realtime WebSocket / SSE debugging","Cookie management, undo & shortcuts","Local-first AES-256-GCM encrypted storage","AI Agent / MCP integration"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/Miyo/blob/main/LICENSE"}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS says the app is damaged?","acceptedAnswer":{"@type":"Answer","text":"Not damaged — Gatekeeper blocks un-notarized apps. Run xattr -cr /Applications/Miyo.app then right-click → Open."}},{"@type":"Question","name":"Windows SmartScreen warning?","acceptedAnswer":{"@type":"Answer","text":"Click More info → Run anyway. The installer has no code-signing certificate yet — normal for open-source projects."}},{"@type":"Question","name":"Environment variables show garbled text?","acceptedAnswer":{"@type":"Answer","text":"The master.key in the data directory was lost, so values cannot be decrypted. Restore from a backup JSON (Settings → Restore)."}},{"@type":"Question","name":"MCP reports spawn ENOENT?","acceptedAnswer":{"@type":"Answer","text":"The binary is not on PATH. Since v0.0.10 use the absolute path bundled inside the installer (macOS: /Applications/Miyo.app/Contents/MacOS/rustfox-mcp)."}},{"@type":"Question","name":"dev build cannot see release data?","acceptedAnswer":{"@type":"Answer","text":"Expected — dev uses the Miyo-dev data directory. Export/import a backup JSON to move data between them."}},{"@type":"Question","name":"How do I report a bug?","acceptedAnswer":{"@type":"Answer","text":"Use the Feedback button in the top bar to generate a local diagnostic report and attach it to a GitHub Issue."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS says the app is damaged?","acceptedAnswer":{"@type":"Answer","text":"Not damaged — Gatekeeper blocks un-notarized apps. Run xattr -cr /Applications/Miyo.app then right-click → Open."}},{"@type":"Question","name":"Windows SmartScreen warning?","acceptedAnswer":{"@type":"Answer","text":"Click More info → Run anyway. The installer has no code-signing certificate yet — normal for open-source projects."}},{"@type":"Question","name":"Environment variables show garbled text?","acceptedAnswer":{"@type":"Answer","text":"The master.key in the data directory was lost, so values cannot be decrypted. Restore from a backup JSON (Settings → Restore)."}},{"@type":"Question","name":"MCP reports spawn ENOENT?","acceptedAnswer":{"@type":"Answer","text":"The binary is not on PATH. Since v0.0.10 use the absolute path bundled inside the installer (macOS: /Applications/Miyo.app/Contents/MacOS/miyo-mcp)."}},{"@type":"Question","name":"dev build cannot see release data?","acceptedAnswer":{"@type":"Answer","text":"Expected — dev uses the Miyo-dev data directory. Export/import a backup JSON to move data between them."}},{"@type":"Question","name":"How do I report a bug?","acceptedAnswer":{"@type":"Answer","text":"Use the Feedback button in the top bar to generate a local diagnostic report and attach it to a GitHub Issue."}}]}
 </script>
 <style>
 :root {
@@ -183,7 +183,7 @@ footer a:hover { color: var(--text); }
         <a href="#faq">FAQ</a>
         <a href="#docs">Docs</a>
         <a href="./zh/index.html">中文</a>
-        <a href="https://github.com/weihubeats/RustFox">GitHub</a>
+        <a href="https://github.com/weihubeats/Miyo">GitHub</a>
       </div>
       <a class="btn-nav" href="#download">Download</a>
       <details class="mobile-menu">
@@ -197,7 +197,7 @@ footer a:hover { color: var(--text); }
           <a href="#download">Download</a>
           <a href="#docs">Docs</a>
           <a href="./zh/index.html">中文</a>
-          <a href="https://github.com/weihubeats/RustFox">GitHub</a>
+          <a href="https://github.com/weihubeats/Miyo">GitHub</a>
         </div>
       </details>
     </div>
@@ -208,13 +208,13 @@ footer a:hover { color: var(--text); }
   <h1>A cross-platform API client<br><span class="accent">in ~10 MB</span></h1>
   <p class="sub">One installer, ready to run. Requests, mock server, automated testing and load testing built in — no bundled browser engine, no Node sandbox, no JRE.</p>
   <div class="badges">
-    <img src="https://github.com/weihubeats/RustFox/actions/workflows/ci.yml/badge.svg" alt="CI">
-    <img src="https://img.shields.io/github/v/release/weihubeats/RustFox" alt="Release">
-    <img src="https://img.shields.io/github/license/weihubeats/RustFox" alt="License">
+    <img src="https://github.com/weihubeats/Miyo/actions/workflows/ci.yml/badge.svg" alt="CI">
+    <img src="https://img.shields.io/github/v/release/weihubeats/Miyo" alt="Release">
+    <img src="https://img.shields.io/github/license/weihubeats/Miyo" alt="License">
   </div>
   <div class="cta">
     <a class="btn btn-primary" href="#download">Download free</a>
-    <a class="btn btn-ghost" href="https://github.com/weihubeats/RustFox">View source</a>
+    <a class="btn btn-ghost" href="https://github.com/weihubeats/Miyo">View source</a>
   </div>
   <p class="meta">Rust + Tauri 2 + system WebView · Windows / macOS / Linux · Apache-2.0</p>
   <figure class="hero-shot">
@@ -280,13 +280,13 @@ footer a:hover { color: var(--text); }
     <h2>AI Agent integration</h2>
     <p class="section-sub">The app starts a loopback control plane on launch — save a cURL or backend snippet as an endpoint with one sentence. Full guide: <a href="./docs/en/agent/">Agent integration</a>.</p>
     <div class="features">
-      <div class="feature"><div class="icon">🤖</div><h3>MCP server (recommended)</h3><p>Configure the bundled <code>rustfox-mcp</code> absolute path once in Claude Code / Cursor and get four tools: save_curl / list_projects / list_endpoints / agent_info.</p></div>
+      <div class="feature"><div class="icon">🤖</div><h3>MCP server (recommended)</h3><p>Configure the bundled <code>miyo-mcp</code> absolute path once in Claude Code / Cursor and get four tools: save_curl / list_projects / list_endpoints / agent_info.</p></div>
       <div class="feature"><div class="icon">🔌</div><h3>Direct HTTP</h3><p>Any HTTP-capable tool can call the <code>127.0.0.1:4110</code> control plane: POST /agent/curl to import, GET /agent/projects, /agent/endpoints, /agent/health to query.</p></div>
       <div class="feature"><div class="icon">🔒</div><h3>Local-first security</h3><p>Loopback-only binding; random UUID token (0600); import is the only write op; existing base_url values are never overwritten.</p></div>
     </div>
     <div class="codeblock">{
   "mcpServers": {
-    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
+    "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" }
   }
 }</div>
   </div>
@@ -337,7 +337,7 @@ footer a:hover { color: var(--text); }
       <details open><summary>macOS says the app is "damaged"?</summary><p>It isn't — that's Gatekeeper blocking an un-notarized app. Move it to Applications, run <code>xattr -cr /Applications/Miyo.app</code>, then right-click → Open.</p></details>
       <details><summary>Windows SmartScreen warning?</summary><p>Click "More info → Run anyway". The installer has no code-signing certificate yet — normal for open-source apps.</p></details>
       <details><summary>Environment variables look garbled?</summary><p>The data-dir <code>master.key</code> was lost. Restore from a backup JSON (Settings → Restore).</p></details>
-      <details><summary>MCP reports spawn ENOENT?</summary><p>The binary isn't on PATH. Since v0.0.10 use the absolute path inside the install bundle (see the agent section above), not a bare <code>rustfox-mcp</code>.</p></details>
+      <details><summary>MCP reports spawn ENOENT?</summary><p>The binary isn't on PATH. Since v0.0.10 use the absolute path inside the install bundle (see the agent section above), not a bare <code>miyo-mcp</code>.</p></details>
       <details><summary>Dev build can't see release data?</summary><p>Expected: dev builds use the isolated <code>Miyo-dev</code> directory. Move data via backup JSON.</p></details>
       <details><summary>How do I report a problem?</summary><p>The top-bar "Feedback" button generates a local diagnostics report — attach it to a GitHub Issue.</p></details>
     </div>
@@ -349,13 +349,13 @@ footer a:hover { color: var(--text); }
     <h2>Download & install</h2>
     <p class="section-sub">Grab the latest build from GitHub Releases; in-app updates supported.</p>
     <div class="download-cards">
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🪟</div><h3>Windows</h3><p>x64-setup.exe (NSIS)</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🍎</div><h3>macOS</h3><p>aarch64 / x64 dmg</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🐧</div><h3>Linux</h3><p>.deb / .rpm / .AppImage</p>
       </a>
     </div>
@@ -371,10 +371,10 @@ footer a:hover { color: var(--text); }
       <a class="dl-card" href="./docs/en/user-guide/">
         <div class="os">📖</div><h3>User Guide</h3><p>Install / requests / mock / testing / preferences</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/blob/main/README.md">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/blob/main/README.md">
         <div class="os">📘</div><h3>README</h3><p>Features / downloads / building</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/blob/main/README.zh-CN.md">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/blob/main/README.zh-CN.md">
         <div class="os">📙</div><h3>README (中文)</h3><p>功能 / 下载 / 构建</p>
       </a>
       <a class="dl-card" href="./docs/en/agent/">
@@ -392,7 +392,7 @@ footer a:hover { color: var(--text); }
 
 <footer>
   <div class="container">
-    <p><a href="https://github.com/weihubeats/RustFox">GitHub</a> · <a href="https://github.com/weihubeats/RustFox/releases">Releases</a> · <a href="./docs/en/user-guide/">User Guide</a> · <a href="./docs/en/migration/">Migration Guide</a> · <a href="./docs/en/agent/">Agent Integration</a> · <a href="./docs/changelog/">Changelog</a> · <a href="https://github.com/weihubeats/RustFox/blob/main/LICENSE">Apache-2.0 License</a></p>
+    <p><a href="https://github.com/weihubeats/Miyo">GitHub</a> · <a href="https://github.com/weihubeats/Miyo/releases">Releases</a> · <a href="./docs/en/user-guide/">User Guide</a> · <a href="./docs/en/migration/">Migration Guide</a> · <a href="./docs/en/agent/">Agent Integration</a> · <a href="./docs/changelog/">Changelog</a> · <a href="https://github.com/weihubeats/Miyo/blob/main/LICENSE">Apache-2.0 License</a></p>
     <p>Built with 🦊 &amp; Rust</p>
   </div>
 </footer>

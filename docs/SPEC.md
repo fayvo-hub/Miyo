@@ -4,10 +4,10 @@
 > 目标是实现一个本地优先、单机可用的 API 管理工具，覆盖 API 设计、调试、Mock、测试、文档管理等核心能力。
 > 第一阶段目标是可交付的 MVP，后续再扩展协作与云端能力。
 
-> **架构迁移说明(2026-08)**:UI 层已从 Dioxus 桌面(`crates/fox-desktop`,已删除)迁移至
+> **架构迁移说明(2026-08)**:UI 层已从 Dioxus 桌面(`crates/miyo-desktop`,已删除)迁移至
 > Tauri 2(`frontend/src-tauri` + `frontend/` Vue 3)。本文下方目录结构为历史设计蓝图,
-> 当前实际结构以 [TAURI_MIGRATION.md](TAURI_MIGRATION.md) 与仓库为准,`fox-core/fox-storage/fox-http/
-> fox-openapi/fox-mock/fox-test/fox-oauth/fox-backup/fox-codegen/fox-smoke` 核心 crate 全部保留。
+> 当前实际结构以 [TAURI_MIGRATION.md](TAURI_MIGRATION.md) 与仓库为准,`miyo-core/miyo-storage/miyo-http/
+> miyo-openapi/miyo-mock/miyo-test/miyo-oauth/miyo-backup/miyo-codegen/miyo-smoke` 核心 crate 全部保留。
 >
 > **本文状态：历史规范（frozen）**——仅供追溯 M0–M16 需求来源，不再随功能更新。
 > 当前事实源：架构看 [ARCHITECTURE.md](ARCHITECTURE.md)，用法看 [USER_GUIDE.md](USER_GUIDE.md)，
@@ -114,7 +114,7 @@ Miyo 是一个本地优先的 API 管理工具，提供：
 | 模块 | 技术 |
 |---|---|
 | 语言 | Rust + TypeScript |
-| 桌面壳 | Tauri 2（插件命名空间 `fox`，IPC `plugin:fox|*`） |
+| 桌面壳 | Tauri 2（插件命名空间 `miyo`，IPC `plugin:miyo|*`） |
 | 前端 | Vue 3（组合式 API）+ Vite 6 + Tailwind CSS 4 + Pinia |
 | 异步运行时 | Tokio |
 | 本地数据库 | SQLite |
@@ -152,7 +152,7 @@ Rust 1.85+
 UI 使用 **Tauri 2 + Vue 3（TypeScript）**：
 
 - 前端代码位于 `frontend/src/`，Vue SFC + `<script setup>`，禁止引入除已列依赖外的框架；
-- 所有后端能力必须经 `fox-tauri` 命令暴露（`useFoxApi` 统一封装，类型见 `types/foxApi.d.ts`）；
+- 所有后端能力必须经 `miyo-tauri` 命令暴露（`useMiyoApi` 统一封装，类型见 `types/miyoApi.d.ts`）；
 - 组件样式只引用 `style.css` 的设计令牌（`--bg-* / --text-* / --accent`），禁止写死色值；
 - 业务数据不得绕过后端直接落到前端存储。
 
@@ -213,25 +213,25 @@ UI 使用 **Tauri 2 + Vue 3（TypeScript）**：
 │   ProjectList / WorkspaceView / GraphQL    │
 │   EndpointEditor / EndpointTree / Panels   │
 └──────────────────────┬─────────────────────┘
-                       │ invoke('plugin:fox|…')  Tauri 2 IPC
+                       │ invoke('plugin:miyo|…')  Tauri 2 IPC
 ┌──────────────────────▼─────────────────────┐
-│              fox-tauri 插件（命令层）        │
+│              miyo-tauri 插件（命令层）        │
 │  40+ Command · AppState(SqlitePool+状态)    │
 └──────┬──────────┬──────────┬───────────────┘
        │          │          │   （Rust 路径依赖）
 ┌──────▼───┐ ┌────▼────┐ ┌───▼────────┐ ┌───▼──────┐
 │ Storage  │ │ HTTP    │ │ OpenAPI /  │ │ Mock /    │
-│ fox-     │ │ fox-    │ │ Backup /   │ │ Test /    │
+│ miyo-     │ │ miyo-    │ │ Backup /   │ │ Test /    │
 │ storage  │ │ http    │ │ Secret     │ │ OAuth     │
 └──────────┘ └─────────┘ └────────────┘ └──────────┘
 ```
 
 ### 4.2 Crate 划分
 
-项目使用 Cargo workspace（根 workspace 不含 fox-tauri；fox-tauri 独立工作区）。
+项目使用 Cargo workspace（根 workspace 不含 miyo-tauri；miyo-tauri 独立工作区）。
 
 ```text
-rustfox/
+miyo/
 ├── Cargo.toml
 ├── rust-toolchain.toml
 ├── README.md
@@ -240,18 +240,18 @@ rustfox/
 │   ├── SPEC.md
 │   └── PROGRESS.md
 ├── crates/
-│   ├── fox-core/
-│   ├── fox-storage/
-│   ├── fox-http/
-│   ├── fox-openapi/
-│   ├── fox-mock/
-│   ├── fox-test/
-│   ├── fox-backup/
-│   ├── fox-secret/
-│   ├── fox-codegen/
-│   ├── fox-oauth/
-│   ├── fox-smoke/
-│   └── fox-tauri/          # 独立工作区（Tauri 2 插件）
+│   ├── miyo-core/
+│   ├── miyo-storage/
+│   ├── miyo-http/
+│   ├── miyo-openapi/
+│   ├── miyo-mock/
+│   ├── miyo-test/
+│   ├── miyo-backup/
+│   ├── miyo-secret/
+│   ├── miyo-codegen/
+│   ├── miyo-oauth/
+│   ├── miyo-smoke/
+│   └── miyo-tauri/          # 独立工作区（Tauri 2 插件）
 └── frontend/
     ├── src/                # Vue 3 前端
     └── src-tauri/          # Tauri 应用壳
@@ -261,19 +261,19 @@ rustfox/
 
 | Crate | 职责 |
 |---|---|
-| fox-core | 领域模型、错误、变量引擎、通用工具 |
-| fox-storage | SQLite 存储、迁移、Repository（upsert 语义） |
-| fox-http | HTTP 请求构建、发送、响应解析、cURL 解析、WS 客户端 |
-| fox-openapi | OpenAPI 导入导出 |
-| fox-mock | Mock Server（axum，4010 起自动探测） |
-| fox-test | 测试运行器、断言、变量提取、压测 |
-| fox-backup | JSON 备份 / 恢复（ID 重映射） |
-| fox-secret | 环境变量 AES-256-GCM 加密 |
-| fox-codegen | 多语言客户端代码生成 |
-| fox-oauth | OAuth2 四模式授权 |
-| fox-smoke | 冒烟测试 |
-| fox-tauri | Tauri 2 插件：IPC 命令层 + AppState 状态托管 |
-| frontend | Vue 3 + TypeScript 界面（types/foxApi.d.ts 为后端命令镜像） |
+| miyo-core | 领域模型、错误、变量引擎、通用工具 |
+| miyo-storage | SQLite 存储、迁移、Repository（upsert 语义） |
+| miyo-http | HTTP 请求构建、发送、响应解析、cURL 解析、WS 客户端 |
+| miyo-openapi | OpenAPI 导入导出 |
+| miyo-mock | Mock Server（axum，4010 起自动探测） |
+| miyo-test | 测试运行器、断言、变量提取、压测 |
+| miyo-backup | JSON 备份 / 恢复（ID 重映射） |
+| miyo-secret | 环境变量 AES-256-GCM 加密 |
+| miyo-codegen | 多语言客户端代码生成 |
+| miyo-oauth | OAuth2 四模式授权 |
+| miyo-smoke | 冒烟测试 |
+| miyo-tauri | Tauri 2 插件：IPC 命令层 + AppState 状态托管 |
+| frontend | Vue 3 + TypeScript 界面（types/miyoApi.d.ts 为后端命令镜像） |
 
 ---
 
@@ -282,7 +282,7 @@ rustfox/
 当前实际结构（Tauri 2 + Vue 3）：
 
 ```text
-rustfox/
+miyo/
 ├── Cargo.toml
 ├── rust-toolchain.toml
 ├── README.md
@@ -291,7 +291,7 @@ rustfox/
 │   ├── SPEC.md
 │   └── PROGRESS.md
 ├── crates/
-│   ├── fox-core/
+│   ├── miyo-core/
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -299,7 +299,7 @@ rustfox/
 │   │       ├── model.rs
 │   │       ├── variable.rs
 │   │       └── util.rs
-│   ├── fox-storage/
+│   ├── miyo-storage/
 │   │   ├── Cargo.toml
 │   │   ├── migrations/
 │   │   │   ├── 0001_init.sql
@@ -308,17 +308,17 @@ rustfox/
 │   │       ├── lib.rs
 │   │       ├── db.rs
 │   │       └── repository.rs
-│   ├── fox-http/
-│   ├── fox-openapi/
-│   ├── fox-mock/
-│   ├── fox-test/
-│   ├── fox-backup/
-│   ├── fox-secret/
-│   ├── fox-codegen/
-│   ├── fox-oauth/
-│   ├── fox-smoke/
-│   └── fox-tauri/
-│       ├── Cargo.toml          # links="fox"，独立工作区
+│   ├── miyo-http/
+│   ├── miyo-openapi/
+│   ├── miyo-mock/
+│   ├── miyo-test/
+│   ├── miyo-backup/
+│   ├── miyo-secret/
+│   ├── miyo-codegen/
+│   ├── miyo-oauth/
+│   ├── miyo-smoke/
+│   └── miyo-tauri/
+│       ├── Cargo.toml          # links="miyo"，独立工作区
 │       ├── permissions/        # tauri-plugin build 生成权限
 │       └── src/
 │           ├── lib.rs          # plugin::init()（setup + 全部命令注册）
@@ -334,9 +334,9 @@ rustfox/
     │   ├── router/index.ts     # /projects /workspace /graphql
     │   ├── views/
     │   ├── stores/workspace.ts
-    │   ├── composables/useFoxApi.ts
+    │   ├── composables/useMiyoApi.ts
     │   ├── components/
-    │   ├── types/foxApi.d.ts
+    │   ├── types/miyoApi.d.ts
     │   └── style.css
     └── src-tauri/
         ├── tauri.conf.json
@@ -354,17 +354,17 @@ rustfox/
 [workspace]
 resolver = "2"
 members = [
-    "crates/fox-core",
-    "crates/fox-storage",
-    "crates/fox-http",
-    "crates/fox-openapi",
-    "crates/fox-mock",
-    "crates/fox-test",
-    "crates/fox-backup",
-    "crates/fox-secret",
-    "crates/fox-codegen",
-    "crates/fox-oauth",
-    "crates/fox-smoke",
+    "crates/miyo-core",
+    "crates/miyo-storage",
+    "crates/miyo-http",
+    "crates/miyo-openapi",
+    "crates/miyo-mock",
+    "crates/miyo-test",
+    "crates/miyo-backup",
+    "crates/miyo-secret",
+    "crates/miyo-codegen",
+    "crates/miyo-oauth",
+    "crates/miyo-smoke",
 ]
 
 [workspace.package]
@@ -423,8 +423,8 @@ aes-gcm = "0.11"
 base64 = "0.23"
 ```
 
-`crates/fox-tauri` 不在根 workspace 中（`[workspace]` 置空、独立解析），依赖以路径引用
-`fox-*` crate，并设置 `links = "fox"` 与 `Builder::new("fox")` 保持一致。
+`crates/miyo-tauri` 不在根 workspace 中（`[workspace]` 置空、独立解析），依赖以路径引用
+`miyo-*` crate，并设置 `links = "miyo"` 与 `Builder::new("miyo")` 保持一致。
 
 ---
 
@@ -435,20 +435,20 @@ base64 = "0.23"
 数据库文件路径：
 
 ```text
-{SystemDataDir}/Miyo/rustfox.db
+{SystemDataDir}/Miyo/miyo.db
 ```
 
 示例：
 
 ```text
 Linux:
-~/.local/share/Miyo/rustfox.db
+~/.local/share/Miyo/miyo.db
 
 macOS:
-~/Library/Application Support/Miyo/rustfox.db
+~/Library/Application Support/Miyo/miyo.db
 
 Windows:
-C:\Users\{User}\AppData\Roaming\Miyo\rustfox.db
+C:\Users\{User}\AppData\Roaming\Miyo\miyo.db
 ```
 
 ---
@@ -458,7 +458,7 @@ C:\Users\{User}\AppData\Roaming\Miyo\rustfox.db
 文件路径：
 
 ```text
-crates/fox-storage/migrations/0001_init.sql
+crates/miyo-storage/migrations/0001_init.sql
 ```
 
 内容必须如下：
@@ -1604,7 +1604,7 @@ RUST_LOG=debug
 
 ```text
 stdout
-{DataDir}/Miyo/logs/rustfox.log
+{DataDir}/Miyo/logs/miyo.log
 ```
 
 ---
@@ -1697,10 +1697,10 @@ cargo build --workspace
 
 ## 任务
 
-1. 实现 `fox-core` 模型
+1. 实现 `miyo-core` 模型
 2. 实现 `AppError`
 3. 实现变量引擎
-4. 实现 `fox-storage`
+4. 实现 `miyo-storage`
 5. 添加 migration
 6. 实现 Project / Folder / Endpoint / Environment Repository
 7. 编写单元测试
@@ -1720,8 +1720,8 @@ cargo build --workspace
 ## 验收标准
 
 ```bash
-cargo test -p fox-core
-cargo test -p fox-storage
+cargo test -p miyo-core
+cargo test -p miyo-storage
 ```
 
 必须通过。
@@ -1750,7 +1750,7 @@ cargo test -p fox-storage
 运行：
 
 ```bash
-cargo run -p fox-desktop
+cargo run -p miyo-desktop
 ```
 
 必须显示应用窗口。
@@ -1828,7 +1828,7 @@ cargo run -p fox-desktop
 
 ## 任务
 
-1. 实现 `fox-http`
+1. 实现 `miyo-http`
 2. 支持 GET/POST/PUT/DELETE/PATCH
 3. 支持 Query
 4. 支持 Headers
@@ -2027,7 +2027,7 @@ AI Coder 完成全部功能后，必须按以下流程验收。
 ### 29.1 启动应用
 
 ```bash
-cargo run -p fox-desktop
+cargo run -p miyo-desktop
 ```
 
 ### 29.2 创建项目
@@ -2159,7 +2159,7 @@ curl http://127.0.0.1:4010/ping
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
-cargo run -p fox-desktop
+cargo run -p miyo-desktop
 ```
 
 3. 应用可以完成以下闭环：
@@ -2199,7 +2199,7 @@ cargo run -p fox-desktop
 
 ### 31.2 SQLite 依赖风险
 
-如果系统 SQLite 不可用，在 `fox-storage` 中加入 bundled sqlite 支持。
+如果系统 SQLite 不可用，在 `miyo-storage` 中加入 bundled sqlite 支持。
 
 可添加：
 
@@ -2247,13 +2247,13 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 ```text
 请阅读 docs/SPEC.md，并执行 M1。
 要求：
-1. 实现 fox-core 领域模型
+1. 实现 miyo-core 领域模型
 2. 实现 AppError
 3. 实现变量引擎
-4. 实现 fox-storage SQLite 迁移和 Repository
+4. 实现 miyo-storage SQLite 迁移和 Repository
 5. 编写单元测试
 6. 更新 docs/PROGRESS.md
-必须通过 cargo test -p fox-core 和 cargo test -p fox-storage。
+必须通过 cargo test -p miyo-core 和 cargo test -p miyo-storage。
 ```
 
 ### 32.3 M2 Prompt
@@ -2267,7 +2267,7 @@ sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
 4. 实现基础布局
 5. 实现项目创建、列表、删除、切换
 6. 更新 docs/PROGRESS.md
-必须保证 cargo run -p fox-desktop 可以启动。
+必须保证 cargo run -p miyo-desktop 可以启动。
 ```
 
 ### 32.4 后续通用 Prompt

@@ -7,14 +7,14 @@
  */
 import { ref, watch } from 'vue'
 import Modal from '../ui/Modal.vue'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
-import type { Project } from '../../types/foxApi'
+import type { Project } from '../../types/miyoApi'
 
 const NAME_MAX = 50
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -69,20 +69,20 @@ async function confirmRename(): Promise<void> {
       <input
         id="rename-project"
         v-model="renameName"
-        class="rf-input"
+        class="miyo-input"
         v-focus-end
-        :class="{ 'rf-input-error': renameError }"
+        :class="{ 'miyo-input-error': renameError }"
         :placeholder="t('workspace.projectName')"
         maxlength="60"
         spellcheck="false"
         @input="renameError = null"
         @keyup.enter="confirmRename"
       />
-      <p v-if="renameError" class="rf-field-error" role="alert">{{ renameError }}</p>
+      <p v-if="renameError" class="miyo-field-error" role="alert">{{ renameError }}</p>
     </div>
     <template #footer>
-      <button class="rf-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
-      <button class="rf-btn rf-btn-primary" type="button" :disabled="api.pending.value" @click="confirmRename">
+      <button class="miyo-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-primary" type="button" :disabled="api.pending.value" @click="confirmRename">
         {{ t('common.save') }}
       </button>
     </template>
@@ -102,10 +102,10 @@ async function confirmRename(): Promise<void> {
   color: var(--text-2);
 }
 
-.rf-input-error {
+.miyo-input-error {
   border-color: var(--danger) !important;
 }
-.rf-input-error:focus {
+.miyo-input-error:focus {
   border-color: var(--danger) !important;
   box-shadow: 0 0 0 2px var(--danger-tint) !important;
 }

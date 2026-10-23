@@ -6,12 +6,12 @@
  * - 确认后调用后端删除并 emit('deleted', id)，由父级移出列表。
  */
 import Modal from '../ui/Modal.vue'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
-import type { Project } from '../../types/foxApi'
+import type { Project } from '../../types/miyoApi'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -43,8 +43,8 @@ async function confirmDelete(): Promise<void> {
       {{ t('pdelete.confirm', { name: project?.name ?? '' }) }}
     </p>
     <template #footer>
-      <button class="rf-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
-      <button class="rf-btn rf-btn-danger-solid" type="button" :disabled="api.pending.value" @click="confirmDelete">
+      <button class="miyo-btn" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-danger-solid" type="button" :disabled="api.pending.value" @click="confirmDelete">
         {{ t('common.delete') }}
       </button>
     </template>

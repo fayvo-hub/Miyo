@@ -1,5 +1,5 @@
 {
-  "name": "rustfox-site-scripts",
+  "name": "miyo-site-scripts",
   "private": true,
   "description": "Miyo website build scripts (docs site generator, release tooling)",
   "license": "Apache-2.0",

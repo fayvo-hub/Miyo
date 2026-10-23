@@ -11,7 +11,7 @@ import { useLocaleStore } from '../../stores/locale'
 import { rowKey } from '../../utils/rowKey'
 import IconButton from '../ui/IconButton.vue'
 import EmptyState from '../ui/EmptyState.vue'
-import type { FieldType, KeyValue } from '../../types/foxApi'
+import type { FieldType, KeyValue } from '../../types/miyoApi'
 
 const locale = useLocaleStore()
 const t = locale.t

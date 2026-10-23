@@ -214,9 +214,9 @@ function gridStyle(): Record<string, string> | undefined {
   <div class="kvt" :class="{ disabled }">
     <div class="kvt-head" :style="gridStyle()">
       <span v-if="showEnable" class="kvt-col kvt-enable"></span>
-      <span class="kvt-col kvt-key rf-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colKey') }}</span>
-      <span class="kvt-col kvt-value rf-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colValue') }}</span>
-      <span v-if="showDescription" class="kvt-col kvt-desc rf-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colDesc') }}</span>
+      <span class="kvt-col kvt-key miyo-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colKey') }}</span>
+      <span class="kvt-col kvt-value miyo-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colValue') }}</span>
+      <span v-if="showDescription" class="kvt-col kvt-desc miyo-mono" :style="gridStyle() ? { width: '100%' } : undefined">{{ t('kv.colDesc') }}</span>
       <span class="kvt-col kvt-actions"></span>
     </div>
 
@@ -238,7 +238,7 @@ function gridStyle(): Record<string, string> | undefined {
       </span>
       <input
         v-model="row.key"
-        class="kvt-input kvt-col kvt-key rf-mono"
+        class="kvt-input kvt-col kvt-key miyo-mono"
         :style="gridStyle() ? { width: '100%' } : undefined"
         :placeholder="effectiveKeyPh"
         :disabled="disabled"
@@ -250,7 +250,7 @@ function gridStyle(): Record<string, string> | undefined {
       />
       <input
         v-model="row.value"
-        class="kvt-input kvt-col kvt-value rf-mono"
+        class="kvt-input kvt-col kvt-value miyo-mono"
         :style="gridStyle() ? { width: '100%' } : undefined"
         :placeholder="effectiveValuePh"
         :disabled="disabled"

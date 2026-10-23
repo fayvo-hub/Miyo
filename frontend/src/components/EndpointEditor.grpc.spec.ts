@@ -15,7 +15,7 @@ import EndpointEditor from './EndpointEditor.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, GrpcInvokeResult } from '../types/foxApi'
+import type { Endpoint, GrpcInvokeResult } from '../types/miyoApi'
 
 const apiMock = vi.hoisted(() => ({
   grpcInvoke: vi.fn(),
@@ -32,7 +32,7 @@ const apiMock = vi.hoisted(() => ({
   executeRequest: vi.fn(),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 vi.mock('../composables/useToast', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), toast: vi.fn() }),
 }))
@@ -81,7 +81,7 @@ describe('EndpointEditor：GRPC 方法分支', () => {
     const tabs = wrapper.findAll('.tabs .tab .tab-label').map((t) => t.text())
     expect(tabs).toEqual(['gRPC', 'Headers'])
     // 激活页签为 gRPC（GrpcPanel 已渲染：出现服务输入框）
-    expect(wrapper.findAll('input.rf-input').length).toBeGreaterThan(0)
+    expect(wrapper.findAll('input.miyo-input').length).toBeGreaterThan(0)
     // 代码生成入口隐藏
     expect(wrapper.findComponent({ name: 'CodeExportMenu' }).exists()).toBe(false)
   })
@@ -90,7 +90,7 @@ describe('EndpointEditor：GRPC 方法分支', () => {
     const result: GrpcInvokeResult = {
       kind: 'unary',
       response: {
-        message_json: '{"fString":"RustFox"}',
+        message_json: '{"fString":"Miyo"}',
         metadata: [['grpc-status', '0']],
         grpc_status: 0,
         grpc_message: '',
@@ -127,7 +127,7 @@ describe('EndpointEditor：GRPC 方法分支', () => {
     expect(args.environment_id).toBe(null)
     // unary 响应入响应区：grpc-status 徽标 + 消息内容
     expect(wrapper.text()).toContain('OK')
-    expect(wrapper.text()).toContain('RustFox')
+    expect(wrapper.text()).toContain('Miyo')
     // 不应走 HTTP 执行链路
     expect(apiMock.executeRequest).not.toHaveBeenCalled()
   })

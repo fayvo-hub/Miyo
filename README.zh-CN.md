@@ -1,12 +1,12 @@
 # Miyo
 
-[![Release](https://img.shields.io/github/v/release/weihubeats/RustFox?include_prereleases&sort=semver)](https://github.com/weihubeats/RustFox/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/RustFox/ci.yml?branch=main)](https://github.com/weihubeats/RustFox/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/weihubeats/Miyo?include_prereleases&sort=semver)](https://github.com/weihubeats/Miyo/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/Miyo/ci.yml?branch=main)](https://github.com/weihubeats/Miyo/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 > 约 10 MB 的轻量跨平台 API 调试工具。一个安装包，开箱即用。
 
-**官网**：[https://weihubeats.github.io/RustFox/](https://weihubeats.github.io/RustFox/zh/)
+**官网**：[https://weihubeats.github.io/Miyo/](https://weihubeats.github.io/Miyo/zh/)
 
 **语言 / Language**：[English](README.md) · 简体中文
 
@@ -39,7 +39,7 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 
 ### 🔒 本地优先，数据在自己手里
 
-数据只存在本机 `rustfox.db`，环境变量值 **AES-256-GCM 加密**存储；一键备份为 JSON，随时可恢复。
+数据只存在本机 `miyo.db`，环境变量值 **AES-256-GCM 加密**存储；一键备份为 JSON，随时可恢复。
 
 ## 功能
 
@@ -87,7 +87,7 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 - Cookie 管理（查看/按域清理/单请求禁用）、Mock 热重载与故障注入
 - 删除撤销、目录树多选批量操作、快捷键帮助（Ctrl+/）、设置页日志查看
 - 备份（JSON）与恢复（ID 全量重映射，绝不覆盖现有数据）
-- 数据目录可配置（设置页更改或 `RUSTFOX_DATA_DIR` 覆盖，重启生效）
+- 数据目录可配置（设置页更改或 `MIYO_DATA_DIR` 覆盖，重启生效）
 - 深色 / 浅色 / 跟随系统主题
 
 ## AI Agent 集成
@@ -95,20 +95,20 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 Miyo 内置 **Agent 控制面**（应用启动时自动拉起）：本机回环地址上的带令牌 HTTP API，
 让 AI Agent（Claude / Cursor / 任意能执行命令的工具）直接把 cURL 命令保存为接口，无需人工粘贴。
 
-完整指南（获取 `rustfox-mcp`、各客户端配置、HTTP API 手册、排障）：**[docs/AGENT.md](docs/AGENT.md)**
+完整指南（获取 `miyo-mcp`、各客户端配置、HTTP API 手册、排障）：**[docs/AGENT.md](docs/AGENT.md)**
 
 ### MCP Server（推荐）
 
-> **前置**：MCP 配置需要 `rustfox-mcp` 二进制。v0.0.10+ 安装包不在 PATH，必须填安装包内绝对路径（macOS 安装包：`/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`）。
+> **前置**：MCP 配置需要 `miyo-mcp` 二进制。v0.0.10+ 安装包不在 PATH，必须填安装包内绝对路径（macOS 安装包：`/Applications/Miyo.app/Contents/MacOS/miyo-mcp`）。
 > **v0.0.10 起安装包已内置**，无需额外安装；更早版本请先按 [docs/AGENT.md](docs/AGENT.md) 构建。
 
 Claude Code 等支持 MCP 的客户端，在项目 `.mcp.json` 中配置一次：
 
 ```json
-{ "mcpServers": { "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" } } }
+{ "mcpServers": { "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" } } }
 ```
 
-> 仅当二进制已加入 PATH 时才可写裸 `rustfox-mcp`（如 Linux .deb 安装、或 `cargo build --release -p fox-mcp` 后放入 `/usr/local/bin`）。
+> 仅当二进制已加入 PATH 时才可写裸 `miyo-mcp`（如 Linux .deb 安装、或 `cargo build --release -p miyo-mcp` 后放入 `/usr/local/bin`）。
 
 配好后直接让 AI 把接口存进 Miyo（贴 cURL 或贴代码都行）：
 
@@ -146,7 +146,7 @@ token 位于数据目录 `agent-token` 文件（0600），应用内「Agent 状�
 
 ## 下载与安装
 
-在 [Releases](https://github.com/weihubeats/RustFox/releases) 下载对应平台安装包：
+在 [Releases](https://github.com/weihubeats/Miyo/releases) 下载对应平台安装包：
 
 | 平台 | 安装包 |
 | --- | --- |
@@ -176,7 +176,7 @@ scripts/package-tauri.sh                # 一键打包分发包
 
 ## 文档
 
-**官网**：[https://weihubeats.github.io/RustFox/zh/](https://weihubeats.github.io/RustFox/zh/) —— 用户手册、迁移手册、Agent 集成与更新日志在线阅读。
+**官网**：[https://weihubeats.github.io/Miyo/zh/](https://weihubeats.github.io/Miyo/zh/) —— 用户手册、迁移手册、Agent 集成与更新日志在线阅读。
 
 | 文档 | 说明 |
 | --- | --- |

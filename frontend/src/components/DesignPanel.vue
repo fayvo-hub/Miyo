@@ -12,7 +12,7 @@
  */
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import ParamDefineTable from './design/ParamDefineTable.vue'
@@ -39,14 +39,14 @@ import type {
   KeyValue,
   MultipartField,
   ResponseExample,
-} from '../types/foxApi'
+} from '../types/miyoApi'
 
 const props = defineProps<{ draft: Endpoint | null }>()
 
 const emit = defineEmits<{ save: [] }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -708,7 +708,7 @@ onBeforeUnmount(() => {
           <div class="grid2">
             <label class="fld">
               <span class="fld-label">{{ t('design.endpointName') }}</span>
-              <input v-model="d.name" class="rf-input" :placeholder="t('editor.namePh')" spellcheck="false" />
+              <input v-model="d.name" class="miyo-input" :placeholder="t('editor.namePh')" spellcheck="false" />
             </label>
             <label class="fld">
               <span class="fld-label">{{ t('design.lifecycle') }}</span>
@@ -881,7 +881,7 @@ onBeforeUnmount(() => {
                 <div class="resp-actions">
                   <button
                     type="button"
-                    class="rf-btn rf-btn-sm"
+                    class="miyo-btn miyo-btn-sm"
                     :disabled="!respEdits.has(ex.id) && !respDocsEdits.has(ex.id)"
                     @click="saveRespBody(ex)"
                   >
@@ -898,7 +898,7 @@ onBeforeUnmount(() => {
           <div class="resp-add">
             <input
               v-model.number="newRespStatus"
-              class="rf-input resp-status-input mono"
+              class="miyo-input resp-status-input mono"
               type="number"
               min="100"
               max="599"
@@ -907,12 +907,12 @@ onBeforeUnmount(() => {
             />
             <input
               v-model="newRespName"
-              class="rf-input resp-name-input"
+              class="miyo-input resp-name-input"
               :placeholder="t('design.customRespNamePh')"
               spellcheck="false"
               @keyup.enter="addResponse()"
             />
-            <button type="button" class="rf-btn rf-btn-sm" @click="addResponse()">
+            <button type="button" class="miyo-btn miyo-btn-sm" @click="addResponse()">
               <Icon name="plus" :size="12" /> {{ t('design.add') }}
             </button>
           </div>

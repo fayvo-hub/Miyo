@@ -9,16 +9,16 @@
 import { ref, watch } from 'vue'
 import Modal from '../ui/Modal.vue'
 import Icon from '../ui/Icon.vue'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
-import type { Team } from '../../types/foxApi'
+import type { Team } from '../../types/miyoApi'
 
 const NAME_MAX = 30
 /** 默认团队固定 UUID（迁移 0015），不可删除/改名。 */
 const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000001'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -136,7 +136,7 @@ async function removeTeam(team: Team): Promise<void> {
         <template v-if="renaming[team.id] !== undefined">
           <input
             v-model="renaming[team.id]"
-            class="rf-input team-rename-input"
+            class="miyo-input team-rename-input"
             :maxlength="NAME_MAX"
             @keyup.enter="confirmRename(team)"
             @keyup.escape="cancelRename(team.id)"
@@ -180,12 +180,12 @@ async function removeTeam(team: Team): Promise<void> {
     <div class="team-create">
       <input
         v-model="newTeamName"
-        class="rf-input"
+        class="miyo-input"
         :placeholder="t('team.newPh')"
         :maxlength="NAME_MAX"
         @keyup.enter="createTeam"
       />
-      <button class="rf-btn rf-btn-primary" type="button" :disabled="busy || !newTeamName.trim()" @click="createTeam">
+      <button class="miyo-btn miyo-btn-primary" type="button" :disabled="busy || !newTeamName.trim()" @click="createTeam">
         <Icon name="plus" :size="14" /> {{ t('team.create') }}
       </button>
     </div>
@@ -193,7 +193,7 @@ async function removeTeam(team: Team): Promise<void> {
     <template #footer>
       <div class="team-actions">
         <div class="team-row-spacer" />
-        <button class="rf-btn" type="button" @click="emit('update:open', false)">
+        <button class="miyo-btn" type="button" @click="emit('update:open', false)">
           {{ t('common.close') }}
         </button>
       </div>
@@ -274,7 +274,7 @@ async function removeTeam(team: Team): Promise<void> {
   gap: 8px;
   margin-top: 14px;
 }
-.team-create .rf-input {
+.team-create .miyo-input {
   flex: 1;
 }
 .team-actions {

@@ -2,7 +2,7 @@
  * bodyMode 单测：Tab ↔ BodySpec 映射、raw 子类型推导与 Content-Type 联动。
  */
 import { describe, expect, it } from 'vitest'
-import type { BodySpec, RequestSpec } from '../types/foxApi'
+import type { BodySpec, RequestSpec } from '../types/miyoApi'
 import {
   RAW_SUBTYPES,
   applyBodyTab,

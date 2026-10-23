@@ -34,15 +34,15 @@ describe('Menu：打开关闭事件与选择', () => {
     vm.openAt(anchor, [{ key: 'a', label: '动作A' }])
     await nextTick()
     expect(wrapper.emitted('open')).toHaveLength(1)
-    expect(document.querySelector('.rf-menu')).toBeTruthy()
+    expect(document.querySelector('.miyo-menu')).toBeTruthy()
 
     document
-      .querySelector<HTMLElement>('.rf-menu-item')!
+      .querySelector<HTMLElement>('.miyo-menu-item')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
     expect(wrapper.emitted('select')?.[0]?.[0]).toMatchObject({ key: 'a' })
     expect(wrapper.emitted('close')).toHaveLength(1)
-    expect(document.querySelector('.rf-menu')).toBeNull()
+    expect(document.querySelector('.miyo-menu')).toBeNull()
     wrapper.unmount()
   })
 
@@ -72,11 +72,11 @@ describe('Menu：打开关闭事件与选择', () => {
     vm.openAt(anchor, [{ key: 'a', label: '动作A', disabled: true }])
     await nextTick()
     document
-      .querySelector<HTMLElement>('.rf-menu-item')!
+      .querySelector<HTMLElement>('.miyo-menu-item')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
     expect(wrapper.emitted('select')).toBeUndefined()
-    expect(document.querySelector('.rf-menu')).toBeTruthy()
+    expect(document.querySelector('.miyo-menu')).toBeTruthy()
     wrapper.unmount()
   })
 })

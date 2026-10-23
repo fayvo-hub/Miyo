@@ -1,7 +1,7 @@
 /**
  * DesignPanel 单测：基本信息卡片 / 请求参数表 / Body 模式切换 /
  * Responses 增改删 / 保存事件与未保存提示。
- * store 与 foxApi 以模块级 mock 替换；locale 需真实 Pinia（组件 setup 调 useLocaleStore）。
+ * store 与 miyoApi 以模块级 mock 替换；locale 需真实 Pinia（组件 setup 调 useLocaleStore）。
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
@@ -10,7 +10,7 @@ import { reactive } from 'vue'
 import DesignPanel from './DesignPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, ResponseExample } from '../types/foxApi'
+import type { Endpoint, ResponseExample } from '../types/miyoApi'
 
 const storeMock = vi.hoisted(() => {
   const examples = new Map<string, ResponseExample[]>()
@@ -35,8 +35,8 @@ vi.mock('../stores/workspace', () => ({
   useWorkspaceStore: () => storeMock,
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => apiMock,
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => apiMock,
 }))
 
 function draft(): Endpoint {
@@ -258,7 +258,7 @@ describe('DesignPanel：返回响应 (Responses)', () => {
       .find((b) => b.text() === '文本')!
       .trigger('click')
     await wrapper.find('.resp-editor textarea').setValue('{"code":1}')
-    await wrapper.find('.resp-actions .rf-btn').trigger('click')
+    await wrapper.find('.resp-actions .miyo-btn').trigger('click')
 
     expect(apiMock.saveExample).toHaveBeenCalledTimes(1)
     expect(apiMock.saveExample.mock.calls[0][0]).toMatchObject({ id: 'ex-1', body: '{"code":1}' })
@@ -269,7 +269,7 @@ describe('DesignPanel：返回响应 (Responses)', () => {
     storeMock.setExamples([['ep-1', [example()]]])
     const wrapper = mountPanel()
     await wrapper.find('.resp-editor .jse-desc').setValue('业务响应码')
-    await wrapper.find('.resp-actions .rf-btn').trigger('click')
+    await wrapper.find('.resp-actions .miyo-btn').trigger('click')
 
     expect(apiMock.saveExample.mock.calls[0][0]).toMatchObject({
       id: 'ex-1',

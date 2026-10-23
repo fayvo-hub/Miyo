@@ -8,7 +8,7 @@
 import { computed, ref, watch } from 'vue'
 import { useLocaleStore } from '../stores/locale'
 import { TEST_CASE_CATEGORIES, caseCategoryLabel } from '../utils/testCases'
-import type { TestCaseCategory } from '../types/foxApi'
+import type { TestCaseCategory } from '../types/miyoApi'
 import CustomSelect from './ui/CustomSelect.vue'
 import Modal from './ui/Modal.vue'
 
@@ -87,11 +87,11 @@ function confirm(): void {
         />
       </label>
       <div class="tcm-actions">
-        <button class="rf-btn rf-btn-sm" type="button" @click="emit('update:open', false)">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="emit('update:open', false)">
           {{ t('common.cancel') }}
         </button>
         <button
-          class="rf-btn rf-btn-sm rf-btn-primary"
+          class="miyo-btn miyo-btn-sm miyo-btn-primary"
           type="button"
           :disabled="!nameInput.trim()"
           @click="confirm"

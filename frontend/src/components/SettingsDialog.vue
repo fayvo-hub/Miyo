@@ -11,7 +11,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { relaunch } from '@tauri-apps/plugin-process'
 import { copyText } from '../utils/clipboard'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { lazyComponent } from '../composables/lazyComponent'
 import { useThemeStore, type ThemeMode } from '../stores/theme'
@@ -46,14 +46,14 @@ import Icon, { type IconName } from './ui/Icon.vue'
 import CustomNumberInput from './ui/CustomNumberInput.vue'
 import CustomSelect from './ui/CustomSelect.vue'
 import { envBaseUrl } from '../utils/environment'
-import type { Environment, LogFile, Project, ProjectStat, SeqCounter } from '../types/foxApi'
+import type { Environment, LogFile, Project, ProjectStat, SeqCounter } from '../types/miyoApi'
 
 // 环境管理是独立大弹窗：设置面板只在点「编辑 / 新建环境」时才需要它的 chunk。
 const EnvironmentManager = lazyComponent(() => import('./EnvironmentManager.vue'))
 
 const emit = defineEmits<{ close: [] }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const theme = useThemeStore()
 const locale = useLocaleStore()
@@ -205,7 +205,7 @@ onMounted(async () => {
 })
 
 // ---------- 通用设置：请求超时（自动保存） ----------
-/** 全局超时兜底值（秒）：与后端执行链路的内置默认同源（workspace 常量镜像 fox-http）。 */
+/** 全局超时兜底值（秒）：与后端执行链路的内置默认同源（workspace 常量镜像 miyo-http）。 */
 const DEFAULT_TIMEOUT_SEC = FALLBACK_GLOBAL_TIMEOUT_MS / 1000
 const timeoutSec = ref(DEFAULT_TIMEOUT_SEC)
 
@@ -431,7 +431,7 @@ async function addSeq(): Promise<void> {
   }
 }
 
-// ---------- 数据目录（rustfox.db / master.key 所在；变更重启后生效） ----------
+// ---------- 数据目录（miyo.db / master.key 所在；变更重启后生效） ----------
 const dataDir = ref('')
 const defaultDataDir = ref('')
 const needRestart = ref(false)
@@ -1051,7 +1051,7 @@ const projectSummary = computed(() => {
                       <p class="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">{{ t('settings.updateAvailableDesc') }}</p>
                     </div>
                     <button
-                      class="rf-btn rf-btn-primary rf-btn-sm shrink-0"
+                      class="miyo-btn miyo-btn-primary miyo-btn-sm shrink-0"
                       type="button"
                       @click="openUpdateDetail"
                     >
@@ -1067,7 +1067,7 @@ const projectSummary = computed(() => {
                       </div>
                       <p class="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">{{ t('settings.skippedVersionDesc') }}</p>
                     </div>
-                    <button class="rf-btn rf-btn-sm shrink-0" type="button" @click="unskipVersion">
+                    <button class="miyo-btn miyo-btn-sm shrink-0" type="button" @click="unskipVersion">
                       {{ t('settings.unskip') }}
                     </button>
                   </div>
@@ -1079,20 +1079,20 @@ const projectSummary = computed(() => {
                     <div class="mt-2 flex flex-wrap items-center gap-2">
                       <input
                         v-model="debugVersion"
-                        class="rf-input rf-input-sm w-36"
+                        class="miyo-input miyo-input-sm w-36"
                         spellcheck="false"
                         :placeholder="t('settingsdbg.versionPh')"
                       />
-                      <button class="rf-btn rf-btn-sm" type="button" @click="debugSimulate">
+                      <button class="miyo-btn miyo-btn-sm" type="button" @click="debugSimulate">
                         {{ t('settingsdbg.simulate') }}
                       </button>
-                      <button class="rf-btn rf-btn-sm" type="button" @click="debugFail">
+                      <button class="miyo-btn miyo-btn-sm" type="button" @click="debugFail">
                         {{ t('settingsdbg.failNext') }}
                       </button>
-                      <button class="rf-btn rf-btn-sm" type="button" @click="debugCheckNow">
+                      <button class="miyo-btn miyo-btn-sm" type="button" @click="debugCheckNow">
                         {{ t('settingsdbg.checkNow') }}
                       </button>
-                      <button class="rf-btn rf-btn-sm" type="button" @click="debugClear">
+                      <button class="miyo-btn miyo-btn-sm" type="button" @click="debugClear">
                         {{ t('settingsdbg.clear') }}
                       </button>
                     </div>
@@ -1143,7 +1143,7 @@ const projectSummary = computed(() => {
                     </div>
                     <input
                       v-model="proxyUrl"
-                      class="rf-input h-8 w-72 shrink-0 font-mono text-xs"
+                      class="miyo-input h-8 w-72 shrink-0 font-mono text-xs"
                       type="text"
                       placeholder="http://127.0.0.1:7890"
                       spellcheck="false"
@@ -1159,7 +1159,7 @@ const projectSummary = computed(() => {
                       </p>
                     </div>
                     <button
-                      class="rf-btn shrink-0"
+                      class="miyo-btn shrink-0"
                       type="button"
                       :disabled="proxyBusy || proxyTesting"
                       @click="testProxy"
@@ -1257,7 +1257,7 @@ const projectSummary = computed(() => {
                   </p>
                 </div>
                 <button
-                  class="rf-btn rf-btn-sm shrink-0"
+                  class="miyo-btn miyo-btn-sm shrink-0"
                   type="button"
                   :disabled="!customizedCount"
                   @click="resetAllShortcuts"
@@ -1334,7 +1334,7 @@ const projectSummary = computed(() => {
                     <input
                       v-model="newSeqKey"
                       type="text"
-                      class="rf-input flex-1 font-mono text-xs"
+                      class="miyo-input flex-1 font-mono text-xs"
                       :placeholder="t('settings.seqKeyPh')"
                       spellcheck="false"
                       @keydown.enter="addSeq"
@@ -1349,7 +1349,7 @@ const projectSummary = computed(() => {
                       />
                     </div>
                     <button
-                      class="rf-btn rf-btn-primary shrink-0"
+                      class="miyo-btn miyo-btn-primary shrink-0"
                       type="button"
                       @click="addSeq"
                     >
@@ -1407,7 +1407,7 @@ const projectSummary = computed(() => {
                           <td class="px-3.5 py-2.5 text-right">
                             <div class="flex items-center justify-end gap-1">
                               <button
-                                class="rf-btn rf-btn-sm rf-btn-ghost"
+                                class="miyo-btn miyo-btn-sm miyo-btn-ghost"
                                 type="button"
                                 :title="t('settings.seqResetTitle')"
                                 :aria-label="t('settings.seqResetTitle')"
@@ -1416,7 +1416,7 @@ const projectSummary = computed(() => {
                                 <Icon name="refresh" :size="12" />
                               </button>
                               <button
-                                class="rf-btn rf-btn-sm rf-btn-ghost text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
+                                class="miyo-btn miyo-btn-sm miyo-btn-ghost text-zinc-500 hover:text-red-500 dark:text-zinc-400 dark:hover:text-red-400"
                                 type="button"
                                 :title="t('settings.seqDeleteTitle')"
                                 :aria-label="t('settings.seqDeleteTitle')"
@@ -1470,7 +1470,7 @@ const projectSummary = computed(() => {
 
                 <div class="mt-4 flex items-center gap-2 border-t border-zinc-200/70 pt-4 dark:border-white/[0.06]">
                   <button
-                    class="rf-btn"
+                    class="miyo-btn"
                     type="button"
                     :disabled="!project || busy"
                     @click="exportBackup"
@@ -1478,7 +1478,7 @@ const projectSummary = computed(() => {
                     <Icon name="download" :size="13" />
                     {{ busy ? t('workspace.processing') : t('settings.exportBackup') }}
                   </button>
-                  <button class="rf-btn" type="button" :disabled="busy" @click="fileInput?.click()">
+                  <button class="miyo-btn" type="button" :disabled="busy" @click="fileInput?.click()">
                     <Icon name="upload" :size="13" />
                     {{ t('settings.importRestore') }}
                   </button>
@@ -1511,11 +1511,11 @@ const projectSummary = computed(() => {
                     </button>
                   </div>
                   <div class="datadir-actions">
-                    <button class="rf-btn" type="button" @click="pickDataDir">
+                    <button class="miyo-btn" type="button" @click="pickDataDir">
                       {{ t('settings.dataDirChange') }}
                     </button>
                     <button
-                      class="rf-btn"
+                      class="miyo-btn"
                       type="button"
                       :disabled="isDefaultDir"
                       @click="resetDataDirToDefault"
@@ -1523,7 +1523,7 @@ const projectSummary = computed(() => {
                       {{ t('settings.dataDirReset') }}
                     </button>
                     <button
-                      class="rf-btn"
+                      class="miyo-btn"
                       type="button"
                       :disabled="!dataDir"
                       @click="revealDataDir"
@@ -1535,7 +1535,7 @@ const projectSummary = computed(() => {
                 <p class="mt-2 text-xxs leading-relaxed text-ink3">{{ t('settings.dataDirDesc') }}</p>
                 <p v-if="needRestart" class="mt-3 text-xs text-zinc-600 dark:text-zinc-400">
                   {{ t('settings.dataDirRestartNow') }}
-                  <button class="rf-btn rf-btn-sm ml-2" type="button" @click="restartNow">
+                  <button class="miyo-btn miyo-btn-sm ml-2" type="button" @click="restartNow">
                     {{ t('settings.restartNow') }}
                   </button>
                 </p>
@@ -1618,7 +1618,7 @@ const projectSummary = computed(() => {
 
               <div class="mt-4 border-t border-zinc-200/70 pt-4 dark:border-white/[0.06]">
                 <button
-                  class="rf-btn w-full"
+                  class="miyo-btn w-full"
                   type="button"
                   :disabled="!envProjectId"
                   @click="openEnvironmentManager()"
@@ -1662,17 +1662,17 @@ const projectSummary = computed(() => {
               <div class="mb-3 flex items-center gap-2">
                 <select
                   v-model="logSelected"
-                  class="rf-input rf-input-sm max-w-60 flex-1"
+                  class="miyo-input miyo-input-sm max-w-60 flex-1"
                   @change="loadLogTail"
                 >
                   <option v-for="f in logFiles" :key="f.name" :value="f.name">
                     {{ f.name }}{{ t('settings.logSize', { v: (f.size_bytes / 1024).toFixed(1) }) }}
                   </option>
                 </select>
-                <button class="rf-btn rf-btn-sm" type="button" :disabled="logLoading" @click="loadLogTail">
+                <button class="miyo-btn miyo-btn-sm" type="button" :disabled="logLoading" @click="loadLogTail">
                   <Icon name="refresh" :size="13" /> {{ logLoading ? t('common.loading') : t('common.refresh') }}
                 </button>
-                <button class="rf-btn rf-btn-sm" type="button" @click="openLogDir">
+                <button class="miyo-btn miyo-btn-sm" type="button" @click="openLogDir">
                   <Icon name="folder" :size="13" /> {{ t('settings.logsOpenDir') }}
                 </button>
               </div>

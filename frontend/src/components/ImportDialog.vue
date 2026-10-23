@@ -8,11 +8,11 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import Modal from './ui/Modal.vue'
-import type { ImportedEndpoint, ImportFormat, Project } from '../types/foxApi'
+import type { ImportedEndpoint, ImportFormat, Project } from '../types/miyoApi'
 
 const props = withDefaults(
   defineProps<{
@@ -27,7 +27,7 @@ const props = withDefaults(
 const emit = defineEmits<{ close: []; imported: [project: Project] }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -139,7 +139,7 @@ const canConfirm = computed(
       <span class="import-name-label">{{ t('importdlg.nameLabel') }}</span>
       <input
         v-model="projectName"
-        class="rf-input"
+        class="miyo-input"
         :placeholder="t('importdlg.namePh')"
         spellcheck="false"
       />
@@ -147,15 +147,15 @@ const canConfirm = computed(
 
     <textarea
       v-model="text"
-      class="rf-input import-text"
+      class="miyo-input import-text"
       spellcheck="false"
       :placeholder="t('importdlg.textPh')"
     ></textarea>
     <div class="import-tools">
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="busy" @click="fileInput?.click()">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="busy" @click="fileInput?.click()">
         {{ t('importdlg.pickFile') }}
       </button>
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="busy || !text.trim()" @click="parse">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="busy || !text.trim()" @click="parse">
         {{ busy ? t('importdlg.parsing') : t('importdlg.parse') }}
       </button>
       <input ref="fileInput" type="file" accept=".json,.yaml,.yml,application/json" class="import-file" @change="pickFile" />
@@ -183,14 +183,14 @@ const canConfirm = computed(
     <template #footer>
       <button
         v-if="result"
-        class="rf-btn rf-btn-primary rf-btn-sm"
+        class="miyo-btn miyo-btn-primary miyo-btn-sm"
         type="button"
         :disabled="!canConfirm"
         @click="confirm"
       >
         {{ mode === 'new-project' ? t('importdlg.createAndImport') : t('importdlg.confirmImport') }}
       </button>
-      <button class="rf-btn rf-btn-sm" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-sm" type="button" @click="emit('close')">{{ t('common.cancel') }}</button>
     </template>
   </Modal>
 </template>
@@ -213,7 +213,7 @@ const canConfirm = computed(
   font-size: 12px;
   color: var(--text-3);
 }
-.import-name-row .rf-input {
+.import-name-row .miyo-input {
   flex: 1;
   height: 30px;
 }

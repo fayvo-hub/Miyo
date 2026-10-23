@@ -1,12 +1,12 @@
 # Miyo
 
-[![Release](https://img.shields.io/github/v/release/weihubeats/RustFox?include_prereleases&sort=semver)](https://github.com/weihubeats/RustFox/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/RustFox/ci.yml?branch=main)](https://github.com/weihubeats/RustFox/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/weihubeats/Miyo?include_prereleases&sort=semver)](https://github.com/weihubeats/Miyo/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/Miyo/ci.yml?branch=main)](https://github.com/weihubeats/Miyo/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 > A lightweight cross-platform API debugging client in ~10 MB. One installer, ready to run.
 
-**Website**: [https://weihubeats.github.io/RustFox/](https://weihubeats.github.io/RustFox/)
+**Website**: [https://weihubeats.github.io/Miyo/](https://weihubeats.github.io/Miyo/)
 
 **Language / 语言**：English · [简体中文](README.zh-CN.md)
 
@@ -39,7 +39,7 @@ Rust LTO + a single-process model + zero-copy SQLite storage — instant open, s
 
 ### 🔒 Local-first, your data stays yours
 
-Everything lives in a local `rustfox.db`; environment variable values are **AES-256-GCM encrypted** at rest. One-click JSON backup, restore anytime.
+Everything lives in a local `miyo.db`; environment variable values are **AES-256-GCM encrypted** at rest. One-click JSON backup, restore anytime.
 
 ## Features
 
@@ -87,26 +87,26 @@ Everything lives in a local `rustfox.db`; environment variable values are **AES-
 - Cookie management (inspect/clear per domain, per-request disable), Mock hot-reload & fault injection
 - Undo delete, tree multi-select batch ops, shortcut help (Ctrl+/), in-app log viewer
 - Backup (JSON) & restore (full ID remapping, never overwrites existing data)
-- Configurable data directory (in-app picker or `RUSTFOX_DATA_DIR`, applied on restart)
+- Configurable data directory (in-app picker or `MIYO_DATA_DIR`, applied on restart)
 - Dark / light / follow-system theme
 
 ## AI Agent integration
 
 Miyo ships with a built-in **Agent control plane** (started automatically with the app): a token-protected HTTP API on loopback that lets AI agents (Claude / Cursor / anything that can run commands) save cURL commands as endpoints — no manual copy-paste.
 
-Full guide (`rustfox-mcp` setup, client configuration, HTTP API reference, troubleshooting): **[docs/en/AGENT.md](docs/en/AGENT.md)**
+Full guide (`miyo-mcp` setup, client configuration, HTTP API reference, troubleshooting): **[docs/en/AGENT.md](docs/en/AGENT.md)**
 
 ### MCP server (recommended)
 
-> **Prerequisite**: MCP needs the `rustfox-mcp` binary. Installers since v0.0.10 bundle it, but it is not on PATH — use the absolute path inside the install (macOS: `/Applications/Miyo.app/Contents/MacOS/rustfox-mcp`).
+> **Prerequisite**: MCP needs the `miyo-mcp` binary. Installers since v0.0.10 bundle it, but it is not on PATH — use the absolute path inside the install (macOS: `/Applications/Miyo.app/Contents/MacOS/miyo-mcp`).
 
 For MCP-capable clients such as Claude Code, configure it once in the project `.mcp.json`:
 
 ```json
-{ "mcpServers": { "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" } } }
+{ "mcpServers": { "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" } } }
 ```
 
-> A bare `rustfox-mcp` works only if the binary is on PATH (Linux .deb install, or a `cargo build --release -p fox-mcp` copied into `/usr/local/bin`).
+> A bare `miyo-mcp` works only if the binary is on PATH (Linux .deb install, or a `cargo build --release -p miyo-mcp` copied into `/usr/local/bin`).
 
 Then just ask the AI to save endpoints into Miyo (paste cURL or source code):
 
@@ -143,7 +143,7 @@ Security: loopback-only binding; the only write operation is import; existing `b
 
 ## Download & install
 
-Grab the installer for your platform from [Releases](https://github.com/weihubeats/RustFox/releases):
+Grab the installer for your platform from [Releases](https://github.com/weihubeats/Miyo/releases):
 
 | Platform | Installer |
 | --- | --- |
@@ -171,7 +171,7 @@ scripts/package-tauri.sh                # package distributables in one step
 
 ## Documentation
 
-**Website**: [https://weihubeats.github.io/RustFox/](https://weihubeats.github.io/RustFox/) — user guide, migration guide, agent integration and changelog, rendered online.
+**Website**: [https://weihubeats.github.io/Miyo/](https://weihubeats.github.io/Miyo/) — user guide, migration guide, agent integration and changelog, rendered online.
 
 | Document | Description |
 | --- | --- |

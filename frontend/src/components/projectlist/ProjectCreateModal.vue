@@ -9,17 +9,17 @@ import { computed, ref, watch } from 'vue'
 import Modal from '../ui/Modal.vue'
 import CustomSelect from '../ui/CustomSelect.vue'
 import type { SelectOption } from '../ui/CustomSelect.vue'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
 import { useLocaleStore } from '../../stores/locale'
-import type { Project, Team } from '../../types/foxApi'
+import type { Project, Team } from '../../types/miyoApi'
 
 const NAME_MAX = 50
 const DESC_MAX = 200
 /** 行内新建团队哨兵值（CustomSelect 选项）。 */
 const NEW_TEAM = '__new__'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -120,15 +120,15 @@ async function confirmCreate(): Promise<void> {
       <input
         id="new-project-name"
         v-model="newName"
-        class="rf-input"
-        :class="{ 'rf-input-error': createError }"
+        class="miyo-input"
+        :class="{ 'miyo-input-error': createError }"
         :placeholder="t('workspace.projectNamePh')"
         maxlength="60"
         spellcheck="false"
         @input="createError = null"
         @keyup.enter="confirmCreate"
       />
-      <p v-if="createError" class="rf-field-error" role="alert">{{ createError }}</p>
+      <p v-if="createError" class="miyo-field-error" role="alert">{{ createError }}</p>
     </div>
     <div class="form-field">
       <label class="form-label">{{ t('pcreate.team') }}</label>
@@ -140,7 +140,7 @@ async function confirmCreate(): Promise<void> {
       <input
         v-if="selectedTeamId === NEW_TEAM"
         v-model="newTeamName"
-        class="rf-input"
+        class="miyo-input"
         :placeholder="t('pcreate.teamNamePh')"
         maxlength="30"
         @keyup.enter="confirmCreate"
@@ -151,15 +151,15 @@ async function confirmCreate(): Promise<void> {
       <textarea
         id="new-project-desc"
         v-model="newDesc"
-        class="rf-textarea"
+        class="miyo-textarea"
         :maxlength="DESC_MAX"
         :placeholder="t('workspace.projectDescPh')"
         rows="3"
       ></textarea>
     </div>
     <template #footer>
-      <button class="rf-btn" type="button" @click="open = false">{{ t('common.cancel') }}</button>
-      <button class="rf-btn rf-btn-primary" type="button" :disabled="api.pending.value" @click="confirmCreate">
+      <button class="miyo-btn" type="button" @click="open = false">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-primary" type="button" :disabled="api.pending.value" @click="confirmCreate">
         {{ t('workspace.create') }}
       </button>
     </template>
@@ -179,10 +179,10 @@ async function confirmCreate(): Promise<void> {
   color: var(--text-2);
 }
 
-.rf-input-error {
+.miyo-input-error {
   border-color: var(--danger) !important;
 }
-.rf-input-error:focus {
+.miyo-input-error:focus {
   border-color: var(--danger) !important;
   box-shadow: 0 0 0 2px var(--danger-tint) !important;
 }

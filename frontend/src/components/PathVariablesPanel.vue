@@ -6,13 +6,13 @@
  *   被 isDirty 误判为「有改动」，见 EndpointEditor.dirty.spec）；
  * - 写入 draft.request.path_variables：文档预览页与 OpenAPI 导出都读该字段，
  *   发送链路的 {id} / {{id}} 代入由 EndpointEditor.buildUrl 完成
- *   （镜像 fox-core util::replace_path_variables 的两种写法）。
+ *   （镜像 miyo-core util::replace_path_variables 的两种写法）。
  */
 import { computed } from 'vue'
 import { useLocaleStore } from '../stores/locale'
 import { useToast } from '../composables/useToast'
 import KeyValueTable, { type KVRow } from './ui/KeyValueTable.vue'
-import type { Endpoint, KeyValue } from '../types/foxApi'
+import type { Endpoint, KeyValue } from '../types/miyoApi'
 import { extractPathVarNames } from '../utils/pathVariables'
 
 const props = defineProps<{ draft: Endpoint | null }>()
@@ -33,7 +33,7 @@ function apply(next: KVRow[]): void {
 
 /**
  * 从路径抽取占位名：委托 `utils/pathVariables.extractPathVarNames`
- * （与后端 `fox_core::util::extract_path_variables` 同源的单一实现）。
+ * （与后端 `miyo_core::util::extract_path_variables` 同源的单一实现）。
  */
 const extractNames = extractPathVarNames
 

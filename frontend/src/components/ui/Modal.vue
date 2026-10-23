@@ -40,7 +40,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const titleId = `rf-modal-title-${Math.random().toString(36).slice(2, 9)}`
+const titleId = `miyo-modal-title-${Math.random().toString(36).slice(2, 9)}`
 
 const locale = useLocaleStore()
 const t = locale.t

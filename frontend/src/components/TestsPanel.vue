@@ -4,21 +4,21 @@
  * 从 ToolsDrawer 提取为独立面板：JSON 断言配置 → 运行 → 逐条结果。
  */
 import { ref, watch } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
 import { formatDuration } from '../utils/format'
 import { handleTextareaTab } from '../utils/textareaIndent'
 import Icon from './ui/Icon.vue'
-import type { Endpoint, EndpointResult } from '../types/foxApi'
+import type { Endpoint, EndpointResult } from '../types/miyoApi'
 
 const props = defineProps<{
   draft: Endpoint | null
   url: string
 }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const store = useWorkspaceStore()
 const locale = useLocaleStore()
@@ -81,13 +81,13 @@ function onCodeKeydown(e: KeyboardEvent): void {
     </div>
     <textarea
       v-model="testsJson"
-      class="rf-input tp-input"
+      class="miyo-input tp-input"
       spellcheck="false"
       :placeholder="t('tests.ph')"
       @keydown="onCodeKeydown"
     ></textarea>
     <div class="tp-run-row">
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="testing" @click="runTests">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="testing" @click="runTests">
         <Icon :name="testing ? 'refresh' : 'beaker'" :size="13" :stroke-width="testing ? 1.8 : 1.5" />
         {{ testing ? t('tests.testing') : t('tests.run') }}
       </button>

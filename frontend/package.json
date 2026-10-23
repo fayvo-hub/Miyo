@@ -1,14 +1,14 @@
 {
-  "name": "rustfox",
+  "name": "miyo",
   "private": true,
   "version": "0.0.43",
   "description": "Miyo — lightweight cross-platform API debugging client (Tauri 2 + Vue 3 frontend)",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/weihubeats/RustFox.git"
+    "url": "https://github.com/weihubeats/Miyo.git"
   },
-  "homepage": "https://weihubeats.github.io/RustFox/",
+  "homepage": "https://weihubeats.github.io/Miyo/",
   "type": "module",
   "scripts": {
     "dev": "vite",

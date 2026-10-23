@@ -10,9 +10,9 @@
  */
 import { computed, ref, watch } from 'vue'
 import { useLocaleStore } from '../stores/locale'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
-import type { SyncPullPreview, SyncRemote } from '../types/foxApi'
+import type { SyncPullPreview, SyncRemote } from '../types/miyoApi'
 import Icon from './ui/Icon.vue'
 import Modal from './ui/Modal.vue'
 import Popconfirm from './ui/Popconfirm.vue'
@@ -36,7 +36,7 @@ const DEFAULT_TEAM_ID = '00000000-0000-0000-0000-000000000001'
 const effectiveTeamId = computed(() => props.teamId ?? DEFAULT_TEAM_ID)
 
 const t = useLocaleStore().t
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 
 const remotes = ref<SyncRemote[]>([])

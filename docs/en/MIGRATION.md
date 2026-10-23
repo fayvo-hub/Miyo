@@ -69,4 +69,4 @@ After import, check two things: groups became folders, and (base_url + path) joi
 4. Take a backup (Settings → backup JSON) — restores drill from it afterwards.
 
 For import errors or lost fields, file an issue with a (redacted) source snippet:
-<https://github.com/weihubeats/RustFox/issues>.
+<https://github.com/weihubeats/Miyo/issues>.

@@ -14,7 +14,7 @@ import { nextTick } from 'vue'
 import EnvironmentBar from './EnvironmentBar.vue'
 import { useLocaleStore } from '../stores/locale'
 import { copyText } from '../utils/clipboard'
-import type { Environment } from '../types/foxApi'
+import type { Environment } from '../types/miyoApi'
 
 const setEnvironment = vi.fn()
 

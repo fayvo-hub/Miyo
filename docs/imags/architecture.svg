@@ -39,12 +39,12 @@
 
   <rect class="box" x="780" y="175" width="330" height="70"/>
   <text x="945" y="203" text-anchor="middle" class="item">Tauri API 桥 · src/lib/</text>
-  <text x="945" y="225" text-anchor="middle" class="item2">invoke('plugin:fox|...') · 事件监听 · 文件对话框</text>
+  <text x="945" y="225" text-anchor="middle" class="item2">invoke('plugin:miyo|...') · 事件监听 · 文件对话框</text>
 
   <!-- Layer 2: 命令层 -->
   <rect class="layer" x="60" y="350" width="1080" height="170"/>
-  <text x="80" y="380" class="title">Layer 2 · 命令层（Tauri 插件 fox）</text>
-  <text x="80" y="402" class="sub">crates/fox-tauri/ · Builder::new("fox") 注册全部命令 · 独立 Cargo workspace · 生成 plugin:fox|* 命令</text>
+  <text x="80" y="380" class="title">Layer 2 · 命令层（Tauri 插件 miyo）</text>
+  <text x="80" y="402" class="sub">crates/miyo-tauri/ · Builder::new("miyo") 注册全部命令 · 独立 Cargo workspace · 生成 plugin:miyo|* 命令</text>
 
   <rect class="box" x="90" y="420" width="240" height="70"/>
   <text x="210" y="448" text-anchor="middle" class="item">HTTP 命令组</text>
@@ -68,28 +68,28 @@
   <text x="80" y="612" class="sub">crates/ · 其余 crate 为独立 Cargo workspace · 命令层经路径依赖直接调用</text>
 
   <rect class="box" x="90" y="630" width="170" height="70"/>
-  <text x="175" y="658" text-anchor="middle" class="item">fox-http</text>
+  <text x="175" y="658" text-anchor="middle" class="item">miyo-http</text>
   <text x="175" y="680" text-anchor="middle" class="item2">reqwest 请求引擎</text>
 
   <rect class="box" x="290" y="630" width="170" height="70"/>
-  <text x="375" y="658" text-anchor="middle" class="item">fox-storage</text>
+  <text x="375" y="658" text-anchor="middle" class="item">miyo-storage</text>
   <text x="375" y="680" text-anchor="middle" class="item2">SQLite 读写层</text>
 
   <rect class="box" x="490" y="630" width="170" height="70"/>
-  <text x="575" y="658" text-anchor="middle" class="item">fox-oauth</text>
+  <text x="575" y="658" text-anchor="middle" class="item">miyo-oauth</text>
   <text x="575" y="680" text-anchor="middle" class="item2">OAuth 2.0 流程</text>
 
   <rect class="box" x="690" y="630" width="170" height="70"/>
-  <text x="775" y="658" text-anchor="middle" class="item">fox-test</text>
+  <text x="775" y="658" text-anchor="middle" class="item">miyo-test</text>
   <text x="775" y="680" text-anchor="middle" class="item2">测试脚本与压测</text>
 
   <rect class="box" x="890" y="630" width="220" height="70"/>
-  <text x="1000" y="658" text-anchor="middle" class="item">fox-openapi / fox-shared</text>
+  <text x="1000" y="658" text-anchor="middle" class="item">miyo-openapi / miyo-shared</text>
   <text x="1000" y="680" text-anchor="middle" class="item2">OpenAPI 导入导出 · 共享类型</text>
 
   <!-- 数据层 -->
   <rect class="box" x="420" y="810" width="360" height="60"/>
-  <text x="600" y="837" text-anchor="middle" class="item">SQLite · rustfox.db（AES-256-GCM 加密环境变量）</text>
+  <text x="600" y="837" text-anchor="middle" class="item">SQLite · miyo.db（AES-256-GCM 加密环境变量）</text>
   <text x="600" y="857" text-anchor="middle" class="item2">系统数据目录 under Miyo/master.key</text>
 
   <!-- 箭头 -->

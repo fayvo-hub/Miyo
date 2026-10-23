@@ -3,5 +3,5 @@
   "identifier": "realtime",
   "description": "实时调试弹出窗口（WebSocket / SSE）：与主窗口同信任域，仅收发调试流量",
   "windows": ["realtime-*"],
-  "permissions": ["core:default", "fox:default"]
+  "permissions": ["core:default", "miyo:default"]
 }

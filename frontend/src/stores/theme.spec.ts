@@ -2,7 +2,7 @@
  * theme store 单测：
  * - 持久化：setMode 写入 localStorage，init 恢复偏好；
  * - 解析：system 跟随 matchMedia，dark/light 直接生效；
- * - DOM 应用：apply 把 data-theme 写入 <html> 并广播 rustfox:theme 事件；
+ * - DOM 应用：apply 把 data-theme 写入 <html> 并广播 miyo:theme 事件；
  * - 系统监听：system 模式切换 matchMedia 触发主题更新。
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -86,7 +86,7 @@ describe('theme store', () => {
 
     store.setMode('light')
     expect(store.resolved).toBe('light')
-    expect(localStorage.getItem('rustfox.theme.mode')).toBe('light')
+    expect(localStorage.getItem('miyo.theme.mode')).toBe('light')
     expect(document.documentElement.getAttribute('data-theme')).toBe('light')
     expect(document.documentElement.classList.contains('light')).toBe(true)
     expect(document.documentElement.classList.contains('dark')).toBe(false)
@@ -96,7 +96,7 @@ describe('theme store', () => {
 
   it('init 从 localStorage 恢复持久化偏好', () => {
     stubLocalStorage()
-    localStorage.setItem('rustfox.theme.mode', 'system')
+    localStorage.setItem('miyo.theme.mode', 'system')
     stubMatchMedia(true)
     const store = useThemeStore()
     store.init()
@@ -132,7 +132,7 @@ describe('theme store', () => {
 
   it('非法持久化值回退默认深色', () => {
     stubLocalStorage()
-    localStorage.setItem('rustfox.theme.mode', 'neon' as ThemeMode)
+    localStorage.setItem('miyo.theme.mode', 'neon' as ThemeMode)
     stubMatchMedia(false)
     const store = useThemeStore()
     expect(store.mode).toBe('dark')

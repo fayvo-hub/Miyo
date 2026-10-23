@@ -12,7 +12,7 @@
 import { defineStore } from 'pinia'
 import { computed, nextTick, ref, watch } from 'vue'
 import { listen } from '@tauri-apps/api/event'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from './locale'
 import { planCrossGroupMove, planSameGroupMove, wouldCreateCycle } from './treeOps'
@@ -49,10 +49,10 @@ import type {
   TestCase,
   TestCaseCategory,
   TestCaseStatus,
-} from '../types/foxApi'
+} from '../types/miyoApi'
 
 /**
- * 后端内置默认超时（毫秒）。镜像 fox-http::client::DEFAULT_TIMEOUT_MS（300s）：
+ * 后端内置默认超时（毫秒）。镜像 miyo-http::client::DEFAULT_TIMEOUT_MS（300s）：
  * 全局设置从未配置时，执行链路（resolve_timeout_ms）实际生效的就是这个值，
  * 前端展示（超时占位符 / 设置页兜底）必须与之一致；后端调整时需同步。
  */
@@ -64,7 +64,7 @@ export const FALLBACK_GLOBAL_TIMEOUT_MS = 300_000
  */
 export const DEFAULT_SESSION_BASE_URL = 'http://localhost'
 
-/** 新建接口的默认请求规格（与 fox-core 模型字段一致）。 */
+/** 新建接口的默认请求规格（与 miyo-core 模型字段一致）。 */
 export function defaultRequestSpec(): Endpoint['request'] {
   return {
     params: [],
@@ -85,7 +85,7 @@ function eq(a: Endpoint, b: Endpoint): boolean {
   return JSON.stringify(a) === JSON.stringify(b)
 }
 
-/** gRPC 服务端流运行态（stream_id → 状态；消息由 fox:grpc-event 事件追加）。 */
+/** gRPC 服务端流运行态（stream_id → 状态；消息由 miyo:grpc-event 事件追加）。 */
 export interface GrpcStreamState {
   streamId: string
   endpointId: string
@@ -98,7 +98,7 @@ export interface GrpcStreamState {
 }
 
 export const useWorkspaceStore = defineStore('workspace', () => {
-  const api = useFoxApi()
+  const api = useMiyoApi()
   const toast = useToast()
   const locale = useLocaleStore()
   const t = locale.t
@@ -131,8 +131,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
    * `applyCurlToDraft` / `restoreFromHistory` / 地址栏整条 URL 提交同此规则）。
    */
   const sessionBaseUrl = ref(DEFAULT_SESSION_BASE_URL)
-  /** 前缀持久化键前缀（按项目隔离，风格与 `rustfox.open-projects` 一致）。 */
-  const BASE_URL_KEY_PREFIX = 'rustfox.base-url.'
+  /** 前缀持久化键前缀（按项目隔离，风格与 `miyo.open-projects` 一致）。 */
+  const BASE_URL_KEY_PREFIX = 'miyo.base-url.'
 
   /**
    * 全局生效的请求超时（毫秒）：全局设置值；未配置时即内置默认（非 null，
@@ -382,7 +382,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   /** 顶部标签栏的项目（有序）。 */
   const openProjects = ref<{ id: string; name: string }[]>([])
   /** 标签列表持久化键（仅存 id 顺序；草稿等 UI 态不跨重启保留）。 */
-  const OPEN_TABS_KEY = 'rustfox.open-projects'
+  const OPEN_TABS_KEY = 'miyo.open-projects'
 
   /** 非激活项目的完整 UI 快照。 */
   interface ProjectSnapshot {
@@ -1509,13 +1509,13 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     return null
   }
 
-  /** fox:grpc-event 单例绑定（store 生命周期 = 应用生命周期，无需解绑）。 */
+  /** miyo:grpc-event 单例绑定（store 生命周期 = 应用生命周期，无需解绑）。 */
   let grpcBound = false
   async function bindGrpcEvents(): Promise<void> {
     if (grpcBound) return
     grpcBound = true
     try {
-      await listen<{ stream_id: string } & Record<string, unknown>>('fox:grpc-event', (event) => {
+      await listen<{ stream_id: string } & Record<string, unknown>>('miyo:grpc-event', (event) => {
         const payload = event.payload
         const st = grpcStreams.value.get(payload.stream_id)
         if (!st) return
@@ -2131,4 +2131,4 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   }
 })
 
-import type { Folder as FolderInput } from '../types/foxApi'
+import type { Folder as FolderInput } from '../types/miyoApi'

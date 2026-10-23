@@ -12,7 +12,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue'
 import { useWorkspaceStore, DEFAULT_SESSION_BASE_URL } from '../stores/workspace'
 import { useToast } from '../composables/useToast'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useLocaleStore } from '../stores/locale'
 import { isDefaultName } from '../stores/locale'
 import { useShortcuts, shortcutDef } from '../composables/useShortcuts'
@@ -69,12 +69,12 @@ import type {
   RequestSpec,
   ResponseExample,
   TestCaseCategory,
-} from '../types/foxApi'
+} from '../types/miyoApi'
 import type { GrpcStreamState } from '../stores/workspace'
 
 const store = useWorkspaceStore()
 const toast = useToast()
-const api = useFoxApi()
+const api = useMiyoApi()
 const locale = useLocaleStore()
 const t = locale.t
 
@@ -759,7 +759,7 @@ function commitUrlPath(): void {
 /**
  * 请求地址（与 send / 代码生成 / 压测共用）；有环境时按环境 Base URL 拼接，变量由 resolveRequestUrl 解析。
  *
- * 路径变量代入见 `utils/pathVariables.applyPathVars`（镜像 fox-core
+ * 路径变量代入见 `utils/pathVariables.applyPathVars`（镜像 miyo-core
  * `util::replace_path_variables`）：后端 execute_request 直接使用前端拼好的
  * 完整 URL，不消费 request.path_variables（该字段只被 OpenAPI 导出与文档预览
  * 读取），故代入必须在前端完成；未配置的行不替换，路径原样发送。
@@ -1480,13 +1480,13 @@ onUnmounted(() => {
             </Tooltip>
           </template>
         </div>
-        <button v-if="!sending" class="rf-btn rf-btn-send bar-send" type="button" @click="send">
+        <button v-if="!sending" class="miyo-btn miyo-btn-send bar-send" type="button" @click="send">
           <Icon name="send" :size="16" />
           {{ t('editor.send') }}
         </button>
         <button
           v-else
-          class="rf-btn rf-btn-danger bar-send is-sending"
+          class="miyo-btn miyo-btn-danger bar-send is-sending"
           type="button"
           :title="t('editor.sendingCancel')"
           @click="cancelSend"
@@ -1497,7 +1497,7 @@ onUnmounted(() => {
         </button>
       </div>
       <div class="editor-actions">
-        <button class="rf-btn rf-btn-sm" type="button" :title="t('editor.toolsHint')" @click="showTools = true">
+        <button class="miyo-btn miyo-btn-sm" type="button" :title="t('editor.toolsHint')" @click="showTools = true">
           <Icon name="gauge" :size="16" /> {{ t('editor.tools') }}
         </button>
         <CodeExportMenu
@@ -1509,11 +1509,11 @@ onUnmounted(() => {
           :auth="draft.request.auth"
         />
         <div class="save-group">
-          <button class="rf-btn save-main" type="button" @click="save">
+          <button class="miyo-btn save-main" type="button" @click="save">
             <Icon name="save" :size="16" /> {{ t('editor.saveHint') }}
           </button>
           <button
-            class="rf-btn save-arrow"
+            class="miyo-btn save-arrow"
             type="button"
             :title="t('editor.saveMore')"
             @click="openSaveMenu($event)"
@@ -1635,7 +1635,7 @@ onUnmounted(() => {
             <div class="req-loading-skel">
               <Skeleton :lines="5" height="12px" />
             </div>
-            <button class="rf-btn rf-btn-sm req-loading-cancel" type="button" @click="cancelSend">
+            <button class="miyo-btn miyo-btn-sm req-loading-cancel" type="button" @click="cancelSend">
               {{ t('editor.cancelRequest') }}
             </button>
           </div>
@@ -1727,7 +1727,7 @@ onUnmounted(() => {
     <p class="name-hint">{{ t('editor.nameHint') }}</p>
     <input
       v-model="pendingName"
-      class="rf-input name-dialog-input"
+      class="miyo-input name-dialog-input"
       :placeholder="t('editor.namePh')"
       spellcheck="false"
       @keyup.enter="confirmName"
@@ -1750,8 +1750,8 @@ onUnmounted(() => {
       </template>
     </CustomSelect>
     <template #footer>
-      <button class="rf-btn" type="button" @click="showNameDialog = false">{{ t('common.cancel') }}</button>
-      <button class="rf-btn rf-btn-primary" type="button" @click="confirmName">
+      <button class="miyo-btn" type="button" @click="showNameDialog = false">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-primary" type="button" @click="confirmName">
         <Icon name="save" :size="14" /> {{ t('common.save') }}
       </button>
     </template>
@@ -1761,14 +1761,14 @@ onUnmounted(() => {
     <p class="name-hint">{{ t('editor.exampleNameHint') }}</p>
     <input
       v-model="exampleName"
-      class="rf-input name-dialog-input"
+      class="miyo-input name-dialog-input"
       :placeholder="t('editor.exampleNamePh')"
       spellcheck="false"
       @keyup.enter="confirmSaveExample"
     />
     <template #footer>
-      <button class="rf-btn" type="button" @click="showExampleDialog = false">{{ t('common.cancel') }}</button>
-      <button class="rf-btn rf-btn-primary" type="button" @click="confirmSaveExample">{{ t('common.save') }}</button>
+      <button class="miyo-btn" type="button" @click="showExampleDialog = false">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn miyo-btn-primary" type="button" @click="confirmSaveExample">{{ t('common.save') }}</button>
     </template>
   </Modal>
 
@@ -2726,7 +2726,7 @@ onUnmounted(() => {
 }
 
 .kv-remove {
-  color: var(--rf-text-muted);
+  color: var(--miyo-text-muted);
 }
 
 .body-mode-select {
@@ -2750,11 +2750,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  color: var(--rf-text-muted);
+  color: var(--miyo-text-muted);
 }
 
 .oauth-status.ok {
-  color: var(--rf-success);
+  color: var(--miyo-success);
 }
 
 .response-save {
@@ -2778,28 +2778,28 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--rf-border);
-  background: var(--rf-input-bg);
+  border: 1px solid var(--miyo-border);
+  background: var(--miyo-input-bg);
   border-radius: 6px;
   padding: 5px 10px;
   cursor: pointer;
-  color: var(--rf-text, #f9fafb);
+  color: var(--miyo-text, #f9fafb);
   font-size: 12.5px;
   text-align: left;
 }
 
 .example-main.open {
-  border-color: var(--rf-info);
+  border-color: var(--miyo-info);
 }
 
 .example-status {
   font-weight: 700;
   font-size: var(--fs-xxs);
-  color: var(--rf-success);
+  color: var(--miyo-success);
 }
 
 .example-status.err {
-  color: var(--rf-danger);
+  color: var(--miyo-danger);
 }
 
 .example-name {
@@ -2811,14 +2811,14 @@ onUnmounted(() => {
 
 .example-meta {
   font-size: var(--fs-xxs);
-  color: var(--rf-text-muted);
+  color: var(--miyo-text-muted);
 }
 
 .example-body {
   margin: 0;
   padding: 10px 12px;
-  background: var(--rf-input-bg);
-  border: 1px solid var(--rf-border);
+  background: var(--miyo-input-bg);
+  border: 1px solid var(--miyo-border);
   border-radius: 6px;
   font-family: var(--font-mono);
   font-size: 12px;

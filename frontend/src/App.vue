@@ -75,7 +75,7 @@ onMounted(async () => {
   window.addEventListener('unhandledrejection', onWindowRejection)
   try {
     if ('__TAURI_INTERNALS__' in window) {
-      unlistenAbout = await listen('rustfox://about', () => {
+      unlistenAbout = await listen('miyo://about', () => {
         showAbout.value = true
       })
       // 定时检查更新：仅主窗口启动（实时调试弹出窗不重复检查），
@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
   <ToastHost />
   <AboutDialog v-model:open="showAbout" />
   <ReleaseNotesModal v-model:open="showRelease" />
-  <main class="rf-app">
+  <main class="miyo-app">
     <router-view />
   </main>
 </template>

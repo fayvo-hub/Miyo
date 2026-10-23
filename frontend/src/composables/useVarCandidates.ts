@@ -10,7 +10,7 @@ import { computed, type ComputedRef } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { environmentVariableMap, variableListToMap } from '../utils/environment'
 
-/** fox-core variable.rs 的内置变量（{{$seq:key}} 形态不做候选，属模板写法）。 */
+/** miyo-core variable.rs 的内置变量（{{$seq:key}} 形态不做候选，属模板写法）。 */
 export const BUILTIN_VARIABLES = ['$uuid', '$timestamp', '$isoTimestamp', '$randomInt', '$seq'] as const
 
 export function useVarCandidates(): ComputedRef<string[]> {

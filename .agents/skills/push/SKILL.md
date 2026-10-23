@@ -1,6 +1,6 @@
 ---
 name: push
-description: 推送 Miyo 代码到远程：按 CI 同款门禁预检（cargo fmt/check/clippy/test、fox-tauri、前端 lint/test/build），主题化提交后推送并监控 CI 直到绿。当用户说「推送」「push」「提交推送」「推代码」时使用。仅用于本仓库（weihubeats/RustFox）。
+description: 推送 Miyo 代码到远程：按 CI 同款门禁预检（cargo fmt/check/clippy/test、miyo-tauri、前端 lint/test/build），主题化提交后推送并监控 CI 直到绿。当用户说「推送」「push」「提交推送」「推代码」时使用。仅用于本仓库（weihubeats/Miyo）。
 ---
 
 # Miyo 推送流程
@@ -38,13 +38,13 @@ cargo test --workspace
 - 新增 Tauri 插件命令：必须同时登记 `generate_handler!`、`build.rs COMMANDS`、
   `permissions/default.toml` 三处（`permissions_contract_test` 双向校验）。
 
-## 2. fox-tauri 独立工作区（CI job: fox-tauri）
+## 2. miyo-tauri 独立工作区（CI job: miyo-tauri）
 
-仅当 `crates/fox-tauri` 或 `crates/fox-*` 有改动时执行（独立 workspace，根 workspace 的
+仅当 `crates/miyo-tauri` 或 `crates/miyo-*` 有改动时执行（独立 workspace，根 workspace 的
 命令覆盖不到）：
 
 ```bash
-cd crates/fox-tauri
+cd crates/miyo-tauri
 cargo fmt --all && cargo fmt --all -- --check   # CI 不查 fmt，但保持一致
 cargo check
 cargo test
@@ -79,15 +79,15 @@ git push origin main
 ## 5. 推送后监控 CI（必做，不放任自流）
 
 ```bash
-curl -s "https://api.github.com/repos/weihubeats/RustFox/actions/runs?branch=main&per_page=1" \
+curl -s "https://api.github.com/repos/weihubeats/Miyo/actions/runs?branch=main&per_page=1" \
   | python3 -c "import json,sys;r=json.load(sys.stdin)['workflow_runs'][0];print(r['name'],r['status'],r['conclusion'],r['html_url'])"
 ```
 
 - 确认新推送的 `head_sha` 对应的 run 已 `in_progress`；
-- 每 2~3 分钟轮询一次直到 `completed`（三个 job：test / fox-tauri / frontend）；
+- 每 2~3 分钟轮询一次直到 `completed`（三个 job：test / miyo-tauri / frontend）；
 - `conclusion: success` → 向用户汇报通过；
 - `failure` → 定位失败 job：
-  `curl -s https://api.github.com/repos/weihubeats/RustFox/actions/runs/<id>/jobs`
+  `curl -s https://api.github.com/repos/weihubeats/Miyo/actions/runs/<id>/jobs`
   拉取失败步骤日志 → 修复 → **从头重走本流程**（重新跑门禁 + 提交 + 推送）。
 
 ## 踩坑记录（历史上真实发生，勿重蹈）

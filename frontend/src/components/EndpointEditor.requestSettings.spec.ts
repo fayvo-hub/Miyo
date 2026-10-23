@@ -12,10 +12,10 @@ import CustomNumberInput from './ui/CustomNumberInput.vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
 }))
 
 async function mountEditor(prepare?: (ep: Endpoint) => void) {

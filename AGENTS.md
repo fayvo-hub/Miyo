@@ -16,8 +16,19 @@ Miyo：Tauri 2 + Vue 3 的跨平台 API 调试工具（Rust 工作区 + 前端�
 - **release**：发布流程——CI success 前置 → `node scripts/release.mjs` 一键升版推送打 tag →
   轮询 Release workflow → draft release 转正。触发词：「发布 / 发版 / release / 打 tag」。
 - **push**：推送流程——按 CI 同款门禁预检（根 workspace fmt/check/clippy/test、
-  fox-tauri check/test、前端 lint/test/build）→ 主题化提交 → 推送 → 监控 CI 直到绿。
+  miyo-tauri check/test、前端 lint/test/build）→ 主题化提交 → 推送 → 监控 CI 直到绿。
   触发词：「推送 / push / 提交推送」。
+
+## 后端规范（实证踩坑）
+
+- **`crates/miyo-storage/migrations/*.sql` 已应用的迁移文件一律不可修改**（含注释）：
+  sqlx 把每个文件的 SHA-384 校验和记在 `_sqlx_migrations`，改一字节即校验失败、
+  所有老库启动报「数据库初始化失败」（2026-10 更名清扫改了 0015~0017 注释，
+  dev/正式版升级双双踩雷，已实证）。品牌更名等批量重构必须排除 migrations 目录；
+  变更只能以新迁移文件（递增编号）追加。
+- **dev 干净启动契约**：`reset_dev_database` 会删当前名与旧品牌名（`rustfox.db`）
+  的库文件；给库文件名/数据目录改名时，两个删除清单都要覆盖，否则旧文件被
+  兼容迁移改名回来，dev 不再从种子数据启动。
 
 ## 前端 UI 规范（实证踩坑）
 
@@ -26,7 +37,7 @@ Miyo：Tauri 2 + Vue 3 的跨平台 API 调试工具（Rust 工作区 + 前端�
   主题差异一律用 `style.css` 的 CSS 变量表达（深/浅各一套），回归测试
   `frontend/src/themePattern.spec.ts` 会扫全仓 `.vue` 拦截。
 - **深/浅验证看构建产物，不只看源码**：`npm run build` 后 grep `dist/assets/*.css`
-  确认规则存在（如 `.rf-sidebar` 是否跟变量），dev 与构建行为可能分叉。
+  确认规则存在（如 `.miyo-sidebar` 是否跟变量），dev 与构建行为可能分叉。
 - **共享类禁止只定义在某组件 scoped 内**：`m-select-*` 曾只在 EndpointEditor 局部，
   另 4 处引用实际裸奔。跨组件复用的类一律放 `style.css` 全局。
 - **方法色 single source**：`@theme` 的 `method-*` 令牌（色值）+ `utils/methodTone.ts`

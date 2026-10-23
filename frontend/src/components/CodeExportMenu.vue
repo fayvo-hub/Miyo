@@ -12,13 +12,13 @@
  * 调试页与测试用例抽屉（贴底工具条用 placement="top" 向上弹）均可复用。
  */
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { copyText } from '../utils/clipboard'
 import CodeExportDialog from './CodeExportDialog.vue'
 import Icon from './ui/Icon.vue'
-import type { AuthSpec, BodySpec, CodeLang, HttpMethod, KeyValue } from '../types/foxApi'
+import type { AuthSpec, BodySpec, CodeLang, HttpMethod, KeyValue } from '../types/miyoApi'
 
 const props = defineProps<{
   method: HttpMethod
@@ -55,7 +55,7 @@ onBeforeUnmount(() => {
   if (copiedTimer) clearTimeout(copiedTimer)
 })
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -140,7 +140,7 @@ async function pickLang(lang: CodeLang): Promise<void> {
   <div ref="wrapEl" class="code-export">
     <button
       type="button"
-      class="rf-btn ce-trigger"
+      class="miyo-btn ce-trigger"
       :class="{ 'ce-copied': copied }"
       :disabled="disabled"
       @click="toggleMenu"

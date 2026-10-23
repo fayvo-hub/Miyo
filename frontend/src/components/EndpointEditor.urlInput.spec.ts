@@ -14,9 +14,9 @@ import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { makeDraft } from '../testUtils/draftFixture'
 import { collectErrors, stubScrollIntoView } from '../testUtils/componentTest'
-import type { Environment, Endpoint } from '../types/foxApi'
+import type { Environment, Endpoint } from '../types/miyoApi'
 
-/** foxApi 全量 mock（口径同 EndpointEditor.response.spec：挂载期懒加载接口全数兜底）。 */
+/** miyoApi 全量 mock（口径同 EndpointEditor.response.spec：挂载期懒加载接口全数兜底）。 */
 const apiMock = vi.hoisted(() => ({
   executeRequest: vi.fn(async () => {
     throw new Error('not used')
@@ -40,7 +40,7 @@ const apiMock = vi.hoisted(() => ({
   })),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 
 const endpoint: Endpoint = makeDraft({ id: 'ep-url', name: '地址栏', path: '/' })
 
@@ -547,7 +547,7 @@ describe('地址栏前置 URL 下拉（环境选项标签）', () => {
     // 重置只动会话前缀，不切换环境（点的是行尾按钮，不是选中该行）
     expect(store.activeEnvId).toBe('env-dev')
     // 同口径持久化（watch 按项目回写，重启不再回落到该 origin）
-    expect(localStorage.getItem('rustfox.base-url.proj-url-1')).toBe('http://localhost')
+    expect(localStorage.getItem('miyo.base-url.proj-url-1')).toBe('http://localhost')
 
     wrapper.unmount()
     document.querySelector('.base-url-pop')?.remove()

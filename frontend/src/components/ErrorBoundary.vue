@@ -4,7 +4,7 @@
  *
  * Vue 没有 React 式内置错误边界，这里用 `onErrorCaptured` 实现：
  * 捕获子树中所有渲染 / 事件处理 / 生命周期抛出的未处理错误，
- * 渲染 rf- 风格兜底 UI，并提供「重试」按钮。
+ * 渲染 miyo- 风格兜底 UI，并提供「重试」按钮。
  *
  * 使用：
  * ```html
@@ -82,8 +82,8 @@ async function onRetry(): Promise<void> {
 </script>
 
 <template>
-  <div v-if="errored" class="rf-boundary" role="alert">
-    <div class="rf-boundary-glyph" aria-hidden="true">
+  <div v-if="errored" class="miyo-boundary" role="alert">
+    <div class="miyo-boundary-glyph" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="28" height="28">
         <path
           d="M12 3l9.5 16.5H2.5L12 3z"
@@ -101,12 +101,12 @@ async function onRetry(): Promise<void> {
         <circle cx="12" cy="16.6" r="0.9" fill="currentColor" />
       </svg>
     </div>
-    <div class="rf-boundary-body">
-      <div class="rf-boundary-title">{{ t('errbound.title') }}</div>
-      <div class="rf-boundary-message">{{ errorMessage || t('errbound.unknownError') }}</div>
-      <div class="rf-boundary-actions">
+    <div class="miyo-boundary-body">
+      <div class="miyo-boundary-title">{{ t('errbound.title') }}</div>
+      <div class="miyo-boundary-message">{{ errorMessage || t('errbound.unknownError') }}</div>
+      <div class="miyo-boundary-actions">
         <button
-          class="rf-btn rf-btn-primary rf-btn-sm"
+          class="miyo-btn miyo-btn-primary miyo-btn-sm"
           type="button"
           :disabled="retrying"
           @click="onRetry"
@@ -115,14 +115,14 @@ async function onRetry(): Promise<void> {
         </button>
         <button
           v-if="errorStack || errorInfo"
-          class="rf-btn rf-btn-sm"
+          class="miyo-btn miyo-btn-sm"
           type="button"
           @click="detailOpen = !detailOpen"
         >
           {{ detailOpen ? t('errbound.hideDetails') : t('app.viewDetails') }}
         </button>
       </div>
-      <pre v-if="detailOpen" class="rf-boundary-detail">{{
+      <pre v-if="detailOpen" class="miyo-boundary-detail">{{
         errorInfo ? `[${errorInfo}]\n` : ''
       }}{{ errorStack || errorMessage }}</pre>
     </div>
@@ -131,56 +131,56 @@ async function onRetry(): Promise<void> {
 </template>
 
 <style scoped>
-.rf-boundary {
+.miyo-boundary {
   display: flex;
   gap: 14px;
   margin: 24px;
   padding: 20px;
   border-radius: 10px;
-  background: var(--rf-bg-panel-2);
-  border: 1px solid var(--rf-border);
-  border-left: 3px solid var(--rf-danger);
+  background: var(--miyo-bg-panel-2);
+  border: 1px solid var(--miyo-border);
+  border-left: 3px solid var(--miyo-danger);
 }
 
-.rf-boundary-glyph {
+.miyo-boundary-glyph {
   flex: none;
-  color: var(--rf-danger);
+  color: var(--miyo-danger);
   margin-top: 2px;
 }
 
-.rf-boundary-body {
+.miyo-boundary-body {
   flex: 1;
   min-width: 0;
 }
 
-.rf-boundary-title {
+.miyo-boundary-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--rf-text);
+  color: var(--miyo-text);
 }
 
-.rf-boundary-message {
+.miyo-boundary-message {
   margin-top: 4px;
   font-size: 12.5px;
-  color: var(--rf-text-secondary);
+  color: var(--miyo-text-secondary);
   word-break: break-all;
 }
 
-.rf-boundary-actions {
+.miyo-boundary-actions {
   margin-top: 12px;
   display: flex;
   gap: 8px;
 }
 
-.rf-boundary-detail {
+.miyo-boundary-detail {
   margin-top: 12px;
   padding: 10px;
   border-radius: 6px;
-  background: var(--rf-input-bg);
-  border: 1px solid var(--rf-border);
+  background: var(--miyo-input-bg);
+  border: 1px solid var(--miyo-border);
   font-size: 11.5px;
   line-height: 1.5;
-  color: var(--rf-text-secondary);
+  color: var(--miyo-text-secondary);
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 220px;

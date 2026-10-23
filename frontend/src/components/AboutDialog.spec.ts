@@ -106,7 +106,7 @@ describe('AboutDialog：更新下载流程', () => {
     click('.a-notes-link')
     await flush()
     expect(mocks.openUrl).toHaveBeenCalledWith(
-      'https://github.com/weihubeats/RustFox/releases/tag/v1.2.3',
+      'https://github.com/weihubeats/Miyo/releases/tag/v1.2.3',
     )
 
     wrapper.unmount()

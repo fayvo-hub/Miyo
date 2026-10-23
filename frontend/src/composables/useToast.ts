@@ -1,8 +1,8 @@
 /**
  * useToast：全局 Toast 通知（Vue 3 Composable）。
  *
- * 4 种类型：success / info / warning / error，样式沿用项目 rf- 设计系统
- * （深色面板 + 类型色左描边，变量名与 fox-desktop/src/styles.rs 对齐）。
+ * 4 种类型：success / info / warning / error，样式沿用项目 miyo- 设计系统
+ * （深色面板 + 类型色左描边，变量名与 miyo-desktop/src/styles.rs 对齐）。
  *
  * 用法：
  * ```ts

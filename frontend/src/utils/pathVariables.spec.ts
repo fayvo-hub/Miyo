@@ -6,7 +6,7 @@ import { applyPathVars, extractPathVarNames } from './pathVariables'
  * 路径变量公共逻辑回归。
  *
  * 这两支函数是「用例保存 / 用例运行 / 调试页发送 / OpenAPI 导入后的展示」
- * 共用的单一实现，与后端 `fox_core::util::{extract_path_variables,
+ * 共用的单一实现，与后端 `miyo_core::util::{extract_path_variables,
  * replace_path_variables}` 语义对齐。旧代码里前端有三份拷贝（PathVariablesPanel、
  * EndpointEditor、workspace store），改一处漏两处——故集中在此加护栏。
  */

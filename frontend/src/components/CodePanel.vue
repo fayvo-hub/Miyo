@@ -6,12 +6,12 @@
  * 调试页与测试用例抽屉（用例快照还原 BodySpec）均可复用。
  */
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import CustomSelect from './ui/CustomSelect.vue'
 import Icon from './ui/Icon.vue'
-import type { AuthSpec, BodySpec, CodeLang, HttpMethod, KeyValue } from '../types/foxApi'
+import type { AuthSpec, BodySpec, CodeLang, HttpMethod, KeyValue } from '../types/miyoApi'
 
 const props = defineProps<{
   method: HttpMethod
@@ -29,7 +29,7 @@ onBeforeUnmount(() => {
   disposed = true
 })
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -98,11 +98,11 @@ watch(codeLang, () => {
         class="cp-lang-select"
         @update:model-value="codeLang = $event as CodeLang"
       />
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="generating" @click="generateCode">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="generating" @click="generateCode">
         <Icon name="code" :size="13" />
         {{ generating ? t('codegen.generating') : t('codegen.generate') }}
       </button>
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="!generatedCode" @click="copyCode">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="!generatedCode" @click="copyCode">
         <Icon name="copy" :size="13" /> {{ t('common.copy') }}
       </button>
     </div>

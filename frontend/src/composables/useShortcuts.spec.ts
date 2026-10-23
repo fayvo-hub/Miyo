@@ -22,7 +22,7 @@ function keydown(init: KeyboardEventInit): void {
 
 afterEach(() => {
   resetAllShortcutBindings()
-  localStorage.removeItem('rustfox:shortcut-bindings')
+  localStorage.removeItem('miyo:shortcut-bindings')
 })
 
 describe('useShortcuts', () => {
@@ -128,7 +128,7 @@ describe('useShortcuts', () => {
 
   it('覆盖持久化到 localStorage，未知 id 被忽略', () => {
     setShortcutBinding('editor.send', { mod: 'ctrl', shift: false, alt: true, key: 'Enter' })
-    const raw = localStorage.getItem('rustfox:shortcut-bindings')
+    const raw = localStorage.getItem('miyo:shortcut-bindings')
     expect(raw).toContain('editor.send')
     setShortcutBinding('unknown.id', { mod: 'ctrl', shift: false, alt: false, key: 'x' })
     expect(defaultBindingOf('unknown.id')).toBeNull()

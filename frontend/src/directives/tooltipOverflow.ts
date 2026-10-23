@@ -3,7 +3,7 @@
  *
  * - 仅当文本真实溢出（el.scrollWidth > el.clientWidth）才显示，完整展示不打扰；
  * - 气泡相对触发元素定位（默认正下方居中，offset 6px，底部空间不足自动翻到上方）；
- * - 暗黑样式（.rf-overflow-tip，定义于 style.css）：半透明毛玻璃 + 描边 + 微阴影；
+ * - 暗黑样式（.miyo-overflow-tip，定义于 style.css）：半透明毛玻璃 + 描边 + 微阴影；
  * - 渐显过渡 + scroll/resize 实时重定位；鼠标离开 / 元素移除即销毁。
  */
 import type { Directive, DirectiveBinding } from 'vue'
@@ -38,7 +38,7 @@ function showTip(): void {
   showTimer = null
   if (!host) return
   tip = document.createElement('div')
-  tip.className = 'rf-overflow-tip'
+  tip.className = 'miyo-overflow-tip'
   tip.textContent = host.__overflowContent ?? ''
   document.body.appendChild(tip)
   position()

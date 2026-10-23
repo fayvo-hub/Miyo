@@ -7,7 +7,7 @@ import { collectErrors, stubScrollIntoView } from '../testUtils/componentTest'
 
 const DATA = {
   users: [
-    { id: 1, name: 'fox' },
+    { id: 1, name: 'miyo' },
     { id: 2, role: 'admin' },
   ],
 }

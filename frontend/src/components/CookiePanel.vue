@@ -6,19 +6,19 @@
  * - 打开页签时加载（静默 IPC，无全局进度条抖动）。
  *
  * 背景：原来 reqwest 内建 jar 是黑盒，登录态问题只能重启应用；
- * 自管 Jar（fox-http::cookie）保持自动回放语义，本面板为其管理面。
+ * 自管 Jar（miyo-http::cookie）保持自动回放语义，本面板为其管理面。
  */
 import { computed, onMounted, ref } from 'vue'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import EmptyState from './ui/EmptyState.vue'
 import Icon from './ui/Icon.vue'
 import IconButton from './ui/IconButton.vue'
 import Popconfirm from './ui/Popconfirm.vue'
-import type { CookieEntry } from '../types/foxApi'
+import type { CookieEntry } from '../types/miyoApi'
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t

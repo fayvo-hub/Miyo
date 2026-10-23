@@ -1,12 +1,12 @@
 <script setup lang="ts">
 /**
  * ToolsDrawer：接口工具抽屉，点击请求栏「工具」按钮打开。
- * 承载低频工具：断言测试（fox-test 运行器）与压测（并发基准）。
+ * 承载低频工具：断言测试（miyo-test 运行器）与压测（并发基准）。
  */
 import Drawer from './ui/Drawer.vue'
 import { lazyComponent } from '../composables/lazyComponent'
 import { useLocaleStore } from '../stores/locale'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
 // 抽屉内容挂在 Drawer 的 v-if="open" 分支下：不打开抽屉就不实例化，
 // 两个工具面板（断言 / 压测）各自的 chunk 只在首次打开「工具」时拉取。

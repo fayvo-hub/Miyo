@@ -1,11 +1,11 @@
 # Miyo 冒烟测试 / 手动验收流程（SMOKE_TEST）
 
-> 本文档对应的自动化补充见 `crates/fox-smoke/tests/smoke_test.rs`
+> 本文档对应的自动化补充见 `crates/miyo-smoke/tests/smoke_test.rs`
 > （`cargo test --workspace` 时自动执行，纯逻辑、不需 UI）。
 
 ## 0. 术语
 
-- **数据目录**：macOS `~/Library/Application Support/Miyo`；日志在 `{数据目录}/logs/rustfox.log`；
+- **数据目录**：macOS `~/Library/Application Support/Miyo`；日志在 `{数据目录}/logs/miyo.log`；
   诊断报告生成在 `{数据目录}/reports/`；备份在 `{数据目录}/backups/`；导出文档在 `{数据目录}/exports/`。
 
 ## 1. 基础链路：创建项目 → 环境 → 接口 → 发送请求 → 查看响应
@@ -42,7 +42,7 @@
    # 预期 404 JSON
    ```
 4. 点「停止 Mock」→ Toast「Mock 服务已停止」，再次 curl 应连接失败。
-5. 日志 `rustfox.log` 应出现 `用户启动 Mock port=4010` 与 `[mock] Mock 服务已启动`。
+5. 日志 `miyo.log` 应出现 `用户启动 Mock port=4010` 与 `[mock] Mock 服务已启动`。
 
 **自动化对应**：`full_user_flow` 中启动/请求/停止真实 Mock 服务。
 
@@ -68,20 +68,20 @@
 2. 删除或改动当前项目数据（可仅删一个接口验证）。
 3. 设置页「恢复」→ 粘贴上一步文件内容 → 点「恢复备份」→ 新项目出现，名称 = 备份时的名称。
 4. 打开恢复的项目 → 接口/文件夹/环境/规则数量与备份前一致；发送一个请求验证数据可用。
-5. 备份文件内容为 JSON，`format` 字段 = `rustfox-project-backup`。
+5. 备份文件内容为 JSON，`format` 字段 = `miyo-project-backup`。
 
 **自动化对应**：`openapi_roundtrip_and_backup` 中 `build_backup → serialize → parse → restore_backup` 后
 逐字段核对（接口数、路径、方法、环境变量、示例）。
 
 ## 6. 诊断报告（问题反馈）
 
-1. 顶栏「反馈」按钮 → Toast 显示报告路径：`{数据目录}/reports/rustfox_report_时间.md`。
+1. 顶栏「反馈」按钮 → Toast 显示报告路径：`{数据目录}/reports/miyo_report_时间.md`。
 2. 打开文件核对：应包含 ① 环境信息（OS/架构/版本/数据目录）② 最近操作步骤列表 ③ 最近日志（最多 500 行）。
-3. 将报告内容粘贴到 GitHub Issue（https://github.com/weihubeats/RustFox/issues）即可提交。
+3. 将报告内容粘贴到 GitHub Issue（https://github.com/weihubeats/Miyo/issues）即可提交。
 
 ## 7. 验收标准
 
-- [ ] `cargo test --workspace` 全绿（含 `fox-smoke` 2 个用例）；
-- [ ] `rustfox.log` 中出现 4 类关键日志（发送请求 / 保存接口 / 启动 Mock / 运行测试）；
+- [ ] `cargo test --workspace` 全绿（含 `miyo-smoke` 2 个用例）；
+- [ ] `miyo.log` 中出现 4 类关键日志（发送请求 / 保存接口 / 启动 Mock / 运行测试）；
 - [ ] 反馈按钮一次点击生成报告文件；
 - [ ] 上述 1~5 节每一步结果与「预期」一致。

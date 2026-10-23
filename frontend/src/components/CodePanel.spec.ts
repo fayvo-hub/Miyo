@@ -9,8 +9,8 @@ import { makeCodegenInputs } from '../testUtils/draftFixture'
 
 const codegenRender = vi.fn()
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     pending: { value: false },
     codegenRender,
   }),

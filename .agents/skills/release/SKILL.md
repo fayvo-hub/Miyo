@@ -1,6 +1,6 @@
 ---
 name: release
-description: 发布 Miyo 新版本：升级版本号、提交推送、打 tag 触发多平台构建。当用户说「发布」「发版」「release」「打个 tag」「升级版本发布」时使用。仅用于本仓库（weihubeats/RustFox）的发版流程。
+description: 发布 Miyo 新版本：升级版本号、提交推送、打 tag 触发多平台构建。当用户说「发布」「发版」「release」「打个 tag」「升级版本发布」时使用。仅用于本仓库（weihubeats/Miyo）的发版流程。
 ---
 
 # Miyo 发布流程
@@ -11,7 +11,7 @@ description: 发布 Miyo 新版本：升级版本号、提交推送、打 tag �
 
 ```bash
 git status --short                 # 有未提交改动 → 先按规范提交推送
-curl -s "https://api.github.com/repos/weihubeats/RustFox/actions/runs?branch=main&per_page=1" \
+curl -s "https://api.github.com/repos/weihubeats/Miyo/actions/runs?branch=main&per_page=1" \
   | python3 -c "import json,sys;r=json.load(sys.stdin)['workflow_runs'][0];print(r['conclusion'])"
 ```
 
@@ -35,12 +35,12 @@ lockfile）→ lint / test / build 门禁 → `chore(release): vX.Y.Z` 提交推
 本机可能没有 `gh`，用 GitHub API 轮询（每 2~3 分钟一次，循环直到 completed）：
 
 ```bash
-curl -s "https://api.github.com/repos/weihubeats/RustFox/actions/runs?event=push&per_page=5" \
+curl -s "https://api.github.com/repos/weihubeats/Miyo/actions/runs?event=push&per_page=5" \
   | python3 -c "import json,sys;[print(r['name'],r['head_branch'],r['status'],r['conclusion']) for r in json.load(sys.stdin)['workflow_runs'] if r['name']=='Release']"
 ```
 
 - `conclusion: success` → 继续
-- `failure` → 拉取失败 job 日志定位（`https://api.github.com/repos/weihubeats/RustFox/actions/runs/<id>/jobs`），
+- `failure` → 拉取失败 job 日志定位（`https://api.github.com/repos/weihubeats/Miyo/actions/runs/<id>/jobs`），
   修复后删除远端 tag 重发：`git push origin :refs/tags/vX.Y.Z && git tag -d vX.Y.Z`
 
 ## 3. 转正 Draft Release

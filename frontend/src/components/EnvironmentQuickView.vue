@@ -17,7 +17,7 @@ import {
   normalizeBaseUrl,
 } from '../utils/environment'
 import Icon from './ui/Icon.vue'
-import type { EnvironmentVariable } from '../types/foxApi'
+import type { EnvironmentVariable } from '../types/miyoApi'
 
 const props = defineProps<{ anchor: HTMLElement | null }>()
 const emit = defineEmits<{ close: []; manage: [] }>()
@@ -220,10 +220,10 @@ onBeforeUnmount(() => {
       <p v-else class="qv-empty">{{ t('envquick.empty') }}</p>
 
       <div class="qv-foot">
-        <button class="rf-btn rf-btn-sm rf-btn-ghost" type="button" @click="addVariable">
+        <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" type="button" @click="addVariable">
           <Icon name="plus" :size="13" /> {{ t('envmgr.addVar') }}
         </button>
-        <button class="rf-btn rf-btn-sm" type="button" @click="emit('manage')">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="emit('manage')">
           <Icon name="settings" :size="13" /> {{ t('envquick.manage') }}
         </button>
       </div>

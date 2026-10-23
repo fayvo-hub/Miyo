@@ -15,10 +15,10 @@ import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
 import { stubScrollIntoView } from '../testUtils/componentTest'
-import type { Endpoint } from '../types/foxApi'
+import type { Endpoint } from '../types/miyoApi'
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => new Proxy({}, { get: () => () => Promise.resolve(null) }),
 }))
 
 const endpointA: Endpoint = makeDraft({ id: 'ep-a', name: '接口 A', method: 'POST', path: '/a' })

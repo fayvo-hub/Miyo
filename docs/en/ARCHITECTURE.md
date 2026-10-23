@@ -17,10 +17,10 @@ Three layers:
 | Layer | Form | Location |
 |---|---|---|
 | Layer 1 · Frontend | Vue 3 + TypeScript (Vite + Tailwind 4 + Pinia) | `frontend/` |
-| Layer 2 · Command layer | Tauri 2 plugin `fox` (`Builder::new("fox")`, exposes `plugin:fox|*` commands) | `crates/fox-tauri/` (standalone workspace) |
+| Layer 2 · Command layer | Tauri 2 plugin `miyo` (`Builder::new("miyo")`, exposes `plugin:miyo|*` commands) | `crates/miyo-tauri/` (standalone workspace) |
 | Layer 3 · Domain layer | Pure library crates, no UI-framework dependency | the rest of `crates/` |
 
-Frontend and backend communicate via **Tauri IPC** (`invoke('plugin:fox|command', args)`);
+Frontend and backend communicate via **Tauri IPC** (`invoke('plugin:miyo|command', args)`);
 domain crates call each other through **path dependencies** (plain Rust), never through IPC.
 
 ## 2. Tech stack (actual dependency list)
@@ -33,13 +33,13 @@ domain crates call each other through **path dependencies** (plain Rust), never 
 | State | Pinia 3 (setup stores: `workspace` / `locale` / `theme`) |
 | Router | vue-router 5 (web history, single-window SPA) |
 | Charts | chart.js + vue-chartjs (load-test results) |
-| IPC wrapper | `composables/useFoxApi.ts` (type safety + error mapping) |
+| IPC wrapper | `composables/useMiyoApi.ts` (type safety + error mapping) |
 | Async runtime | Tokio (workspace-wide `tokio = "1"`) |
 | Local database | SQLite + SQLx (`runtime-tokio-rustls` / `sqlite` / `migrate`) |
 | HTTP client | reqwest 0.12 (rustls-tls / cookies / multipart / stream) |
 | Mock server | axum 0.8 (path syntax `{param}`) |
 | OpenAPI | openapiv3 2.0 (import/export) |
-| Crypto | aes-gcm (fox-secret, AES-256-GCM env vars, `master.key`) |
+| Crypto | aes-gcm (miyo-secret, AES-256-GCM env vars, `master.key`) |
 | Assertions/mock | jsonpath-rust, fake, rand (tests & mock template variables) |
 | Logging | tracing + tracing-subscriber |
 | File dialogs | rfd (import/export) |
@@ -50,21 +50,21 @@ domain crates call each other through **path dependencies** (plain Rust), never 
 ## 3. Workspace layout
 
 ```text
-rustfox/
+miyo/
 ├── Cargo.toml                     # root workspace (11 pure library crates, no tauri)
 ├── crates/
-│   ├── fox-core/                  # domain models, errors, variable engine ({{name}} resolution)
-│   ├── fox-storage/               # SQLx migrations (migrations/), repositories, db init
-│   ├── fox-http/                  # reqwest request build/send, cURL parsing, WS client
-│   ├── fox-openapi/               # OpenAPI 3.x / Swagger 2.0 import & export
-│   ├── fox-mock/                  # axum mock server (port probing from 4010)
-│   ├── fox-test/                  # test runner (assertions, extraction, load testing)
-│   ├── fox-backup/                # JSON backup / restore (ID remapping)
-│   ├── fox-secret/                # AES-256-GCM (env var values, master.key)
-│   ├── fox-codegen/               # multilingual client code generation
-│   ├── fox-oauth/                 # OAuth2 four flows (browser auth / token endpoint)
-│   └── fox-smoke/                 # smoke tests (app-launch skeleton, health checks)
-├── crates/fox-tauri/              # standalone workspace: Tauri 2 plugin wrapper (see §4)
+│   ├── miyo-core/                  # domain models, errors, variable engine ({{name}} resolution)
+│   ├── miyo-storage/               # SQLx migrations (migrations/), repositories, db init
+│   ├── miyo-http/                  # reqwest request build/send, cURL parsing, WS client
+│   ├── miyo-openapi/               # OpenAPI 3.x / Swagger 2.0 import & export
+│   ├── miyo-mock/                  # axum mock server (port probing from 4010)
+│   ├── miyo-test/                  # test runner (assertions, extraction, load testing)
+│   ├── miyo-backup/                # JSON backup / restore (ID remapping)
+│   ├── miyo-secret/                # AES-256-GCM (env var values, master.key)
+│   ├── miyo-codegen/               # multilingual client code generation
+│   ├── miyo-oauth/                 # OAuth2 four flows (browser auth / token endpoint)
+│   └── miyo-smoke/                 # smoke tests (app-launch skeleton, health checks)
+├── crates/miyo-tauri/              # standalone workspace: Tauri 2 plugin wrapper (see §4)
 ├── frontend/                      # Vue 3 frontend (see §5)
 │   ├── src-tauri/                 # Tauri app shell (tauri.conf.json, capabilities, icons)
 │   └── dist/                      # vite build output (frontendDist points to ../dist)
@@ -72,26 +72,26 @@ rustfox/
 └── docs/                          # this documentation
 ```
 
-> `crates/fox-tauri` is excluded from the root workspace: the tauri dependency is heavy and would
-> slow down main-repo builds; it references `fox-*` crates via path dependencies and resolves
+> `crates/miyo-tauri` is excluded from the root workspace: the tauri dependency is heavy and would
+> slow down main-repo builds; it references `miyo-*` crates via path dependencies and resolves
 > independently (`[workspace]` deliberately empty — see its `Cargo.toml` comment).
-> `links = "fox"` fixes the permission namespace prefix and must match `Builder::new("fox")`.
+> `links = "miyo"` fixes the permission namespace prefix and must match `Builder::new("miyo")`.
 
-## 4. fox-tauri command layer
+## 4. miyo-tauri command layer
 
-- Entry point: `plugin::init()` in `crates/fox-tauri/src/lib.rs`.
-- `setup` flow: `fox_storage::db::init_db(database_path())` (create dirs + run migrations) →
+- Entry point: `plugin::init()` in `crates/miyo-tauri/src/lib.rs`.
+- `setup` flow: `miyo_storage::db::init_db(database_path())` (create dirs + run migrations) →
   `app.manage(AppState::new(db))` holds the pool and active context.
   In debug builds the dev database is reset and re-seeded with test fixtures on every launch
-  (`fox_storage::db::reset_dev_database` + `seed::seed_dev_data`); release builds skip both.
+  (`miyo_storage::db::reset_dev_database` + `seed::seed_dev_data`); release builds skip both.
 - `AppState` (`state.rs`): `SqlitePool` + `RwLock` active project/environment + Mock state `Mutex`.
 - Commands: 60+ registered via `generate_handler!`, split by module
   (`commands/{project,folder,endpoint,environment,request,history,example,mock,mock_rule,load_test,oauth,codegen,import_export,backup,curl,settings,agent,test_case,...}.rs`).
 - Error convention: every command returns `Result<T, CommandError>`; `CommandError` serializes to
   `{ code, message }` (`VALIDATION` / `NOT_FOUND` / `DECRYPT` / `IO` / …);
-  the frontend `useFoxApi.call()` converts them into `Error`s carrying `code`.
-- Event push: e.g. load-test progress via `AppHandle.emit("fox:load-progress", …)`.
-- Permissions: the `fox:default` permission set is declared in `frontend/src-tauri/capabilities/`
+  the frontend `useMiyoApi.call()` converts them into `Error`s carrying `code`.
+- Event push: e.g. load-test progress via `AppHandle.emit("miyo:load-progress", …)`.
+- Permissions: the `miyo:default` permission set is declared in `frontend/src-tauri/capabilities/`
   (`permissions/` is generated by the `tauri-plugin` build dependency; every registered command
   must also be listed in `build.rs` and `permissions/default.toml` — guarded by a contract test).
 
@@ -109,16 +109,16 @@ frontend/
 │   │   └── GraphQLView.vue         # GraphQL debugging view
 │   ├── stores/workspace.ts         # the single Pinia store (projects/envs/tabs/tree/history)
 │   ├── composables/
-│   │   ├── useFoxApi.ts            # unified IPC wrapper (auto plugin:fox prefix)
+│   │   ├── useMiyoApi.ts            # unified IPC wrapper (auto plugin:miyo prefix)
 │   │   ├── useToast.ts / useProgress.ts / useTheme.ts
 │   ├── components/                 # EndpointEditor / EndpointTree / ResponsePanel /
 │   │   │                           # TabBar / EnvironmentBar / ToolsDrawer / SettingsDialog /
 │   │   │                           # Params/Headers/Body/Auth/Tests/Docs panels / …
 │   │   └── ui/                     # base widget library (buttons/inputs/selects/menus…)
-│   └── types/foxApi.d.ts           # command signatures mirroring the Rust models (hand-maintained)
+│   └── types/miyoApi.d.ts           # command signatures mirroring the Rust models (hand-maintained)
 └── src-tauri/
     ├── tauri.conf.json             # 1360×900 main window (overlay title bar), devUrl:5173
-    ├── capabilities/default.json   # core:default + fox:default
+    ├── capabilities/default.json   # core:default + miyo:default
     └── icons/
 ```
 
@@ -156,14 +156,14 @@ components only reference tokens. Dark / light / follow-system themes are suppor
 
 ```text
 Frontend EndpointEditor (Send)
-  → useFoxApi.executeRequest({ spec, environment_id, project_id })
-  → IPC invoke('plugin:fox|execute_request')
-  → fox-tauri commands::request::execute_request
-  → fox-core variable engine resolves {{name}} (environment > project > global)
-  → fox-http builds the reqwest request (Auth/Body/Headers)
+  → useMiyoApi.executeRequest({ spec, environment_id, project_id })
+  → IPC invoke('plugin:miyo|execute_request')
+  → miyo-tauri commands::request::execute_request
+  → miyo-core variable engine resolves {{name}} (environment > project > global)
+  → miyo-http builds the reqwest request (Auth/Body/Headers)
   → target server
-  ← response → fox-http parses (status/headers/body/duration/size)
-  ← also written to fox-storage request_histories
+  ← response → miyo-http parses (status/headers/body/duration/size)
+  ← also written to miyo-storage request_histories
   ← ExecuteResponse returned → frontend ResponsePanel renders
 ```
 
@@ -173,7 +173,7 @@ Requests can be cancelled anytime (`cancel_request`, abort token); downloads str
 
 ```text
 Settings "Start Mock"
-  → mock_start → fox-mock::start (port probing from 4010)
+  → mock_start → miyo-mock::start (port probing from 4010)
   → axum routing:
      mock rules match first (method + path + headers + query + body template)
      fallback: the endpoint's saved "response examples"
@@ -193,9 +193,9 @@ Auth panel "Authorize"
 
 | Item | Description |
 |---|---|
-| Database | `{data_dir}/Miyo/rustfox.db` (single SQLite file; SQLx migrations in `fox-storage/migrations/`) |
+| Database | `{data_dir}/Miyo/miyo.db` (single SQLite file; SQLx migrations in `miyo-storage/migrations/`) |
 | Encryption | Environment variable values are AES-256-GCM encrypted with the `master.key` file; the `DECRYPT` error code means key mismatch |
-| Backup | fox-backup exports JSON (with plaintext variables); restore remaps all IDs into a brand-new project |
+| Backup | miyo-backup exports JSON (with plaintext variables); restore remaps all IDs into a brand-new project |
 | Save semantics | Every save path with an id is an **upsert** (`INSERT … ON CONFLICT(id) DO UPDATE`) — renames/edits never hit primary-key conflicts |
 
 ## 9. Documentation index

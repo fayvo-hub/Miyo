@@ -12,7 +12,7 @@ Miyo is pre-1.0 and released frequently. Please update to the latest release
 Please report privately via one of:
 
 - GitHub Security Advisories for this repository (preferred):
-  https://github.com/weihubeats/RustFox/security/advisories/new
+  https://github.com/weihubeats/Miyo/security/advisories/new
 - Email: (add maintainer contact here)
 
 Include: affected version, reproduction steps, impact, and any proposed fix if known.

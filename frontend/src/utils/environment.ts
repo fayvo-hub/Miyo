@@ -6,10 +6,10 @@
  * - environmentVariableMap：结构化变量 → 扁平 `{{name}}` 注入表（enabled、本地值优先；
  *   环境 Base URL 自动以 `base_url` 注入，已有同名变量时不覆盖）；
  * - resolveRequestUrl：请求拼接核心 —— 最终 URL = 环境 Base URL + 相对路径；
- * - resolveVariables：镜像 fox-core variable.rs 的 `{{name}}` 单层递归解析（深度上限 10）。
+ * - resolveVariables：镜像 miyo-core variable.rs 的 `{{name}}` 单层递归解析（深度上限 10）。
  */
 
-import type { Environment } from '../types/foxApi'
+import type { Environment } from '../types/miyoApi'
 
 /** 环境名称 → 颜色类（映射类名，颜色值由调用方 scoped CSS 定义）。 */
 export function envColorClass(name: string): string {
@@ -88,7 +88,7 @@ function isAbsolute(s: string): boolean {
   return s.startsWith('http://') || s.startsWith('https://')
 }
 
-/** 基址 + 相对路径拼接（与 fox-core util::build_url 一致：完整 URL 直用，否则去斜杠后拼接）。 */
+/** 基址 + 相对路径拼接（与 miyo-core util::build_url 一致：完整 URL 直用，否则去斜杠后拼接）。 */
 export function joinBaseUrl(base: string, path: string): string {
   if (isAbsolute(path)) return path
   const p = path.trim().replace(/^\/+/, '')

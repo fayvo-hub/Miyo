@@ -16,9 +16,9 @@ import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { makeDraft } from '../testUtils/draftFixture'
 import { collectErrors, stubScrollIntoView } from '../testUtils/componentTest'
-import type { Endpoint, ExecuteResponse } from '../types/foxApi'
+import type { Endpoint, ExecuteResponse } from '../types/miyoApi'
 
-/** foxApi 全量 mock：executeRequest 按 endpoint_id 返回对应响应体，便于断言「谁的响应」。 */
+/** miyoApi 全量 mock：executeRequest 按 endpoint_id 返回对应响应体，便于断言「谁的响应」。 */
 const apiMock = vi.hoisted(() => ({
   executeRequest: vi.fn(),
   listExamples: vi.fn(async () => []),
@@ -33,7 +33,7 @@ const apiMock = vi.hoisted(() => ({
   saveExample: vi.fn(),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 
 function makeResponse(tag: string): ExecuteResponse {
   return {

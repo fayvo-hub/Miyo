@@ -89,7 +89,7 @@ export const SHORTCUT_DEFAULTS: ShortcutDefault[] = [
   },
 ]
 
-const BINDINGS_KEY = 'rustfox:shortcut-bindings'
+const BINDINGS_KEY = 'miyo:shortcut-bindings'
 
 function readOverrides(): Record<string, ShortcutBinding> {
   try {

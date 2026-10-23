@@ -163,16 +163,16 @@ defineExpose({ openAt, close })
     <div
       v-if="open"
       ref="menuEl"
-      class="rf-menu"
+      class="miyo-menu"
       :style="menuStyle"
       role="menu"
       @click.stop
     >
       <template v-if="view.kind === 'list'">
         <template v-for="item in items" :key="item.key">
-          <div v-if="item.dividerBefore" class="rf-menu-divider"></div>
+          <div v-if="item.dividerBefore" class="miyo-menu-divider"></div>
           <button
-            class="rf-menu-item"
+            class="miyo-menu-item"
             :class="{ danger: item.danger, disabled: item.disabled, checked: item.checked }"
             type="button"
             role="menuitem"
@@ -181,16 +181,16 @@ defineExpose({ openAt, close })
           >
             <span
               v-if="item.icon"
-              class="rf-menu-icon"
+              class="miyo-menu-icon"
               :class="{ accent: item.iconAccent }"
             >
               <Icon :name="item.icon" :size="14" />
             </span>
-            <span class="rf-menu-label">{{ item.label }}</span>
-            <kbd v-if="item.shortcut" class="rf-menu-kbd">{{ item.shortcut }}</kbd>
+            <span class="miyo-menu-label">{{ item.label }}</span>
+            <kbd v-if="item.shortcut" class="miyo-menu-kbd">{{ item.shortcut }}</kbd>
             <Icon
               v-else-if="item.checked"
-              class="rf-menu-check"
+              class="miyo-menu-check"
               name="check"
               :size="13"
             />
@@ -198,21 +198,21 @@ defineExpose({ openAt, close })
         </template>
       </template>
       <template v-else>
-        <div class="rf-menu-confirm" :class="{ danger: confirmDanger }">
-          <div class="rf-menu-confirm-head">
-            <span class="rf-menu-confirm-badge">
+        <div class="miyo-menu-confirm" :class="{ danger: confirmDanger }">
+          <div class="miyo-menu-confirm-head">
+            <span class="miyo-menu-confirm-badge">
               <Icon name="alert-triangle" :size="13" />
             </span>
-            <p class="rf-menu-confirm-title">{{ view.item.confirm }}</p>
+            <p class="miyo-menu-confirm-title">{{ view.item.confirm }}</p>
           </div>
-          <p v-if="confirmDanger" class="rf-menu-confirm-hint">{{ t('confirm.undone') }}</p>
-          <div class="rf-menu-confirm-actions">
-            <button class="rf-btn rf-btn-sm" type="button" @click="backToList">
+          <p v-if="confirmDanger" class="miyo-menu-confirm-hint">{{ t('confirm.undone') }}</p>
+          <div class="miyo-menu-confirm-actions">
+            <button class="miyo-btn miyo-btn-sm" type="button" @click="backToList">
               {{ t('common.cancel') }}
             </button>
             <button
-              class="rf-btn rf-btn-sm"
-              :class="confirmDanger ? 'rf-btn-danger-solid' : undefined"
+              class="miyo-btn miyo-btn-sm"
+              :class="confirmDanger ? 'miyo-btn-danger-solid' : undefined"
               type="button"
               @click="onConfirm"
             >
@@ -226,7 +226,7 @@ defineExpose({ openAt, close })
 </template>
 
 <style scoped>
-.rf-menu {
+.miyo-menu {
   position: fixed;
   z-index: 300;
   min-width: 176px;
@@ -242,7 +242,7 @@ defineExpose({ openAt, close })
   transform-origin: top center;
 }
 
-.rf-menu-item {
+.miyo-menu-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -258,30 +258,30 @@ defineExpose({ openAt, close })
   text-align: left;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.rf-menu-item:hover {
+.miyo-menu-item:hover {
   background: var(--bg-hover);
   color: var(--text-1);
 }
-.rf-menu-item.checked {
+.miyo-menu-item.checked {
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--text-1);
 }
-.rf-menu-item.danger {
+.miyo-menu-item.danger {
   color: var(--danger);
 }
-.rf-menu-item.danger:hover {
+.miyo-menu-item.danger:hover {
   background: var(--danger-tint);
   color: var(--danger);
 }
-.rf-menu-item.disabled {
+.miyo-menu-item.disabled {
   color: var(--text-3);
   cursor: default;
 }
-.rf-menu-item.disabled:hover {
+.miyo-menu-item.disabled:hover {
   background: none;
 }
 
-.rf-menu-icon {
+.miyo-menu-icon {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -290,17 +290,17 @@ defineExpose({ openAt, close })
   height: 14px;
   color: var(--text-3);
 }
-.rf-menu-item:hover .rf-menu-icon {
+.miyo-menu-item:hover .miyo-menu-icon {
   color: var(--text-2);
 }
-.rf-menu-icon.accent {
+.miyo-menu-icon.accent {
   color: var(--accent);
 }
-.rf-menu-icon :deep(svg) {
+.miyo-menu-icon :deep(svg) {
   display: block;
 }
 
-.rf-menu-label {
+.miyo-menu-label {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -308,12 +308,12 @@ defineExpose({ openAt, close })
   white-space: nowrap;
 }
 
-.rf-menu-check {
+.miyo-menu-check {
   flex-shrink: 0;
   color: var(--accent);
 }
 
-.rf-menu-kbd {
+.miyo-menu-kbd {
   flex-shrink: 0;
   margin-left: 8px;
   padding: 1px 5px;
@@ -326,24 +326,24 @@ defineExpose({ openAt, close })
   color: var(--text-3);
 }
 
-.rf-menu-divider {
+.miyo-menu-divider {
   height: 1px;
   margin: 4px -6px;
   background: var(--border);
 }
 
 /* ---- 行内确认视图：警示徽章 + 标题 + 不可撤销提示 + 按钮行 ---- */
-.rf-menu-confirm {
+.miyo-menu-confirm {
   padding: 4px;
 }
 
-.rf-menu-confirm-head {
+.miyo-menu-confirm-head {
   display: flex;
   align-items: flex-start;
   gap: 8px;
 }
 
-.rf-menu-confirm-badge {
+.miyo-menu-confirm-badge {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -354,12 +354,12 @@ defineExpose({ openAt, close })
   background: var(--bg-hover);
   color: var(--text-2);
 }
-.rf-menu-confirm.danger .rf-menu-confirm-badge {
+.miyo-menu-confirm.danger .miyo-menu-confirm-badge {
   background: var(--danger-tint);
   color: var(--danger);
 }
 
-.rf-menu-confirm-title {
+.miyo-menu-confirm-title {
   margin: 2px 0 0;
   font-size: 12.5px;
   font-weight: 600;
@@ -368,7 +368,7 @@ defineExpose({ openAt, close })
   word-break: break-word;
 }
 
-.rf-menu-confirm-hint {
+.miyo-menu-confirm-hint {
   /* 与标题左缘对齐：徽章 22 + gap 8 */
   margin: 5px 0 0 30px;
   font-size: 11px;
@@ -376,7 +376,7 @@ defineExpose({ openAt, close })
   color: var(--text-3);
 }
 
-.rf-menu-confirm-actions {
+.miyo-menu-confirm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 6px;

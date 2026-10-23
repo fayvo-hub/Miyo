@@ -8,7 +8,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import EnvBadge from './EnvBadge.vue'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useLocaleStore } from '../../stores/locale'
-import type { Environment } from '../../types/foxApi'
+import type { Environment } from '../../types/miyoApi'
 
 function makeEnv(id: string, name: string, base_url: string): Environment {
   return {

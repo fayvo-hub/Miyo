@@ -20,7 +20,7 @@ import { join } from '@tauri-apps/api/path'
 import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { envBaseUrl, envColorClass, normalizeBaseUrl } from '../utils/environment'
 import { deepClone } from '../utils/clone'
@@ -36,7 +36,7 @@ import type {
   EnvironmentVariable,
   GlobalParam,
   ImportedEnv,
-} from '../types/foxApi'
+} from '../types/miyoApi'
 
 const props = defineProps<{
   open: boolean
@@ -52,7 +52,7 @@ const store = useWorkspaceStore()
 const locale = useLocaleStore()
 const t = locale.t
 const toast = useToast()
-const api = useFoxApi()
+const api = useMiyoApi()
 
 const envs = ref<Environment[]>([])
 const selected = ref<Environment | null>(null)
@@ -372,7 +372,7 @@ const exchanging = ref(false)
 
 /** 导出菜单项（Miyo JSON / Postman 为专有名词，两种语言显示原文）。 */
 const EXPORT_FORMAT_ITEMS: MenuItem[] = [
-  { key: 'rustfox_json', label: 'Miyo JSON', icon: 'file' },
+  { key: 'miyo_json', label: 'Miyo JSON', icon: 'file' },
   { key: 'postman_json', label: 'Postman', icon: 'download' },
 ]
 
@@ -702,7 +702,7 @@ async function remove(env: Environment): Promise<void> {
                   v-if="editingId === env.id"
                   :ref="setEditInput"
                   v-model="editValue"
-                  class="rf-input rf-input-sm em-row-input"
+                  class="miyo-input miyo-input-sm em-row-input"
                   :placeholder="t('envmgr.namePh')"
                   spellcheck="false"
                   @click.stop
@@ -725,12 +725,12 @@ async function remove(env: Environment): Promise<void> {
                 </template>
               </div>
             </div>
-            <button class="rf-btn rf-btn-sm em-add" type="button" @click="addEnvironment">
+            <button class="miyo-btn miyo-btn-sm em-add" type="button" @click="addEnvironment">
               <Icon name="plus" :size="13" /> {{ t('envmgr.addEnv') }}
             </button>
             <div class="em-exchange-row">
               <button
-                class="rf-btn rf-btn-sm"
+                class="miyo-btn miyo-btn-sm"
                 type="button"
                 :disabled="!selected || exchanging"
                 :title="t('envmgr.exportTitle')"
@@ -739,7 +739,7 @@ async function remove(env: Environment): Promise<void> {
                 <Icon name="upload" :size="13" /> {{ t('envmgr.export') }}
               </button>
               <button
-                class="rf-btn rf-btn-sm"
+                class="miyo-btn miyo-btn-sm"
                 type="button"
                 :disabled="exchanging"
                 :title="t('envmgr.importTitle')"
@@ -760,7 +760,7 @@ async function remove(env: Environment): Promise<void> {
             <div class="em-editor-head">
               <input
                 v-model="selected.name"
-                class="rf-input em-name"
+                class="miyo-input em-name"
                 :placeholder="t('envmgr.namePh')"
                 spellcheck="false"
                 @input="onAnyChange"
@@ -782,7 +782,7 @@ async function remove(env: Environment): Promise<void> {
                 <div class="em-tr em-tr-base">
                   <input
                     v-model="selected.base_url"
-                    class="rf-input rf-input-sm em-base-input"
+                    class="miyo-input miyo-input-sm em-base-input"
                     :placeholder="t('envmgr.baseUrlPh')"
                     spellcheck="false"
                     @input="onAnyChange"
@@ -813,21 +813,21 @@ async function remove(env: Environment): Promise<void> {
                 >
                   <input
                     v-model="v.key"
-                    class="rf-input rf-input-sm em-col-key"
+                    class="miyo-input miyo-input-sm em-col-key"
                     :placeholder="t('envmgr.varKeyPh')"
                     spellcheck="false"
                     @input="onAnyChange"
                   />
                   <input
                     v-model="v.remote_value"
-                    class="rf-input rf-input-sm em-col-remote"
+                    class="miyo-input miyo-input-sm em-col-remote"
                     :placeholder="t('envmgr.varRemotePh')"
                     spellcheck="false"
                     @input="onAnyChange"
                   />
                   <input
                     v-model="v.local_value"
-                    class="rf-input rf-input-sm em-col-local"
+                    class="miyo-input miyo-input-sm em-col-local"
                     :placeholder="t('envmgr.varLocalPh')"
                     spellcheck="false"
                     @input="onAnyChange"
@@ -849,7 +849,7 @@ async function remove(env: Environment): Promise<void> {
                     @click="removeVariable(i)"
                   />
                 </div>
-                <button class="rf-btn rf-btn-sm em-add-var" type="button" @click="addVariable">
+                <button class="miyo-btn miyo-btn-sm em-add-var" type="button" @click="addVariable">
                   <Icon name="plus" :size="13" /> {{ t('envmgr.addVar') }}
                 </button>
               </div>
@@ -885,21 +885,21 @@ async function remove(env: Environment): Promise<void> {
                 >
                   <input
                     v-model="v.key"
-                    class="rf-input rf-input-sm em-col-key"
+                    class="miyo-input miyo-input-sm em-col-key"
                     :placeholder="t('envmgr.globalVarKeyPh')"
                     spellcheck="false"
                     @input="onGlobalChange"
                   />
                   <input
                     v-model="v.remote_value"
-                    class="rf-input rf-input-sm em-col-remote"
+                    class="miyo-input miyo-input-sm em-col-remote"
                     :placeholder="t('envmgr.varRemotePh')"
                     spellcheck="false"
                     @input="onGlobalChange"
                   />
                   <input
                     v-model="v.local_value"
-                    class="rf-input rf-input-sm em-col-local"
+                    class="miyo-input miyo-input-sm em-col-local"
                     :placeholder="t('envmgr.varLocalPh')"
                     spellcheck="false"
                     @input="onGlobalChange"
@@ -922,7 +922,7 @@ async function remove(env: Environment): Promise<void> {
                   />
                 </div>
                 <button
-                  class="rf-btn rf-btn-sm em-add-var"
+                  class="miyo-btn miyo-btn-sm em-add-var"
                   type="button"
                   @click="addGlobalVariable"
                 >
@@ -960,21 +960,21 @@ async function remove(env: Environment): Promise<void> {
                 >
                   <input
                     v-model="p.key"
-                    class="rf-input rf-input-sm em-col-key"
+                    class="miyo-input miyo-input-sm em-col-key"
                     :placeholder="t('envmgr.paramKeyPh')"
                     spellcheck="false"
                     @input="onParamsChange"
                   />
                   <input
                     v-model="p.value"
-                    class="rf-input rf-input-sm em-col-remote"
+                    class="miyo-input miyo-input-sm em-col-remote"
                     :placeholder="t('envmgr.paramValuePh')"
                     spellcheck="false"
                     @input="onParamsChange"
                   />
                   <select
                     v-model="p.location"
-                    class="rf-input rf-input-sm em-col-loc"
+                    class="miyo-input miyo-input-sm em-col-loc"
                     @change="onParamsChange"
                   >
                     <option value="header">{{ t('envmgr.locHeader') }}</option>
@@ -997,7 +997,7 @@ async function remove(env: Environment): Promise<void> {
                     @click="removeGlobalParam(i)"
                   />
                 </div>
-                <button class="rf-btn rf-btn-sm em-add-var" type="button" @click="addGlobalParam">
+                <button class="miyo-btn miyo-btn-sm em-add-var" type="button" @click="addGlobalParam">
                   <Icon name="plus" :size="13" /> {{ t('envmgr.addParam') }}
                 </button>
               </div>
@@ -1011,9 +1011,9 @@ async function remove(env: Environment): Promise<void> {
     </div>
 
     <template #footer>
-      <button class="rf-btn" type="button" @click="cancel">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn" type="button" @click="cancel">{{ t('common.cancel') }}</button>
       <button
-        class="rf-btn rf-btn-primary"
+        class="miyo-btn miyo-btn-primary"
         type="button"
         :disabled="busy || (!dirty && !globalDirty && !paramsDirty)"
         @click="save"
@@ -1035,16 +1035,16 @@ async function remove(env: Environment): Promise<void> {
     <p class="em-import-hint">{{ t('envmgr.importHint') }}</p>
     <textarea
       v-model="importText"
-      class="rf-input em-import-input"
+      class="miyo-input em-import-input"
       spellcheck="false"
       placeholder='{"name": "prod", "values": [{"key": "base_url", "value": "https://…"}]}'
     ></textarea>
     <div class="em-import-actions">
-      <button class="rf-btn rf-btn-sm" type="button" @click="importFromFile">
+      <button class="miyo-btn miyo-btn-sm" type="button" @click="importFromFile">
         <Icon name="folder" :size="13" /> {{ t('envmgr.importFromFile') }}
       </button>
       <button
-        class="rf-btn rf-btn-sm rf-btn-primary"
+        class="miyo-btn miyo-btn-sm miyo-btn-primary"
         type="button"
         :disabled="importing || !importText.trim()"
         @click="previewImport"
@@ -1068,9 +1068,9 @@ async function remove(env: Environment): Promise<void> {
       </div>
     </div>
     <template #footer>
-      <button class="rf-btn" type="button" @click="importOpen = false">{{ t('common.cancel') }}</button>
+      <button class="miyo-btn" type="button" @click="importOpen = false">{{ t('common.cancel') }}</button>
       <button
-        class="rf-btn rf-btn-primary"
+        class="miyo-btn miyo-btn-primary"
         type="button"
         :disabled="!importPreview || importing"
         @click="confirmImport"
@@ -1093,13 +1093,13 @@ async function remove(env: Environment): Promise<void> {
     <div class="em-confirm">
       <p class="em-confirm-text">{{ t('envmgr.unsavedWarning') }}</p>
       <div class="em-confirm-actions">
-        <button class="rf-btn rf-btn-sm rf-btn-primary" type="button" @click="saveAndProceed">
+        <button class="miyo-btn miyo-btn-sm miyo-btn-primary" type="button" @click="saveAndProceed">
           {{ t('envmgr.saveAndContinue') }}
         </button>
-        <button class="rf-btn rf-btn-sm rf-btn-danger" type="button" @click="discardChanges">
+        <button class="miyo-btn miyo-btn-sm miyo-btn-danger" type="button" @click="discardChanges">
           {{ t('envmgr.discard') }}
         </button>
-        <button class="rf-btn rf-btn-sm" type="button" @click="keepEditing">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="keepEditing">
           {{ t('envmgr.keepEditing') }}
         </button>
       </div>
@@ -1343,7 +1343,7 @@ async function remove(env: Environment): Promise<void> {
 }
 
 /* 导出 / 导入等宽铺满，替代原先被挤到截断的格式下拉 */
-.em-exchange-row .rf-btn {
+.em-exchange-row .miyo-btn {
   flex: 1;
   min-width: 0;
   justify-content: center;

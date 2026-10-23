@@ -45,7 +45,7 @@ describe('highlightCode：cURL / Rust', () => {
 
 describe('JSON 语法高亮与搜索标记', () => {
   const sample = JSON.stringify({
-    name: 'fox',
+    name: 'miyo',
     count: 42,
     active: true,
     extra: null,
@@ -60,7 +60,7 @@ describe('JSON 语法高亮与搜索标记', () => {
     const nulls = tokens.filter((t) => t.cls === 'hl-null')
 
     expect(keys.length).toBe(4)
-    expect(strs.some((t) => t.text.includes('"fox"'))).toBe(true)
+    expect(strs.some((t) => t.text.includes('"miyo"'))).toBe(true)
     expect(nums.some((t) => t.text === '42')).toBe(true)
     expect(bools.some((t) => t.text === 'true')).toBe(true)
     expect(nulls.some((t) => t.text === 'null')).toBe(true)
@@ -87,14 +87,14 @@ describe('JSON 语法高亮与搜索标记', () => {
   })
 
   it('highlightJSONText 支持多匹配与 activeMatch 索引高亮', () => {
-    const code = '{"fox_key": "fox_val", "other": "fox_again"}'
-    const html = highlightJSONText(code, 'fox', 1)
+    const code = '{"miyo_key": "miyo_val", "other": "miyo_again"}'
+    const html = highlightJSONText(code, 'miyo', 1)
     // 共有 3 处匹配，第 2 处（index 1）应为 active
-    const marks = html.match(/<mark class="[^"]+">fox<\/mark>/g)
+    const marks = html.match(/<mark class="[^"]+">miyo<\/mark>/g)
     expect(marks).toHaveLength(3)
-    expect(html).toContain('<span class="hl-k">&quot;<mark class="rp-find-mark">fox</mark>_key&quot;:</span>')
-    expect(html).toContain('<span class="hl-s">&quot;<mark class="rp-find-mark active">fox</mark>_val&quot;</span>')
-    expect(html).toContain('<span class="hl-s">&quot;<mark class="rp-find-mark">fox</mark>_again&quot;</span>')
+    expect(html).toContain('<span class="hl-k">&quot;<mark class="rp-find-mark">miyo</mark>_key&quot;:</span>')
+    expect(html).toContain('<span class="hl-s">&quot;<mark class="rp-find-mark active">miyo</mark>_val&quot;</span>')
+    expect(html).toContain('<span class="hl-s">&quot;<mark class="rp-find-mark">miyo</mark>_again&quot;</span>')
   })
 })
 

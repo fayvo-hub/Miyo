@@ -54,7 +54,7 @@ registry = "sparse+https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
 
 ```bash
 cargo build --release          # 本项目首次全量构建约数分钟
-cargo test -p fox-secret       # 小范围快速验证
+cargo test -p miyo-secret       # 小范围快速验证
 ```
 
 ## 4. 离线环境（完全无外网）

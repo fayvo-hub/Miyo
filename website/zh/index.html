@@ -5,32 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miyo — 轻量跨平台 API 调试工具</title>
 <meta name="description" content="约 10 MB 的轻量跨平台 API 调试工具。请求、Mock、自动化测试、压测，一个安装包开箱即用。本地优先，数据自己掌握。">
-<link rel="canonical" href="https://weihubeats.github.io/RustFox/zh/">
-<link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/">
-<link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/">
-<link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/">
+<link rel="canonical" href="https://weihubeats.github.io/Miyo/zh/">
+<link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/">
+<link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/zh/">
+<link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/">
 <meta name="theme-color" content="#0d1117">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Miyo">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:url" content="https://weihubeats.github.io/RustFox/zh/">
+<meta property="og:url" content="https://weihubeats.github.io/Miyo/zh/">
 <meta property="og:title" content="Miyo — 轻量跨平台 API 调试工具">
 <meta property="og:description" content="约 10 MB 的轻量跨平台 API 调试工具。请求、Mock、自动化测试、压测，一个安装包开箱即用。">
-<meta property="og:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
+<meta property="og:image" content="https://weihubeats.github.io/Miyo/assets/home.png">
 <meta property="og:image:width" content="2880">
 <meta property="og:image:height" content="1600">
 <meta property="og:image:alt" content="Miyo — 轻量跨平台 API 调试工具">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Miyo — 轻量跨平台 API 调试工具">
 <meta name="twitter:description" content="约 10 MB 的轻量跨平台 API 调试工具，一个安装包开箱即用。">
-<meta name="twitter:image" content="https://weihubeats.github.io/RustFox/assets/home.png">
+<meta name="twitter:image" content="https://weihubeats.github.io/Miyo/assets/home.png">
 <link rel="icon" type="image/png" href="../assets/favicon.png">
 <link rel="manifest" href="../manifest.json">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Miyo","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"zh-CN","url":"https://weihubeats.github.io/RustFox/zh/","screenshot":"https://weihubeats.github.io/RustFox/assets/home.png","featureList":["约 10 MB 安装包","请求与 Mock Server","自动化测试与压测","实时调试（WebSocket / SSE）","Cookie 管理、删除撤销与快捷键","本地优先 AES-256-GCM 加密存储","AI Agent / MCP 集成"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/RustFox/blob/main/LICENSE"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Miyo","softwareVersion":"0.0.26","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","inLanguage":"zh-CN","url":"https://weihubeats.github.io/Miyo/zh/","screenshot":"https://weihubeats.github.io/Miyo/assets/home.png","featureList":["约 10 MB 安装包","请求与 Mock Server","自动化测试与压测","实时调试（WebSocket / SSE）","Cookie 管理、删除撤销与快捷键","本地优先 AES-256-GCM 加密存储","AI Agent / MCP 集成"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/weihubeats/Miyo/blob/main/LICENSE"}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS 提示「已损坏，无法打开」？","acceptedAnswer":{"@type":"Answer","text":"应用本身没有损坏，这是 Gatekeeper 对未公证应用的拦截。拖入「应用程序」后执行 xattr -cr /Applications/Miyo.app，再右键 → 打开。"}},{"@type":"Question","name":"Windows SmartScreen 警告？","acceptedAnswer":{"@type":"Answer","text":"点击「更多信息 → 仍要运行」。安装包暂无代码签名证书，开源项目正常现象。"}},{"@type":"Question","name":"环境变量显示乱码？","acceptedAnswer":{"@type":"Answer","text":"数据目录的 master.key 丢失导致无法解密。用备份 JSON 恢复（设置页 → 恢复）。"}},{"@type":"Question","name":"MCP 报 spawn ENOENT？","acceptedAnswer":{"@type":"Answer","text":"二进制不在 PATH。v0.0.10+ 安装包填写包内绝对路径（macOS 如上 agent 章节），不要写裸 rustfox-mcp。"}},{"@type":"Question","name":"dev 构建看不到正式版数据？","acceptedAnswer":{"@type":"Answer","text":"符合预期：dev 使用 Miyo-dev 目录隔离。用备份 JSON 在两侧互导。"}},{"@type":"Question","name":"如何反馈问题？","acceptedAnswer":{"@type":"Answer","text":"顶栏「反馈」按钮生成本机诊断报告，附到 GitHub Issues 即可。"}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"macOS 提示「已损坏，无法打开」？","acceptedAnswer":{"@type":"Answer","text":"应用本身没有损坏，这是 Gatekeeper 对未公证应用的拦截。拖入「应用程序」后执行 xattr -cr /Applications/Miyo.app，再右键 → 打开。"}},{"@type":"Question","name":"Windows SmartScreen 警告？","acceptedAnswer":{"@type":"Answer","text":"点击「更多信息 → 仍要运行」。安装包暂无代码签名证书，开源项目正常现象。"}},{"@type":"Question","name":"环境变量显示乱码？","acceptedAnswer":{"@type":"Answer","text":"数据目录的 master.key 丢失导致无法解密。用备份 JSON 恢复（设置页 → 恢复）。"}},{"@type":"Question","name":"MCP 报 spawn ENOENT？","acceptedAnswer":{"@type":"Answer","text":"二进制不在 PATH。v0.0.10+ 安装包填写包内绝对路径（macOS 如上 agent 章节），不要写裸 miyo-mcp。"}},{"@type":"Question","name":"dev 构建看不到正式版数据？","acceptedAnswer":{"@type":"Answer","text":"符合预期：dev 使用 Miyo-dev 目录隔离。用备份 JSON 在两侧互导。"}},{"@type":"Question","name":"如何反馈问题？","acceptedAnswer":{"@type":"Answer","text":"顶栏「反馈」按钮生成本机诊断报告，附到 GitHub Issues 即可。"}}]}
 </script>
 <style>
 :root {
@@ -195,7 +195,7 @@ footer a:hover { color: var(--text); }
         <a href="#faq">FAQ</a>
         <a href="#docs">文档</a>
         <a href="../index.html">English</a>
-        <a href="https://github.com/weihubeats/RustFox">GitHub</a>
+        <a href="https://github.com/weihubeats/Miyo">GitHub</a>
       </div>
       <a class="btn-nav" href="#download">下载</a>
       <details class="mobile-menu">
@@ -209,7 +209,7 @@ footer a:hover { color: var(--text); }
           <a href="#download">下载</a>
           <a href="#docs">文档</a>
           <a href="../index.html">English</a>
-          <a href="https://github.com/weihubeats/RustFox">GitHub</a>
+          <a href="https://github.com/weihubeats/Miyo">GitHub</a>
         </div>
       </details>
     </div>
@@ -220,13 +220,13 @@ footer a:hover { color: var(--text); }
   <h1>跨平台 API 调试工具<br><span class="accent">只有约 10 MB</span></h1>
   <p class="sub">一个安装包，开箱即用。请求、Mock、自动化测试、压测全部内置——不内置浏览器内核，无 Node 沙箱，无 JRE。</p>
   <div class="badges">
-    <img src="https://github.com/weihubeats/RustFox/actions/workflows/ci.yml/badge.svg" alt="CI">
-    <img src="https://img.shields.io/github/v/release/weihubeats/RustFox" alt="Release">
-    <img src="https://img.shields.io/github/license/weihubeats/RustFox" alt="License">
+    <img src="https://github.com/weihubeats/Miyo/actions/workflows/ci.yml/badge.svg" alt="CI">
+    <img src="https://img.shields.io/github/v/release/weihubeats/Miyo" alt="Release">
+    <img src="https://img.shields.io/github/license/weihubeats/Miyo" alt="License">
   </div>
   <div class="cta">
     <a class="btn btn-primary" href="#download">免费下载</a>
-    <a class="btn btn-ghost" href="https://github.com/weihubeats/RustFox">查看源码</a>
+    <a class="btn btn-ghost" href="https://github.com/weihubeats/Miyo">查看源码</a>
   </div>
   <p class="meta">Rust + Tauri 2 + 系统 WebView · Windows / macOS / Linux · Apache-2.0</p>
   <figure class="hero-shot">
@@ -293,13 +293,13 @@ footer a:hover { color: var(--text); }
     <h2>AI Agent 集成</h2>
     <p class="section-sub">应用启动自动拉起本机控制面，一句话把 cURL 或后端代码存为接口。完整指南见 <a href="../docs/agent/">Agent 集成手册</a>。</p>
     <div class="features">
-      <div class="feature"><div class="icon">🤖</div><h3>MCP Server（推荐）</h3><p>Claude Code / Cursor 配一次安装包内 <code>rustfox-mcp</code> 绝对路径，即得 save_curl / list_projects / list_endpoints / agent_info 四个工具。</p></div>
+      <div class="feature"><div class="icon">🤖</div><h3>MCP Server（推荐）</h3><p>Claude Code / Cursor 配一次安装包内 <code>miyo-mcp</code> 绝对路径，即得 save_curl / list_projects / list_endpoints / agent_info 四个工具。</p></div>
       <div class="feature"><div class="icon">🔌</div><h3>直接 HTTP</h3><p>任意能发 HTTP 的工具调 <code>127.0.0.1:4110</code> 控制面：POST /agent/curl 导入，GET /agent/projects、/agent/endpoints、/agent/health 查询。</p></div>
       <div class="feature"><div class="icon">🔒</div><h3>本地安全</h3><p>只绑回环地址；随机 UUID 令牌（0600）；写操作仅限导入；不覆盖已有 base_url；不读加密变量明文。</p></div>
     </div>
     <div class="codeblock">{
   "mcpServers": {
-    "rustfox": { "command": "/Applications/Miyo.app/Contents/MacOS/rustfox-mcp" }
+    "miyo": { "command": "/Applications/Miyo.app/Contents/MacOS/miyo-mcp" }
   }
 }</div>
   </div>
@@ -350,7 +350,7 @@ footer a:hover { color: var(--text); }
       <details open><summary>macOS 提示「已损坏，无法打开」？</summary><p>应用本身没有损坏，这是 Gatekeeper 对未公证应用的拦截。拖入「应用程序」后执行 <code>xattr -cr /Applications/Miyo.app</code>，再右键 → 打开。</p></details>
       <details><summary>Windows SmartScreen 警告？</summary><p>点击「更多信息 → 仍要运行」。安装包暂无代码签名证书，开源项目正常现象。</p></details>
       <details><summary>环境变量显示乱码？</summary><p>数据目录的 <code>master.key</code> 丢失导致无法解密。用备份 JSON 恢复（设置页 → 恢复）。</p></details>
-      <details><summary>MCP 报 spawn ENOENT？</summary><p>二进制不在 PATH。v0.0.10+ 安装包填写包内绝对路径（macOS 如上 agent 章节），不要写裸 <code>rustfox-mcp</code>。</p></details>
+      <details><summary>MCP 报 spawn ENOENT？</summary><p>二进制不在 PATH。v0.0.10+ 安装包填写包内绝对路径（macOS 如上 agent 章节），不要写裸 <code>miyo-mcp</code>。</p></details>
       <details><summary>dev 构建看不到正式版数据？</summary><p>符合预期：dev 使用 <code>Miyo-dev</code> 目录隔离。用备份 JSON 在两侧互导。</p></details>
       <details><summary>如何反馈问题？</summary><p>顶栏「反馈」按钮生成本机诊断报告，附到 GitHub Issues 即可。</p></details>
     </div>
@@ -362,13 +362,13 @@ footer a:hover { color: var(--text); }
     <h2>下载与安装</h2>
     <p class="section-sub">从 GitHub Releases 获取最新版本，应用内支持检查更新。</p>
     <div class="download-cards">
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🪟</div><h3>Windows</h3><p>x64-setup.exe（NSIS）</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🍎</div><h3>macOS</h3><p>aarch64 / x64 dmg</p>
       </a>
-      <a class="dl-card" href="https://github.com/weihubeats/RustFox/releases/latest">
+      <a class="dl-card" href="https://github.com/weihubeats/Miyo/releases/latest">
         <div class="os">🐧</div><h3>Linux</h3><p>.deb / .rpm / .AppImage</p>
       </a>
     </div>
@@ -402,7 +402,7 @@ footer a:hover { color: var(--text); }
 
 <footer>
   <div class="container">
-    <p><a href="https://github.com/weihubeats/RustFox">GitHub</a> · <a href="https://github.com/weihubeats/RustFox/releases">Releases</a> · <a href="../docs/user-guide/">用户手册</a> · <a href="../docs/migration/">迁移手册</a> · <a href="../docs/agent/">Agent 集成</a> · <a href="../docs/changelog/">更新日志</a> · <a href="https://github.com/weihubeats/RustFox/blob/main/LICENSE">Apache-2.0 License</a></p>
+    <p><a href="https://github.com/weihubeats/Miyo">GitHub</a> · <a href="https://github.com/weihubeats/Miyo/releases">Releases</a> · <a href="../docs/user-guide/">用户手册</a> · <a href="../docs/migration/">迁移手册</a> · <a href="../docs/agent/">Agent 集成</a> · <a href="../docs/changelog/">更新日志</a> · <a href="https://github.com/weihubeats/Miyo/blob/main/LICENSE">Apache-2.0 License</a></p>
     <p>用 🦊 与 Rust 打造</p>
   </div>
 </footer>

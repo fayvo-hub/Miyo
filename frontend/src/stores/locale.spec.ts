@@ -27,7 +27,7 @@ describe('locale store', () => {
     store.setMode('zh')
     expect(store.resolved).toBe('zh')
     expect(store.t('common.save')).toBe('保存')
-    expect(localStorage.getItem('rustfox.locale.mode')).toBe('zh')
+    expect(localStorage.getItem('miyo.locale.mode')).toBe('zh')
     expect(document.documentElement.getAttribute('lang')).toBe('zh-CN')
   })
 

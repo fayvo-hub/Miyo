@@ -2,7 +2,7 @@
 .DS_Store
 *.db
 /dist
-/assets/icons/rustfox.iconset
+/assets/icons/miyo.iconset
 
 __pycache__/
 *.pyc

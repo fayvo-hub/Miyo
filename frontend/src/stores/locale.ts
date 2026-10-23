@@ -49,7 +49,7 @@ export function loadLocale(locale: ResolvedLocale): Promise<void> {
   return enLoading
 }
 
-const STORAGE_KEY = 'rustfox.locale.mode'
+const STORAGE_KEY = 'miyo.locale.mode'
 const DEFAULT_MODE: LocaleMode = 'system'
 
 function isMode(v: string | null): v is LocaleMode {

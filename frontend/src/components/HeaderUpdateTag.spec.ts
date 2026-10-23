@@ -37,13 +37,13 @@ function fakeUpdate(): Update {
 }
 
 function card(): HTMLElement | null {
-  return document.body.querySelector('.rf-update-card')
+  return document.body.querySelector('.miyo-update-card')
 }
 
 /** 挂载并悬停触发区，推进到卡片出齐。 */
 async function hoverOpen(): Promise<ReturnType<typeof mount>> {
   const wrapper = mount(HeaderUpdateTag, { attachTo: document.body })
-  await wrapper.find('.rf-update-tag').trigger('mouseenter')
+  await wrapper.find('.miyo-update-tag').trigger('mouseenter')
   vi.advanceTimersByTime(SHOW_MS)
   await nextTick()
   return wrapper
@@ -67,7 +67,7 @@ describe('HeaderUpdateTag：悬停展示本版更新内容', () => {
   it('无待装更新时不渲染触发区与卡片', () => {
     const wrapper = mount(HeaderUpdateTag, { attachTo: document.body })
 
-    expect(wrapper.find('.rf-update-tag').exists()).toBe(false)
+    expect(wrapper.find('.miyo-update-tag').exists()).toBe(false)
     expect(card()).toBeNull()
 
     wrapper.unmount()
@@ -77,8 +77,8 @@ describe('HeaderUpdateTag：悬停展示本版更新内容', () => {
     restorePendingUpdate(fakeUpdate())
     const wrapper = mount(HeaderUpdateTag, { attachTo: document.body })
 
-    expect(wrapper.find('.rf-update-tag').text()).toContain('更新 v1.2.3')
-    await wrapper.find('.rf-update-tag').trigger('mouseenter')
+    expect(wrapper.find('.miyo-update-tag').text()).toContain('更新 v1.2.3')
+    await wrapper.find('.miyo-update-tag').trigger('mouseenter')
     // 延迟未到不出现（划过不误触）
     expect(card()).toBeNull()
     vi.advanceTimersByTime(SHOW_MS)
@@ -99,7 +99,7 @@ describe('HeaderUpdateTag：悬停展示本版更新内容', () => {
     restorePendingUpdate(fakeUpdate())
     const wrapper = await hoverOpen()
 
-    await wrapper.find('.rf-update-tag').trigger('mouseleave')
+    await wrapper.find('.miyo-update-tag').trigger('mouseleave')
     expect(card()).toBeTruthy()
     vi.advanceTimersByTime(HIDE_MS)
     await nextTick()
@@ -107,10 +107,10 @@ describe('HeaderUpdateTag：悬停展示本版更新内容', () => {
 
     // 再次悬停 → 移入卡片：收起被撤销，日志可继续阅读
     // （真实事件序：按钮先 mouseleave 排队收起，卡片 mouseenter 随后撤销）
-    await wrapper.find('.rf-update-tag').trigger('mouseenter')
+    await wrapper.find('.miyo-update-tag').trigger('mouseenter')
     vi.advanceTimersByTime(SHOW_MS)
     await nextTick()
-    await wrapper.find('.rf-update-tag').trigger('mouseleave')
+    await wrapper.find('.miyo-update-tag').trigger('mouseleave')
     card()!.dispatchEvent(new MouseEvent('mouseenter'))
     vi.advanceTimersByTime(HIDE_MS)
     await nextTick()
@@ -130,7 +130,7 @@ describe('HeaderUpdateTag：悬停展示本版更新内容', () => {
     const wrapper = await hoverOpen()
 
     const before = openReleaseSignal.value
-    await wrapper.find('.rf-update-tag').trigger('click')
+    await wrapper.find('.miyo-update-tag').trigger('click')
 
     expect(openReleaseSignal.value).toBe(before + 1)
     expect(card()).toBeNull()

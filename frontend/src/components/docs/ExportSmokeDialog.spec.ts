@@ -1,7 +1,7 @@
 /**
  * ExportSmokeDialog 单测：范围选择与冒烟文档导出流程编排。
  * Modal Teleport 到 body，DOM 断言/点击走 document 层面；
- * Tauri dialog / opener 插件与 foxApi、store 均以模块级 mock 替换。
+ * Tauri dialog / opener 插件与 miyoApi、store 均以模块级 mock 替换。
  */
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ExportSmokeDialog from './ExportSmokeDialog.vue'
 import { useLocaleStore } from '../../stores/locale'
 import { makeDraft } from '../../testUtils/draftFixture'
-import type { Endpoint } from '../../types/foxApi'
+import type { Endpoint } from '../../types/miyoApi'
 
 const storeMock = vi.hoisted(() => ({
   project: { id: 'pj-1', name: '演示项目' },
@@ -30,7 +30,7 @@ const pathMock = vi.hoisted(() => ({
 }))
 
 vi.mock('../../stores/workspace', () => ({ useWorkspaceStore: () => storeMock }))
-vi.mock('../../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 vi.mock('@tauri-apps/plugin-dialog', () => dialogMock)
 vi.mock('@tauri-apps/plugin-opener', () => openerMock)
 vi.mock('@tauri-apps/api/path', () => pathMock)
@@ -92,7 +92,7 @@ describe('ExportSmokeDialog：导出流程', () => {
     const wrapper = mountDialog(d)
     await flushPromises()
 
-    await click('.m-foot .rf-btn-primary')
+    await click('.m-foot .miyo-btn-primary')
 
     expect(apiMock.exportSmokeDocs).toHaveBeenCalledWith({
       projectId: 'pj-1',
@@ -115,7 +115,7 @@ describe('ExportSmokeDialog：导出流程', () => {
     await flushPromises()
 
     await click('.scope-grid .scope-card:last-child')
-    await click('.m-foot .rf-btn-primary')
+    await click('.m-foot .miyo-btn-primary')
 
     expect(apiMock.exportSmokeDocs).toHaveBeenCalledWith({
       projectId: 'pj-1',
@@ -135,7 +135,7 @@ describe('ExportSmokeDialog：导出流程', () => {
     check!.dispatchEvent(new Event('change'))
     await flushPromises()
 
-    await click('.m-foot .rf-btn-primary')
+    await click('.m-foot .miyo-btn-primary')
 
     expect(apiMock.exportSmokeDocs).toHaveBeenCalledWith({
       projectId: 'pj-1',
@@ -151,7 +151,7 @@ describe('ExportSmokeDialog：导出流程', () => {
     const wrapper = mountDialog()
     await flushPromises()
 
-    await click('.m-foot .rf-btn-primary')
+    await click('.m-foot .miyo-btn-primary')
 
     expect(apiMock.writeTextFile).not.toHaveBeenCalled()
     expect(wrapper.emitted('close')).toBeUndefined()
@@ -163,7 +163,7 @@ describe('ExportSmokeDialog：导出流程', () => {
     const wrapper = mountDialog()
     await flushPromises()
 
-    await click('.m-foot .rf-btn-primary')
+    await click('.m-foot .miyo-btn-primary')
 
     expect(apiMock.writeTextFile).not.toHaveBeenCalled()
     expect(wrapper.emitted('close')).toBeUndefined()

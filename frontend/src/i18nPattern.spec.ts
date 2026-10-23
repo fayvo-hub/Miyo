@@ -141,7 +141,7 @@ function visibleEnLines(text: string, allow: RegExp[]): string[] {
     if (EN_TERM_ALLOW.test(value)) continue
     if (TEXT_EXAMPLE.test(value)) continue // 路径 / URL 示例
     if (value.includes('&#123;')) continue // 实体化的 {{变量}}
-    if (value.includes('::')) continue // Rust 模块路径（如 fox-core::curl_parser）
+    if (value.includes('::')) continue // Rust 模块路径（如 miyo-core::curl_parser）
     offenders.push(`text=${JSON.stringify(value)}`)
   }
   return offenders

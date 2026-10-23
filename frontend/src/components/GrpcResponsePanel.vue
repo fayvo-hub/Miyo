@@ -10,12 +10,12 @@
 import { computed, ref, watch } from 'vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { methodTextTone } from '../utils/methodTone'
 import JsonTree from './JsonTree.vue'
 import Icon from './ui/Icon.vue'
 import Tooltip from './ui/Tooltip.vue'
-import type { GrpcResponse } from '../types/foxApi'
+import type { GrpcResponse } from '../types/miyoApi'
 import type { GrpcStreamState } from '../stores/workspace'
 
 const props = defineProps<{
@@ -29,7 +29,7 @@ const props = defineProps<{
 const locale = useLocaleStore()
 const t = locale.t
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 
 /** grpc-status → 展示文案（gRPC 标准状态码；0=OK 绿，非零红）。 */
 const STATUS_LABELS: Record<number, string> = {
@@ -171,7 +171,7 @@ function metaRows(metadata: [string, string][]): Array<{ key: string; value: str
         <span v-if="stream.status === 'running'" class="stream-dot" aria-hidden="true"></span>
         <span class="grpc-head-spacer"></span>
         <Tooltip v-if="stream.status === 'running'" :content="t('grpc.closeStream')" placement="top">
-          <button class="rf-btn rf-btn-sm rf-btn-danger" type="button" @click="void closeStream()">
+          <button class="miyo-btn miyo-btn-sm miyo-btn-danger" type="button" @click="void closeStream()">
             <Icon name="stop" :size="12" /> {{ t('grpc.stopStream') }}
           </button>
         </Tooltip>

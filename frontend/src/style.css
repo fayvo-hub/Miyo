@@ -3,11 +3,11 @@
  *
  * - 深色为默认主题；浅色通过根元素 [data-theme="light"] 覆盖；
  * - 所有组件只引用 var(--bg-* / --text-* / --accent 等)，禁止写死色值；
- * - 旧 rf-* 变量保留为别名（var(--rf-xxx): var(--新令牌)），旧组件自动跟随；
+ * - 旧 miyo-* 变量保留为别名（var(--miyo-xxx): var(--新令牌)），旧组件自动跟随；
  * - 全局 :where(:focus-visible) 零特异性光环，组件自有 focus 样式优先级更高。
  */
 
-/* Tailwind v4：仅 theme + utilities（跳过 preflight，避免重置破坏现有 rf-* 组件）。
+/* Tailwind v4：仅 theme + utilities（跳过 preflight，避免重置破坏现有 miyo-* 组件）。
    @theme 把设计令牌映射为语义 Tailwind 色板（bg-panel / text-ink1 / border-line ...）。 */
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
@@ -228,30 +228,30 @@
   --overflow-tip-border: rgba(74, 78, 90, 0.5);
   --overflow-tip-text: #e9eaee;
 
-  /* ---- rf-* 兼容别名（指向新令牌，旧组件自动跟随） ---- */
-  --rf-bg: var(--bg-panel); /* 主工作区全局背景 */
-  --rf-bg-panel: var(--bg-panel);
-  --rf-bg-panel-2: var(--bg-card);
-  --rf-input-bg: var(--bg-code);
-  --rf-border: var(--border);
-  --rf-text: var(--text-1);
-  --rf-text-secondary: var(--text-2);
-  --rf-text-muted: var(--text-3);
-  --rf-accent: var(--accent);
-  --rf-accent-weak: var(--accent-hover);
-  --rf-danger: var(--danger);
-  --rf-warning: var(--warning);
-  --rf-success: var(--success);
-  --rf-info: var(--info);
-  --rf-danger-tint: var(--danger-tint);
-  --rf-warning-tint: var(--warning-tint);
-  --rf-success-tint: var(--success-tint);
-  --rf-info-tint: var(--info-tint);
-  --rf-hover: var(--bg-hover);
-  --rf-active: var(--bg-active);
-  --rf-shadow: var(--shadow);
-  --rf-radius: var(--radius);
-  --rf-radius-sm: var(--radius-sm);
+  /* ---- miyo-* 兼容别名（指向新令牌，旧组件自动跟随） ---- */
+  --miyo-bg: var(--bg-panel); /* 主工作区全局背景 */
+  --miyo-bg-panel: var(--bg-panel);
+  --miyo-bg-panel-2: var(--bg-card);
+  --miyo-input-bg: var(--bg-code);
+  --miyo-border: var(--border);
+  --miyo-text: var(--text-1);
+  --miyo-text-secondary: var(--text-2);
+  --miyo-text-muted: var(--text-3);
+  --miyo-accent: var(--accent);
+  --miyo-accent-weak: var(--accent-hover);
+  --miyo-danger: var(--danger);
+  --miyo-warning: var(--warning);
+  --miyo-success: var(--success);
+  --miyo-info: var(--info);
+  --miyo-danger-tint: var(--danger-tint);
+  --miyo-warning-tint: var(--warning-tint);
+  --miyo-success-tint: var(--success-tint);
+  --miyo-info-tint: var(--info-tint);
+  --miyo-hover: var(--bg-hover);
+  --miyo-active: var(--bg-active);
+  --miyo-shadow: var(--shadow);
+  --miyo-radius: var(--radius);
+  --miyo-radius-sm: var(--radius-sm);
 }
 
 [data-theme='light'] {
@@ -378,7 +378,7 @@ body {
 }
 
 #app,
-.rf-app {
+.miyo-app {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -419,7 +419,7 @@ select {
 pre,
 code,
 kbd,
-.rf-mono {
+.miyo-mono {
   font-family: var(--font-mono);
 }
 
@@ -447,7 +447,7 @@ kbd,
 
 /* ---- 通用工具类 ---- */
 
-.rf-mono {
+.miyo-mono {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
@@ -456,9 +456,9 @@ kbd,
   font-variant-numeric: tabular-nums;
 }
 
-/* ---- 按钮（rf- 兼容类） ---- */
+/* ---- 按钮（miyo- 兼容类） ---- */
 
-.rf-btn {
+.miyo-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -480,21 +480,21 @@ kbd,
     color var(--dur) var(--ease),
     opacity var(--dur) var(--ease);
 }
-.rf-btn:hover:not(:disabled) {
+.miyo-btn:hover:not(:disabled) {
   background: var(--bg-elevated);
   border-color: var(--border-strong);
 }
-.rf-btn:active:not(:disabled) {
+.miyo-btn:active:not(:disabled) {
   background: var(--bg-active);
   transform: translateY(1px);
 }
-.rf-btn:disabled {
+.miyo-btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
 
 /* Obsidian 主按钮：紫渐变 + 光晕（对标参考图的 Create 按钮），配色走 --grad-primary 系令牌 */
-.rf-btn-primary {
+.miyo-btn-primary {
   background: var(--grad-primary);
   border-color: transparent;
   color: #fff;
@@ -502,19 +502,19 @@ kbd,
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 4px 16px var(--primary-glow);
 }
-.rf-btn-primary:hover:not(:disabled) {
+.miyo-btn-primary:hover:not(:disabled) {
   background: var(--grad-primary-hover);
   border-color: transparent;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 6px 20px var(--primary-glow-hover);
 }
-.rf-btn-primary:active:not(:disabled) {
+.miyo-btn-primary:active:not(:disabled) {
   background: var(--grad-primary);
   box-shadow: 0 2px 8px var(--primary-glow);
 }
 
-.rf-btn-send {
+.miyo-btn-send {
   background: var(--grad-primary);
   border-color: transparent;
   color: #fff;
@@ -522,7 +522,7 @@ kbd,
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 3px 12px var(--primary-glow);
 }
-.rf-btn-send:hover:not(:disabled) {
+.miyo-btn-send:hover:not(:disabled) {
   background: var(--grad-primary-hover);
   border-color: transparent;
   transform: translateY(-1px);
@@ -530,51 +530,51 @@ kbd,
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     0 6px 18px var(--primary-glow-hover);
 }
-.rf-btn-send:active:not(:disabled) {
+.miyo-btn-send:active:not(:disabled) {
   background: var(--grad-primary);
   transform: translateY(0);
   box-shadow: 0 2px 8px var(--primary-glow);
 }
 
-.rf-btn-danger {
+.miyo-btn-danger {
   background: transparent;
   border-color: transparent;
   color: var(--danger);
 }
-.rf-btn-danger:hover:not(:disabled) {
+.miyo-btn-danger:hover:not(:disabled) {
   background: var(--danger-tint);
   border-color: transparent;
 }
 
-.rf-btn-danger-solid {
+.miyo-btn-danger-solid {
   background: var(--danger);
   border-color: transparent;
   color: #fff;
 }
-.rf-btn-danger-solid:hover:not(:disabled) {
+.miyo-btn-danger-solid:hover:not(:disabled) {
   background: var(--danger);
   filter: brightness(1.1);
   border-color: transparent;
 }
-.rf-btn-danger-solid:active:not(:disabled) {
+.miyo-btn-danger-solid:active:not(:disabled) {
   filter: brightness(0.95);
 }
 
-.rf-btn-sm {
+.miyo-btn-sm {
   height: var(--h-sm);
   padding: 0 10px;
   font-size: var(--fs-xs);
   border-radius: var(--radius);
 }
 
-.rf-btn-ghost {
+.miyo-btn-ghost {
   background: transparent;
 }
 
-/* ---- 输入框（rf- 兼容类） ---- */
+/* ---- 输入框（miyo- 兼容类） ---- */
 
-.rf-input,
-.rf-textarea {
+.miyo-input,
+.miyo-textarea {
   /* 浅色下 --border-strong = slate-300，与纯白输入底形成清晰边界；
      深色下 = #3a3a42（原 --border 几乎不可见，一并提亮） */
   border: 1px solid var(--border-strong);
@@ -589,36 +589,36 @@ kbd,
     border-color var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
 }
-.rf-input::placeholder,
-.rf-textarea::placeholder {
+.miyo-input::placeholder,
+.miyo-textarea::placeholder {
   color: var(--text-3);
 }
-.rf-input:focus,
-.rf-textarea:focus {
+.miyo-input:focus,
+.miyo-textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-tint);
 }
-.rf-input:disabled,
-.rf-textarea:disabled {
+.miyo-input:disabled,
+.miyo-textarea:disabled {
   opacity: 0.5;
 }
-.rf-input-sm {
+.miyo-input-sm {
   height: var(--h-sm);
   padding: 2px 8px;
   font-size: var(--fs-xs);
 }
-.rf-input[type='number'] {
+.miyo-input[type='number'] {
   font-variant-numeric: tabular-nums;
 }
 
-.rf-textarea {
+.miyo-textarea {
   min-height: 72px;
   resize: vertical;
   line-height: 1.5;
 }
 
 /* 原生 select 兜底样式（逐步被 CustomSelect 替换，保留以兼容） */
-.rf-select {
+.miyo-select {
   appearance: none;
   -webkit-appearance: none;
   height: var(--h-md);
@@ -638,49 +638,49 @@ kbd,
     border-color var(--dur) var(--ease),
     box-shadow var(--dur) var(--ease);
 }
-.rf-select:focus {
+.miyo-select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-tint);
 }
-.rf-select:disabled {
+.miyo-select:disabled {
   opacity: 0.5;
 }
 
 /* ---- 语义色文本 / 柔底 ---- */
 
-.rf-text-success {
+.miyo-text-success {
   color: var(--success);
 }
-.rf-text-danger {
+.miyo-text-danger {
   color: var(--danger);
 }
-.rf-text-warning {
+.miyo-text-warning {
   color: var(--warning);
 }
-.rf-text-info {
+.miyo-text-info {
   color: var(--info);
 }
 
-.rf-tint-danger {
+.miyo-tint-danger {
   background: var(--danger-tint);
   color: var(--danger);
 }
-.rf-tint-success {
+.miyo-tint-success {
   background: var(--success-tint);
   color: var(--success);
 }
-.rf-tint-warning {
+.miyo-tint-warning {
   background: var(--warning-tint);
   color: var(--warning);
 }
-.rf-tint-info {
+.miyo-tint-info {
   background: var(--info-tint);
   color: var(--info);
 }
 
 /* ---- HTTP 方法标识：彩色文本（不用色块） ---- */
 
-.rf-method {
+.miyo-method {
   font-family: var(--font-mono);
   font-size: var(--fs-xxs);
   font-weight: 700;
@@ -688,31 +688,31 @@ kbd,
   line-height: 1.5;
   white-space: nowrap;
 }
-.rf-method-get {
+.miyo-method-get {
   color: var(--get);
 }
-.rf-method-post {
+.miyo-method-post {
   color: var(--post);
 }
-.rf-method-put {
+.miyo-method-put {
   color: var(--put);
 }
-.rf-method-delete {
+.miyo-method-delete {
   color: var(--delete);
 }
-.rf-method-patch {
+.miyo-method-patch {
   color: var(--patch);
 }
-.rf-method-options {
+.miyo-method-options {
   color: var(--text-3);
 }
-.rf-method-head {
+.miyo-method-head {
   color: var(--get);
 }
-.rf-method-graphql {
+.miyo-method-graphql {
   color: var(--patch);
 }
-.rf-method-grpc {
+.miyo-method-grpc {
   color: var(--grpc);
 }
 
@@ -731,24 +731,24 @@ kbd,
 
 /* ---- 表单 / 列表 / 面板 ---- */
 
-.rf-form {
+.miyo-form {
   display: flex;
   gap: var(--sp-2);
   align-items: flex-start;
 }
 
-.rf-field {
+.miyo-field {
   flex: 1;
   min-width: 0;
 }
 
-.rf-field-error {
+.miyo-field-error {
   margin: 5px 0 0;
   font-size: var(--fs-xs);
   color: var(--danger);
 }
 
-.rf-inline-error {
+.miyo-inline-error {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -759,13 +759,13 @@ kbd,
   border: 1px solid var(--danger-border);
 }
 
-.rf-inline-error-text {
+.miyo-inline-error-text {
   font-size: var(--fs-sm);
   color: var(--danger);
   word-break: break-all;
 }
 
-.rf-list {
+.miyo-list {
   list-style: none;
   margin: var(--sp-4) 0 0;
   padding: 0;
@@ -774,7 +774,7 @@ kbd,
   gap: 6px;
 }
 
-.rf-list-item {
+.miyo-list-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -785,16 +785,16 @@ kbd,
   transition: background var(--dur) var(--ease);
 }
 
-.rf-list-item:hover {
+.miyo-list-item:hover {
   background: var(--bg-hover);
 }
 
-.rf-list-meta {
+.miyo-list-meta {
   font-size: var(--fs-xs);
   color: var(--text-3);
 }
 
-.rf-tag {
+.miyo-tag {
   display: inline-flex;
   align-items: center;
   padding: 1px 8px;
@@ -806,20 +806,20 @@ kbd,
   border: 1px solid var(--info-border);
 }
 
-.rf-panel {
+.miyo-panel {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-panel);
   padding: var(--sp-4);
 }
 
-.rf-heading {
+.miyo-heading {
   margin: 0;
   font-size: var(--fs-lg);
   font-weight: 600;
 }
 
-.rf-hint {
+.miyo-hint {
   margin: 0;
   font-size: 12.5px;
   color: var(--text-2);
@@ -827,14 +827,14 @@ kbd,
 
 /* ---- 按需加载面板的 loading / error 占位（composables/lazyComponent.ts） ---- */
 
-.rf-lazy-loading {
+.miyo-lazy-loading {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-3);
 }
 
-.rf-lazy-error {
+.miyo-lazy-error {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -844,7 +844,7 @@ kbd,
   border: 1px solid var(--danger-border);
 }
 
-.rf-lazy-error-text {
+.miyo-lazy-error-text {
   flex: 1;
   min-width: 0;
   font-size: var(--fs-sm);
@@ -889,7 +889,7 @@ body.dragging-dnd {
   user-select: none;
 }
 /* ---- 溢出 Tooltip 气泡（指令动态注入 body，需全局定义） ---- */
-.rf-overflow-tip {
+.miyo-overflow-tip {
   position: fixed;
   z-index: 400;
   max-width: 320px;
@@ -910,12 +910,12 @@ body.dragging-dnd {
   opacity: 0;
   transition: opacity 140ms ease;
 }
-.rf-overflow-tip.in {
+.miyo-overflow-tip.in {
   opacity: 1;
 }
 
 /* ---- 设置齿轮占位（小红点已由顶部更新 Tag 取代，保留 flex-shrink 防挤压） ---- */
-.rf-update-wrap {
+.miyo-update-wrap {
   position: relative;
   display: inline-flex;
   flex-shrink: 0;

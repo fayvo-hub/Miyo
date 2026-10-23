@@ -142,13 +142,13 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
       .querySelector<HTMLButtonElement>('.tab-more')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
-    return Array.from(document.querySelectorAll('.rf-menu-item')).map(
+    return Array.from(document.querySelectorAll('.miyo-menu-item')).map(
       (m) => m.textContent?.trim() ?? '',
     )
   }
 
   function clickMenuItem(label: string): void {
-    const item = Array.from(document.querySelectorAll<HTMLElement>('.rf-menu-item')).find(
+    const item = Array.from(document.querySelectorAll<HTMLElement>('.miyo-menu-item')).find(
       (m) => m.textContent?.trim() === label,
     )!
     item.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -164,10 +164,10 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     const wrapper = mountBar()
     await openMenuLabels()
     // 三行均无图标（标签不错位），关闭全部标红且组前分隔
-    expect(document.querySelectorAll('.rf-menu-item .rf-menu-icon')).toHaveLength(0)
-    const danger = document.querySelector('.rf-menu-item.danger')
+    expect(document.querySelectorAll('.miyo-menu-item .miyo-menu-icon')).toHaveLength(0)
+    const danger = document.querySelector('.miyo-menu-item.danger')
     expect(danger?.textContent?.trim()).toBe('关闭全部标签页')
-    expect(danger?.previousElementSibling?.classList.contains('rf-menu-divider')).toBe(true)
+    expect(danger?.previousElementSibling?.classList.contains('miyo-menu-divider')).toBe(true)
     wrapper.unmount()
   })
 
@@ -197,9 +197,9 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     clickMenuItem('关闭其他标签页')
     await nextTick()
     // 进入确认视图：展示未保存数，尚未执行
-    expect(document.querySelector('.rf-menu-confirm-title')?.textContent).toContain('7')
+    expect(document.querySelector('.miyo-menu-confirm-title')?.textContent).toContain('7')
     expect(mocked.closeOtherTabs).not.toHaveBeenCalled()
-    const ok = document.querySelector<HTMLButtonElement>('.rf-menu-confirm-actions .rf-btn-danger-solid')!
+    const ok = document.querySelector<HTMLButtonElement>('.miyo-menu-confirm-actions .miyo-btn-danger-solid')!
     ok.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
     expect(mocked.closeOtherTabs).toHaveBeenCalledWith('t8')
@@ -225,7 +225,7 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
       })
       arrow.dispatchEvent(new MouseEvent('click', { bubbles: true }))
       await nextTick()
-      const menu = document.querySelector('.rf-menu') as HTMLElement
+      const menu = document.querySelector('.miyo-menu') as HTMLElement
       expect(menu).toBeTruthy()
       // left 对齐：菜单左缘 == 触发器左缘（右对齐会是 1240-176=1064）
       expect(menu.style.left).toBe('1200px')
@@ -240,7 +240,7 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     const wrapper = mountBar()
     await openMenuLabels()
     const disabled = Array.from(
-      document.querySelectorAll<HTMLButtonElement>('.rf-menu-item[disabled]'),
+      document.querySelectorAll<HTMLButtonElement>('.miyo-menu-item[disabled]'),
     ).map((m) => m.textContent?.trim())
     expect(disabled).toEqual(['关闭其他标签页'])
     wrapper.unmount()

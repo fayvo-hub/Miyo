@@ -1,6 +1,6 @@
 # 构建产物统一落到仓库根 target/。
 #
-# 本仓库有三个独立 Cargo workspace（根 / crates/fox-tauri / frontend/src-tauri），
+# 本仓库有三个独立 Cargo workspace（根 / crates/miyo-tauri / frontend/src-tauri），
 # 依赖多为 path 互引的同源 crate；各自默认 target/ 会把 tokio/serde/tauri 等重依赖
 # 编译三份（曾实测 70G+）。共用一份后第三方依赖只编一次（各 workspace 的特性差异
 # 由 fingerprint 隔离，并行构建由 cargo 文件锁串行化）。

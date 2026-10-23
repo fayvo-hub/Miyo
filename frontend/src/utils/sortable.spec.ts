@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const { mount, SortableMock } = vi.hoisted(() => {
   const mount = vi.fn()
-  const obj = { mount } as { mount: typeof mount; __rustfox_swap_mounted?: boolean }
+  const obj = { mount } as { mount: typeof mount; __miyo_swap_mounted?: boolean }
   return { mount, SortableMock: obj }
 })
 vi.mock('sortablejs', () => ({
@@ -15,7 +15,7 @@ import { ensureSwapMounted } from './sortable'
 afterEach(() => {
   vi.clearAllMocks()
   vi.unstubAllGlobals()
-  delete SortableMock.__rustfox_swap_mounted
+  delete SortableMock.__miyo_swap_mounted
 })
 
 describe('ensureSwapMounted', () => {
@@ -23,19 +23,19 @@ describe('ensureSwapMounted', () => {
     ensureSwapMounted()
     ensureSwapMounted()
     expect(mount).toHaveBeenCalledTimes(1)
-    expect(SortableMock.__rustfox_swap_mounted).toBe(true)
+    expect(SortableMock.__miyo_swap_mounted).toBe(true)
   })
 
   it('清除标记后允许再次挂载（标记是"本周期内已挂载"，非永久锁定）', () => {
     ensureSwapMounted()
-    delete SortableMock.__rustfox_swap_mounted
+    delete SortableMock.__miyo_swap_mounted
     ensureSwapMounted()
     expect(mount).toHaveBeenCalledTimes(2)
   })
 
   it('标记键写在 Sortable 对象上，跨模块重灌仍稳定', () => {
     ensureSwapMounted()
-    expect('__rustfox_swap_mounted' in SortableMock).toBe(true)
+    expect('__miyo_swap_mounted' in SortableMock).toBe(true)
     expect(() => ensureSwapMounted()).not.toThrow()
     expect(mount).toHaveBeenCalledTimes(1)
   })

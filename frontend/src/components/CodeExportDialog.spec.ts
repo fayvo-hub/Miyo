@@ -8,8 +8,8 @@ import { makeCodegenInputs } from '../testUtils/draftFixture'
 
 const codegenRender = vi.fn()
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     pending: { value: false },
     codegenRender,
   }),
@@ -43,7 +43,7 @@ describe('CodeExportDialog：导出接口代码', () => {
     expect(dialogBody()?.querySelector('.cp-preview')?.textContent).toContain('curl')
 
     // Modal 通过 Teleport 渲染到 body，需从 document 层面点击关闭按钮。
-    const closeBtn = dialogBody()?.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')
+    const closeBtn = dialogBody()?.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')
     closeBtn?.click()
     await flushPromises()
     expect(wrapper.emitted('close')).toBeTruthy()

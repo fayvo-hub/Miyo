@@ -16,7 +16,7 @@ import {
 } from '../../scripts/release.mjs'
 
 function makeFixture(version = '0.0.8'): string {
-  const root = mkdtempSync(path.join(tmpdir(), 'rustfox-release-'))
+  const root = mkdtempSync(path.join(tmpdir(), 'miyo-release-'))
   const confDir = path.join(root, 'frontend/src-tauri')
   mkdirSync(confDir, { recursive: true })
   writeFileSync(
@@ -25,7 +25,7 @@ function makeFixture(version = '0.0.8'): string {
   )
   writeFileSync(
     path.join(root, 'frontend/package.json'),
-    JSON.stringify({ name: 'rustfox', version }, null, 2) + '\n',
+    JSON.stringify({ name: 'miyo', version }, null, 2) + '\n',
   )
   writeFileSync(
     path.join(confDir, 'Cargo.toml'),

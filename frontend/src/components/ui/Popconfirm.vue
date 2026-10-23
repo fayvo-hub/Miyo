@@ -130,10 +130,10 @@ onBeforeUnmount(() => {
         </div>
         <p v-if="description" class="pc-desc">{{ description }}</p>
         <div class="pc-actions">
-          <button class="rf-btn rf-btn-sm" type="button" @click="onCancel">{{ effectiveCancel }}</button>
+          <button class="miyo-btn miyo-btn-sm" type="button" @click="onCancel">{{ effectiveCancel }}</button>
           <button
-            class="rf-btn rf-btn-sm"
-            :class="danger ? 'rf-btn-danger-solid' : 'rf-btn-primary'"
+            class="miyo-btn miyo-btn-sm"
+            :class="danger ? 'miyo-btn-danger-solid' : 'miyo-btn-primary'"
             type="button"
             autofocus
             @click="onConfirm"

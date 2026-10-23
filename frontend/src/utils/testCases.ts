@@ -4,7 +4,7 @@
  * - 快照：从请求（RequestSpec + path）提取 URL 路径 / Query 参数 / 请求头 / Body 文本；
  * - 回填：把用例快照写回请求（params / headers / body 按 body_type 还原）。
  */
-import type { BodySpec, KeyValue, RequestSpec, TestCase, TestCaseCategory } from '../types/foxApi'
+import type { BodySpec, KeyValue, RequestSpec, TestCase, TestCaseCategory } from '../types/miyoApi'
 import { tFallback } from '../stores/locale'
 import { deepClone } from './clone'
 

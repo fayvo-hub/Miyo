@@ -39,8 +39,8 @@ Afterwards launch from Launchpad or Applications, or pin it to the Dock.
 
 ### 1.3 Linux
 
-1. Download `rustfox-<version>-amd64.deb` (Debian/Ubuntu) or run the `.AppImage` directly
-2. Debian-based install: `sudo apt install ./rustfox-<version>-amd64.deb`
+1. Download `miyo-<version>-amd64.deb` (Debian/Ubuntu) or run the `.AppImage` directly
+2. Debian-based install: `sudo apt install ./miyo-<version>-amd64.deb`
 
 > Linux relies on the system WebKit/GTK libraries (webkit2gtk-4.1, gtk-3). If startup complains about missing `libwebkit2gtk`, install the packages for your distribution.
 
@@ -170,7 +170,7 @@ Top bar → "GraphQL workbench" (route `/graphql`, independent of the folder tre
 - Enter the endpoint URL (`{{variables}}` supported), Query, Variables and OperationName, then send.
 - Responses distinguish `data` from `errors` per GraphQL semantics (`errors` present means business failure and renders first).
 - Save the request as a tree endpoint (body mode `graphql`), or generate cURL / JavaScript (fetch) code.
-- History lives in local browser storage (`rustfox_graphql_history`), separate from request history.
+- History lives in local browser storage (`miyo_graphql_history`), separate from request history.
 
 ### Realtime debugging (WebSocket / SSE)
 
@@ -248,7 +248,7 @@ Everything lives under the system data directory / Miyo:
 | macOS | `~/Library/Application Support/Miyo/` |
 | Windows | `%APPDATA%\Miyo\` |
 
-- `rustfox.db`: main database (projects/endpoints/environments/mock rules/history)
+- `miyo.db`: main database (projects/endpoints/environments/mock rules/history)
 - `master.key`: encryption key for environment variables (**do not delete**)
 - `backups/`, `exports/`: backup and export directories
 - `sync/`: local clone cache of team sync remotes; `sync/backups/` holds the auto-archives taken before a pull overwrite
@@ -268,7 +268,7 @@ Everything lives under the system data directory / Miyo:
 ## 10.2 AI Agent integration
 
 Save a cURL / backend controller snippet as an endpoint with one sentence — no manual paste: see [AGENT.md](AGENT.md).
-Configure `rustfox-mcp` once in MCP clients (bundled in installers since v0.0.10), or call the
+Configure `miyo-mcp` once in MCP clients (bundled in installers since v0.0.10), or call the
 `127.0.0.1:4110` control plane directly from any HTTP-capable tool (token in the data-dir `agent-token` file).
 
 ## 11. FAQ
@@ -281,7 +281,7 @@ Configure `rustfox-mcp` once in MCP clients (bundled in installers since v0.0.10
 | Environment variables look garbled/encrypted | `master.key` was lost; restore from a backup JSON (section 9) |
 | Mock port busy | The port auto-increments; or stop whatever occupies it |
 | OpenAPI import fails | OpenAPI 3.0 / 3.1 / Swagger 2.0 / Postman Collection v2.1 are supported (JSON or YAML); 3.1 is auto-normalized, `webhooks` are dropped |
-| Database corrupted? | Startup runs `integrity_check` and shows a recovery hint on failure; pre-migration snapshots are kept (5 copies in the data-dir `snapshots/`) — copy one back over `rustfox.db`, or rebuild from a `backups/` JSON |
+| Database corrupted? | Startup runs `integrity_check` and shows a recovery hint on failure; pre-migration snapshots are kept (5 copies in the data-dir `snapshots/`) — copy one back over `miyo.db`, or rebuild from a `backups/` JSON |
 | Editor unreadable in light theme | Switch back to "Dark" or "System" in Settings; if it persists, mention theme mode + OS version in feedback |
 | Requests always time out | Raise the request timeout in Settings; allow one more notch for load tests / large downloads |
 | Dev build can't see release data | Expected: dev uses the isolated `Miyo-dev` directory; move data between them via backup JSON |

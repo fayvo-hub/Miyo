@@ -9,9 +9,9 @@
  */
 import { ref, watch } from 'vue'
 import { useLocaleStore } from '../../stores/locale'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
-import type { RemoteProjectEntry } from '../../types/foxApi'
+import type { RemoteProjectEntry } from '../../types/miyoApi'
 import Icon from '../ui/Icon.vue'
 import Modal from '../ui/Modal.vue'
 
@@ -28,7 +28,7 @@ const emit = defineEmits<{
 }>()
 
 const t = useLocaleStore().t
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 
 const remotesOk = ref(false)

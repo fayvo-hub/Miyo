@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import ResponsePanel from './ResponsePanel.vue'
 import { useLocaleStore } from '../stores/locale'
-import type { ExecuteResponse } from '../types/foxApi'
+import type { ExecuteResponse } from '../types/miyoApi'
 import { collectErrors, stubScrollIntoView } from '../testUtils/componentTest'
 import { copyText } from '../utils/clipboard'
 

@@ -5,9 +5,9 @@
  * 与后端 BodySpec（none / multipart / urlencoded / json|text / binary / graphql）
  * 不一一对应：raw 是 json+text 的聚合视图，其子类型（JSON/Text/JS/HTML/XML）
  * 不新增存储字段，而是通过 Content-Type 请求头持久化——发送时用户显式头
- * 优先于模式默认 MIME（fox-http client.rs），因此只需同步头即可生效。
+ * 优先于模式默认 MIME（miyo-http client.rs），因此只需同步头即可生效。
  */
-import type { BodySpec, KeyValue, MultipartField, RequestSpec } from '../types/foxApi'
+import type { BodySpec, KeyValue, MultipartField, RequestSpec } from '../types/miyoApi'
 
 /** Body 面板顶层 Tab（Postman 风格）。 */
 export type BodyTab =

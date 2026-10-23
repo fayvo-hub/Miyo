@@ -11,7 +11,7 @@
 import { computed, ref, watch } from 'vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useToast } from '../composables/useToast'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useLocaleStore } from '../stores/locale'
 import Icon from './ui/Icon.vue'
 import IconButton from './ui/IconButton.vue'
@@ -19,13 +19,13 @@ import Popconfirm from './ui/Popconfirm.vue'
 import Tooltip from './ui/Tooltip.vue'
 import CustomSelect from './ui/CustomSelect.vue'
 import JsonEditor from './ui/JsonEditor.vue'
-import type { Endpoint, ProtoFile, ServiceCatalog } from '../types/foxApi'
+import type { Endpoint, ProtoFile, ServiceCatalog } from '../types/miyoApi'
 
 const props = defineProps<{ draft: Endpoint }>()
 
 const store = useWorkspaceStore()
 const toast = useToast()
-const api = useFoxApi()
+const api = useMiyoApi()
 const locale = useLocaleStore()
 const t = locale.t
 
@@ -199,7 +199,7 @@ const streamBadge = computed(() => {
         <label class="grpc-label">{{ t('grpc.service') }}</label>
         <div class="service-picker">
           <input
-            class="rf-input"
+            class="miyo-input"
             :value="spec.service"
             spellcheck="false"
             :placeholder="t('grpc.servicePh')"
@@ -223,7 +223,7 @@ const streamBadge = computed(() => {
         <label class="grpc-label">{{ t('grpc.method') }}</label>
         <div class="method-picker">
           <input
-            class="rf-input"
+            class="miyo-input"
             :value="spec.method"
             spellcheck="false"
             :placeholder="t('grpc.methodPh')"
@@ -257,7 +257,7 @@ const streamBadge = computed(() => {
     </div>
 
     <div class="grpc-catalog-row">
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="catalogLoading" @click="void loadCatalog()">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="catalogLoading" @click="void loadCatalog()">
         <Icon name="list" :size="13" />
         {{ catalog ? t('grpc.reloadCatalogShort') : t('grpc.loadCatalog') }}
       </button>
@@ -289,7 +289,7 @@ const streamBadge = computed(() => {
     <div class="grpc-proto">
       <div class="grpc-proto-head">
         <label class="grpc-label">{{ t('grpc.protoFiles') }}</label>
-        <button class="rf-btn rf-btn-sm" type="button" @click="pickProtoFiles">
+        <button class="miyo-btn miyo-btn-sm" type="button" @click="pickProtoFiles">
           <Icon name="upload" :size="13" /> {{ t('grpc.protoImport') }}
         </button>
         <input
@@ -359,8 +359,8 @@ const streamBadge = computed(() => {
   gap: 6px;
   align-items: center;
 }
-.service-picker .rf-input,
-.method-picker .rf-input {
+.service-picker .miyo-input,
+.method-picker .miyo-input {
   flex: 1;
   min-width: 0;
 }

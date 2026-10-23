@@ -4,7 +4,7 @@
  * 模块级单例：任何组件调用都是同一进度条。挂载 <ProgressBar /> 后，
  * `start()` 显示并递增到 ~90%，`done()` 拉满后淡出。
  *
- * 用法（useFoxApi 内部已自动接线，无需手动调用）：
+ * 用法（useMiyoApi 内部已自动接线，无需手动调用）：
  * ```ts
  * const progress = useProgress()
  * progress.start()   // 请求开始

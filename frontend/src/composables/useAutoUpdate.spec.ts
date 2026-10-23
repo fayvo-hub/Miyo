@@ -97,7 +97,7 @@ describe('useAutoUpdate', () => {
   })
 
   it('距上次检查不足间隔则跳过（多窗口/重启不重复打扰）', async () => {
-    localStorage.setItem('rustfox:update:last-check', String(Date.now()))
+    localStorage.setItem('miyo:update:last-check', String(Date.now()))
     const checkFn = vi.fn(async () => fakeUpdate('1.2.0'))
     const stop = startAutoUpdate({ checkFn, startupDelayMs: 100 })
     await vi.advanceTimersByTimeAsync(200)
@@ -123,8 +123,8 @@ describe('useAutoUpdate', () => {
   })
 
   it('同版本超过 24 小时后再次提醒（替代永久锁存）', async () => {
-    localStorage.setItem('rustfox:update:notified-version', '1.2.0')
-    localStorage.setItem('rustfox:update:notified-at', String(Date.now() - 25 * 60 * 60 * 1000))
+    localStorage.setItem('miyo:update:notified-version', '1.2.0')
+    localStorage.setItem('miyo:update:notified-at', String(Date.now() - 25 * 60 * 60 * 1000))
     const checkFn = vi.fn(async () => fakeUpdate('1.2.0'))
     const onUpdateAvailable = vi.fn()
     const stop = startAutoUpdate({ checkFn, startupDelayMs: 100, onUpdateAvailable })
@@ -158,7 +158,7 @@ describe('useAutoUpdate', () => {
   })
 
   it('triggerUpdateCheckNow 绕过节流立即检查；停止后返回 false', async () => {
-    localStorage.setItem('rustfox:update:last-check', String(Date.now()))
+    localStorage.setItem('miyo:update:last-check', String(Date.now()))
     const checkFn = vi.fn(async () => fakeUpdate('1.2.0'))
     const onUpdateAvailable = vi.fn()
     const stop = startAutoUpdate({ checkFn, startupDelayMs: 100, onUpdateAvailable })
@@ -226,7 +226,7 @@ describe('useAutoUpdate', () => {
 
   it('debugRunCheckNow 等待结果：notified / none / failed / no-instance', async () => {
     // notified（绕过节流）
-    localStorage.setItem('rustfox:update:last-check', String(Date.now()))
+    localStorage.setItem('miyo:update:last-check', String(Date.now()))
     const checkFn = vi.fn(async () => fakeUpdate('1.2.0'))
     const onUpdateAvailable = vi.fn()
     const stop = startAutoUpdate({ checkFn, startupDelayMs: 100, onUpdateAvailable })
@@ -320,7 +320,7 @@ describe('useAutoUpdate', () => {
     // 取消跳过 + 清除节流后，下次检查重新提醒
     clearSkippedUpdateVersion()
     expect(skippedUpdateVersion()).toBeNull()
-    localStorage.removeItem('rustfox:update:last-check')
+    localStorage.removeItem('miyo:update:last-check')
     const stop2 = startAutoUpdate({ checkFn, startupDelayMs: 100, onUpdateAvailable })
     await vi.advanceTimersByTimeAsync(200)
     expect(onUpdateAvailable).toHaveBeenCalledWith({ version: '1.2.0' })

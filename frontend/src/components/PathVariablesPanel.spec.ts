@@ -10,7 +10,7 @@ import PathVariablesPanel from './PathVariablesPanel.vue'
 import KeyValueTable from './ui/KeyValueTable.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, KeyValue } from '../types/foxApi'
+import type { Endpoint, KeyValue } from '../types/miyoApi'
 
 beforeEach(() => {
   setActivePinia(createPinia())

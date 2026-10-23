@@ -2,79 +2,79 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://weihubeats.github.io/RustFox/</loc>
+    <loc>https://weihubeats.github.io/Miyo/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/zh/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/"/>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/zh/</loc>
+    <loc>https://weihubeats.github.io/Miyo/zh/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/"/>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/zh/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/zh/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/"/>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/user-guide/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/user-guide/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/user-guide/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/user-guide/"/>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/en/user-guide/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/en/user-guide/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/user-guide/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/user-guide/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/user-guide/"/>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/migration/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/migration/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/migration/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/migration/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/migration/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/migration/"/>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/en/migration/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/en/migration/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/migration/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/migration/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/migration/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/migration/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/migration/"/>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/agent/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/agent/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/agent/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/agent/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/agent/"/>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/en/agent/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/en/agent/</loc>
     <lastmod>2026-10-13</lastmod>
-    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/RustFox/docs/agent/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/RustFox/docs/en/agent/"/>
+    <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://weihubeats.github.io/Miyo/docs/agent/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://weihubeats.github.io/Miyo/docs/en/agent/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://weihubeats.github.io/Miyo/docs/en/agent/"/>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://weihubeats.github.io/RustFox/docs/changelog/</loc>
+    <loc>https://weihubeats.github.io/Miyo/docs/changelog/</loc>
     <lastmod>2026-10-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

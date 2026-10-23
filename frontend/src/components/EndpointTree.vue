@@ -76,8 +76,8 @@ const TREE_EDIT_STATE: InjectionKey<{
  * O(层数 × (F+E))；索引后每层 O(1) 取直属子项。
  */
 export interface TreeChildIndex {
-  foldersByParent: Map<string | null, import('../types/foxApi').Folder[]>
-  endpointsByFolder: Map<string | null, import('../types/foxApi').Endpoint[]>
+  foldersByParent: Map<string | null, import('../types/miyoApi').Folder[]>
+  endpointsByFolder: Map<string | null, import('../types/miyoApi').Endpoint[]>
 }
 
 const TREE_INDEX: InjectionKey<import('vue').ComputedRef<TreeChildIndex>> =
@@ -111,7 +111,7 @@ import Menu from './ui/Menu.vue'
 import Popconfirm from './ui/Popconfirm.vue'
 import DeleteConfirmModal from './DeleteConfirmModal.vue'
 import type { MenuItem } from './ui/Menu.vue'
-import type { Endpoint, Folder } from '../types/foxApi'
+import type { Endpoint, Folder } from '../types/miyoApi'
 
 const props = withDefaults(
   defineProps<{
@@ -898,7 +898,7 @@ function onBatchMenuSelect(item: MenuItem): void {
         <template v-if="editing?.kind === 'rename-folder' && editing.id === f.id">
           <input
             v-model="editValue"
-            class="rf-input rf-input-sm tree-input"
+            class="miyo-input miyo-input-sm tree-input"
             v-focus-end
             autofocus
             @keyup.enter="commitEdit"
@@ -932,7 +932,7 @@ function onBatchMenuSelect(item: MenuItem): void {
     <div v-if="editing?.kind === 'create-folder' && editing.parentId === folderId" class="tree-row">
       <input
         v-model="editValue"
-        class="rf-input rf-input-sm tree-input"
+        class="miyo-input miyo-input-sm tree-input"
           :placeholder="t('tree.folderNamePh')"
         autofocus
         @keyup.enter="commitEdit"
@@ -964,7 +964,7 @@ function onBatchMenuSelect(item: MenuItem): void {
         <template v-if="editing?.kind === 'rename-endpoint' && editing.id === e.id">
           <input
             v-model="editValue"
-            class="rf-input rf-input-sm tree-input"
+            class="miyo-input miyo-input-sm tree-input"
             v-focus-end
             autofocus
             @keyup.enter="commitEdit"
@@ -997,16 +997,16 @@ function onBatchMenuSelect(item: MenuItem): void {
     <!-- 批量操作条（仅根实例渲染）：多选后出现 -->
     <div v-if="folderId === null && selectionCount > 0" class="tree-batch">
       <span class="tree-batch-count">{{ t('tree.selected', { n: selectionCount }) }}</span>
-      <button class="rf-btn rf-btn-sm" type="button" @click="openMoveMenu($event)">{{ t('tree.moveTo') }}</button>
+      <button class="miyo-btn miyo-btn-sm" type="button" @click="openMoveMenu($event)">{{ t('tree.moveTo') }}</button>
       <Popconfirm
         :title="t('tree.batchDeleteConfirm', { n: selectionCount })"
         :confirm-text="t('common.delete')"
         danger
         @confirm="batchDelete"
       >
-        <button class="rf-btn rf-btn-sm rf-btn-danger" type="button">{{ t('common.delete') }}</button>
+        <button class="miyo-btn miyo-btn-sm miyo-btn-danger" type="button">{{ t('common.delete') }}</button>
       </Popconfirm>
-      <button class="rf-btn rf-btn-sm rf-btn-ghost" type="button" @click="clearTreeSelection">
+      <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" type="button" @click="clearTreeSelection">
         {{ t('tree.clearSelection') }}
       </button>
     </div>
@@ -1029,7 +1029,7 @@ function onBatchMenuSelect(item: MenuItem): void {
       class="dnd-ghost"
       :style="{ left: ghostPos.x + 'px', top: ghostPos.y + 'px' }"
     >
-      <span v-if="ghostInfo.method" class="rf-method" :class="`rf-method-${ghostInfo.method.toLowerCase()}`">
+      <span v-if="ghostInfo.method" class="miyo-method" :class="`miyo-method-${ghostInfo.method.toLowerCase()}`">
         {{ ghostInfo.method }}
       </span>
       <Icon v-else name="folder" :size="13" />

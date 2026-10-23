@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { aggregateProjectStats, totalEndpointCount } from './projectStats'
-import type { ProjectStat } from '../types/foxApi'
+import type { ProjectStat } from '../types/miyoApi'
 
 const snakeStats: ProjectStat[] = [
   { project_id: 'p1', endpoint_count: 7, latest_method: 'GET', latest_path: '/pets' },

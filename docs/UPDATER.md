@@ -10,11 +10,11 @@
 
 ```bash
 cd frontend
-npm run tauri -- signer generate -w ~/.tauri/rustfox-updater.key
+npm run tauri -- signer generate -w ~/.tauri/miyo-updater.key
 ```
 
-- 私钥：`~/.tauri/rustfox-updater.key`（**丢失后已发布用户将无法静默升级，务必备份**）
-- 公钥：`~/.tauri/rustfox-updater.key.pub`
+- 私钥：`~/.tauri/miyo-updater.key`（**丢失后已发布用户将无法静默升级，务必备份**）
+- 公钥：`~/.tauri/miyo-updater.key.pub`
 
 ### 2. 公钥写入应用配置
 
@@ -47,7 +47,7 @@ npm run tauri -- signer generate -w ~/.tauri/rustfox-updater.key
 ## 版本号
 
 发版前同步三处版本：`frontend/package.json`、`frontend/src-tauri/tauri.conf.json`、
-`frontend/src-tauri/Cargo.toml`（`rustfox` 包）。updater 以 `tauri.conf.json` 的
+`frontend/src-tauri/Cargo.toml`（`miyo` 包）。updater 以 `tauri.conf.json` 的
 `version` 为当前版本，与 `latest.json` 里的 `version` 比较（semver 语义）。
 
 ## 开发验证（无需改版号/重启）

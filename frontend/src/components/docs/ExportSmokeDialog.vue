@@ -16,9 +16,9 @@ import Modal from '../ui/Modal.vue'
 import Icon from '../ui/Icon.vue'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useLocaleStore } from '../../stores/locale'
-import { useFoxApi } from '../../composables/useFoxApi'
+import { useMiyoApi } from '../../composables/useMiyoApi'
 import { useToast } from '../../composables/useToast'
-import type { Endpoint, ExportedDoc } from '../../types/foxApi'
+import type { Endpoint, ExportedDoc } from '../../types/miyoApi'
 
 const props = defineProps<{
   /** 仅导出当前接口时使用。 */
@@ -28,7 +28,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>()
 
 const store = useWorkspaceStore()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -167,8 +167,8 @@ async function startExport(): Promise<void> {
     </label>
 
     <template #footer>
-      <button type="button" class="rf-btn" @click="emit('close')">{{ t('common.cancel') }}</button>
-      <button type="button" class="rf-btn rf-btn-primary" :disabled="exporting" @click="startExport">
+      <button type="button" class="miyo-btn" @click="emit('close')">{{ t('common.cancel') }}</button>
+      <button type="button" class="miyo-btn miyo-btn-primary" :disabled="exporting" @click="startExport">
         <Icon name="download" :size="13" />
         {{ exporting ? t('exportdocs.generating') : t('exportdocs.start') }}
       </button>

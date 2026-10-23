@@ -146,14 +146,14 @@ onBeforeUnmount(() => {
   <button
     v-if="hasPendingUpdate"
     ref="triggerEl"
-    class="rf-update-tag flex cursor-pointer items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/20 px-3 py-1 font-mono text-xs font-medium text-purple-700 transition-all hover:bg-purple-500/30 dark:text-purple-300"
+    class="miyo-update-tag flex cursor-pointer items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/20 px-3 py-1 font-mono text-xs font-medium text-purple-700 transition-all hover:bg-purple-500/30 dark:text-purple-300"
     type="button"
     :aria-label="t('app.updateFound', { v: pendingUpdateVersion() ?? '' })"
     @click="onClick"
     @mouseenter="scheduleShow"
     @mouseleave="scheduleHide"
   >
-    <span class="rf-update-tag-icon" aria-hidden="true">🚀</span>
+    <span class="miyo-update-tag-icon" aria-hidden="true">🚀</span>
     <span>{{ t('app.updateTag', { v: pendingUpdateVersion() ?? '' }) }}</span>
   </button>
 
@@ -161,15 +161,15 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <div
       v-if="open"
-      class="rf-update-card"
+      class="miyo-update-card"
       :style="{ left: `${pos.left}px`, top: `${pos.top}px`, width: `${cardWidth}px` }"
       @mouseenter="keepOpen"
       @mouseleave="scheduleHide"
     >
-      <div class="rf-update-card-head">
-        <span class="rf-update-card-icon" aria-hidden="true">🚀</span>
-        <span class="rf-update-card-title">{{ t('app.updateFound', { v: version }) }}</span>
-        <span v-if="dateText" class="rf-update-card-date">{{ dateText }}</span>
+      <div class="miyo-update-card-head">
+        <span class="miyo-update-card-icon" aria-hidden="true">🚀</span>
+        <span class="miyo-update-card-title">{{ t('app.updateFound', { v: version }) }}</span>
+        <span v-if="dateText" class="miyo-update-card-date">{{ dateText }}</span>
       </div>
       <ReleaseNotesBody :notes="notes" :max-height="notesMaxHeight" />
     </div>
@@ -178,18 +178,18 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* 投影走 primary 光晕（原 shadow-purple-950/50 浅色下糊成暗紫脏影） */
-.rf-update-tag {
+.miyo-update-tag {
   box-shadow: 0 1px 3px var(--primary-glow);
 }
 
 /* 火箭微亮呼吸：prefers-reduced-motion 由 style.css 全局兜底关闭 */
-.rf-update-tag-icon {
+.miyo-update-tag-icon {
   font-size: 11px;
   line-height: 1;
-  animation: rf-update-tag-glow 1.8s ease-in-out infinite;
+  animation: miyo-update-tag-glow 1.8s ease-in-out infinite;
 }
 
-@keyframes rf-update-tag-glow {
+@keyframes miyo-update-tag-glow {
   0%,
   100% {
     transform: scale(1);
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
 
 /* 悬停预览卡片：配色全走主题令牌（深/浅各一套），层级同 Tooltip / Menu
    （z-index 300），高过顶栏与弹窗，且不会被顶栏 overflow 裁剪（fixed + Teleport） */
-.rf-update-card {
+.miyo-update-card {
   position: fixed;
   z-index: 300;
   display: flex;
@@ -214,22 +214,22 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-lg);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-lg);
-  animation: rf-update-card-in 140ms var(--ease);
+  animation: miyo-update-card-in 140ms var(--ease);
   transform-origin: top right;
 }
 
-.rf-update-card-head {
+.miyo-update-card-head {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.rf-update-card-icon {
+.miyo-update-card-icon {
   font-size: 12px;
   line-height: 1;
 }
 
-.rf-update-card-title {
+.miyo-update-card-title {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 700;
@@ -237,13 +237,13 @@ onBeforeUnmount(() => {
 }
 
 /* 发布日期靠右靠后（服务器未提供时不渲染） */
-.rf-update-card-date {
+.miyo-update-card-date {
   margin-left: auto;
   font-size: var(--fs-xxs);
   color: var(--text-3);
 }
 
-@keyframes rf-update-card-in {
+@keyframes miyo-update-card-in {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.98);

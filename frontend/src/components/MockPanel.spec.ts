@@ -20,8 +20,8 @@ const apiMocks = {
   mockReload: vi.fn().mockResolvedValue(7),
 }
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => apiMocks,
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => apiMocks,
 }))
 
 describe('MockPanel', () => {

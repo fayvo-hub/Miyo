@@ -7,14 +7,14 @@
 import { computed, defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import type { ChartOptions } from 'chart.js'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import CustomNumberInput from './ui/CustomNumberInput.vue'
 import Icon from './ui/Icon.vue'
 import { formatDuration } from '../utils/format'
-import type { Endpoint, LoadResult } from '../types/foxApi'
+import type { Endpoint, LoadResult } from '../types/miyoApi'
 
 // chart.js 体积较大（约 200KB gz）且仅压测面板使用，懒加载以缩减首屏 bundle
 const Line = defineAsyncComponent(async () => {
@@ -31,7 +31,7 @@ const props = defineProps<{
   url: string
 }>()
 
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const store = useWorkspaceStore()
 const locale = useLocaleStore()
@@ -143,7 +143,7 @@ let unlistenLoad: UnlistenFn | null = null
 
 onMounted(async () => {
   unlistenLoad = await listen<{ done: number; total: number; ok: number; failed: number }>(
-    'fox:load-progress',
+    'miyo:load-progress',
     (event) => onProgress(event.payload),
   )
 })
@@ -257,13 +257,13 @@ const metrics = computed<Metric[]>(() => {
         :disabled="running"
         @update:model-value="loadTotal = String($event)"
       />
-      <button class="rf-btn rf-btn-sm" type="button" :disabled="!draft || running" @click="runLoadTest">
+      <button class="miyo-btn miyo-btn-sm" type="button" :disabled="!draft || running" @click="runLoadTest">
         <Icon name="gauge" :size="13" />
         {{ loading ? t('loadtest.running', { v: progress ? `${progress.done}/${progress.total}` : '' }) : t('loadtest.start') }}
       </button>
       <button
         v-if="running && activeRunId"
-        class="rf-btn rf-btn-sm rf-btn-danger"
+        class="miyo-btn miyo-btn-sm miyo-btn-danger"
         type="button"
         @click="cancelLoadTest"
       >

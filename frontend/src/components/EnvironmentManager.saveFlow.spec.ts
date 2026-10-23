@@ -12,7 +12,7 @@ import { nextTick } from 'vue'
 import EnvironmentManager from './EnvironmentManager.vue'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useLocaleStore } from '../stores/locale'
-import type { Environment, Project } from '../types/foxApi'
+import type { Environment, Project } from '../types/miyoApi'
 
 const toastMock = vi.hoisted(() => ({
   success: vi.fn(),
@@ -44,8 +44,8 @@ vi.mock('../composables/useToast', () => ({
   useToast: () => toastMock,
 }))
 
-vi.mock('../composables/useFoxApi', () => ({
-  useFoxApi: () => ({
+vi.mock('../composables/useMiyoApi', () => ({
+  useMiyoApi: () => ({
     getProjects: vi.fn().mockResolvedValue(backend.projects),
     getActiveProject: vi.fn().mockImplementation(async () => backend.projects.find((p) => p.id === backend.active()) ?? null),
     setActiveProject: vi.fn(),
@@ -156,7 +156,7 @@ describe('环境 Base URL 保存全链路', () => {
     await nextTick()
 
     // 点击底部「保存」
-    const save = document.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')!
+    const save = document.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')!
     expect(save.disabled).toBe(false)
     save.click()
     await flushPromises()
@@ -187,7 +187,7 @@ describe('环境 Base URL 保存全链路', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }))
     await nextTick()
 
-    document.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')!.click()
+    document.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')!.click()
     await flushPromises()
 
     expect(backend.savedPayloads[0]!.base_url).toBe('http://localhost:8093')
@@ -204,7 +204,7 @@ describe('环境 Base URL 保存全链路', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }))
     await nextTick()
 
-    document.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')!.click()
+    document.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')!.click()
     await flushPromises()
 
     // 保存按失败处理：错误提示 + 无成功提示 + 本地列表不写入假值
@@ -243,7 +243,7 @@ describe('环境 Base URL 保存全链路', () => {
     input.value = 'http://p2.example.com'
     input.dispatchEvent(new Event('input', { bubbles: true }))
     await nextTick()
-    document.querySelector<HTMLButtonElement>('.m-foot .rf-btn-primary')!.click()
+    document.querySelector<HTMLButtonElement>('.m-foot .miyo-btn-primary')!.click()
     await flushPromises()
 
     // 保存归属 p2 并落库

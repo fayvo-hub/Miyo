@@ -1,0 +1,24 @@
+[package]
+name = "miyo-smoke"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "测试用例冒烟文档导出（内部工具，不发布）"
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish = false
+
+[dependencies]
+miyo-core = { path = "../miyo-core" }
+miyo-storage = { path = "../miyo-storage" }
+miyo-http = { path = "../miyo-http" }
+miyo-mock = { path = "../miyo-mock" }
+miyo-openapi = { path = "../miyo-openapi" }
+miyo-test = { path = "../miyo-test" }
+miyo-backup = { path = "../miyo-backup" }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+tokio = { workspace = true }
+sqlx = { workspace = true }

@@ -8,6 +8,7 @@ import App from './App.vue'
 import router from './router'
 import { useThemeStore } from './stores/theme'
 import { useLocaleStore } from './stores/locale'
+import { migrateLegacyStorageKeys } from './utils/legacyStorage'
 // 字体：仅 latin 子集 + 仅 woff2 + 400/500/700（原 8 个 fontsource 入口产出
 // 44 个 woff/woff2 共 760KB，占 dist 约 1/3），声明见 fonts.css。
 import './fonts.css'
@@ -21,6 +22,10 @@ if (navigator.userAgent.includes('Mac')) {
 }
 
 const pinia = createPinia()
+
+// 品牌更名（RustFox → Miyo）的 localStorage 旧键迁移：必须先于任何读偏好键的
+// store 初始化（主题 / 语言），否则老用户升级后偏好回落默认值。
+migrateLegacyStorageKeys()
 
 // 防闪烁（FOUC）：主题同步生效；语言字典按需（en 动态 import），在挂载前补齐。
 useThemeStore(pinia).init()

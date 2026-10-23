@@ -2,16 +2,16 @@
 /**
  * RealtimeView：实时调试视图（WebSocket / SSE）。
  *
- * - WebSocket：后端 `fox-http::ws_client` 早已完备（自动重连/心跳/离线补发），
- *   本视图经新增的 ws_* 命令接入：建连 → 收发帧 → 断开，事件经 `fox:ws-event` 推送；
+ * - WebSocket：后端 `miyo-http::ws_client` 早已完备（自动重连/心跳/离线补发），
+ *   本视图经新增的 ws_* 命令接入：建连 → 收发帧 → 断开，事件经 `miyo:ws-event` 推送；
  * - SSE：`sse_connect` 拉流转发原始文本块，前端按帧解析（event/data/id），事件经
- *   `fox:sse-event` 推送；断线续传带 `Last-Event-ID`。
+ *   `miyo:sse-event` 推送；断线续传带 `Last-Event-ID`。
  * - 消息日志上限 500 条（超限丢弃最旧）；卸载视图时自动断开，避免后台泄漏。
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
-import { useFoxApi } from '../composables/useFoxApi'
+import { useMiyoApi } from '../composables/useMiyoApi'
 import { useToast } from '../composables/useToast'
 import { useLocaleStore } from '../stores/locale'
 import { formatTime } from '../utils/dateTime'
@@ -19,10 +19,10 @@ import Icon from '../components/ui/Icon.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import KeyValueTable, { type KVRow } from '../components/ui/KeyValueTable.vue'
 import Tabs, { type TabItem } from '../components/ui/Tabs.vue'
-import type { SseEventPayload, WsEventPayload } from '../types/foxApi'
+import type { SseEventPayload, WsEventPayload } from '../types/miyoApi'
 
 const router = useRouter()
-const api = useFoxApi()
+const api = useMiyoApi()
 const toast = useToast()
 const locale = useLocaleStore()
 const t = locale.t
@@ -316,8 +316,8 @@ onMounted(async () => {
   void detectWindow()
   try {
     if ('__TAURI_INTERNALS__' in window) {
-      unlistenWs = await listen<WsEventPayload>('fox:ws-event', (e) => onWsEvent(e.payload))
-      unlistenSse = await listen<SseEventPayload>('fox:sse-event', (e) => onSseEvent(e.payload))
+      unlistenWs = await listen<WsEventPayload>('miyo:ws-event', (e) => onWsEvent(e.payload))
+      unlistenSse = await listen<SseEventPayload>('miyo:sse-event', (e) => onSseEvent(e.payload))
     }
   } catch {
     // 非 Tauri（浏览器预览）环境：忽略
@@ -335,10 +335,10 @@ onUnmounted(() => {
 
 <template>
   <div class="rt-root">
-    <div class="row rf-mb-2 rt-top">
+    <div class="row miyo-mb-2 rt-top">
       <button
         v-if="isMainWindow"
-        class="rf-btn rf-btn-sm"
+        class="miyo-btn miyo-btn-sm"
         type="button"
         @click="router.push('/workspace')"
       >
@@ -346,7 +346,7 @@ onUnmounted(() => {
       </button>
       <button
         v-if="isMainWindow"
-        class="rf-btn rf-btn-sm rf-btn-ghost"
+        class="miyo-btn miyo-btn-sm miyo-btn-ghost"
         type="button"
         :title="t('realtime.popoutHint')"
         @click="popout"
@@ -371,10 +371,10 @@ onUnmounted(() => {
 
     <!-- WebSocket -->
     <div v-if="mainTab === 'ws'" class="rt-pane">
-      <div class="row rf-mb-2">
+      <div class="row miyo-mb-2">
         <input
           v-model="wsUrl"
-          class="rf-input rt-url"
+          class="miyo-input rt-url"
           placeholder="ws://127.0.0.1:4010/socket"
           spellcheck="false"
           :disabled="!!wsConnId"
@@ -385,17 +385,17 @@ onUnmounted(() => {
         </label>
         <button
           v-if="!wsConnId"
-          class="rf-btn rf-btn-sm rf-btn-primary"
+          class="miyo-btn miyo-btn-sm miyo-btn-primary"
           type="button"
           :disabled="wsConnecting || !wsUrl.trim()"
           @click="wsConnect"
         >
           {{ wsConnecting ? t('realtime.connectingShort') : t('realtime.connect') }}
         </button>
-        <button v-else class="rf-btn rf-btn-sm rf-btn-danger" type="button" @click="wsDisconnect()">
+        <button v-else class="miyo-btn miyo-btn-sm miyo-btn-danger" type="button" @click="wsDisconnect()">
           {{ t('realtime.disconnect') }}
         </button>
-        <button class="rf-btn rf-btn-sm rf-btn-ghost" type="button" @click="wsLog = []">{{ t('realtime.clearLog') }}</button>
+        <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" type="button" @click="wsLog = []">{{ t('realtime.clearLog') }}</button>
       </div>
 
       <!-- 折叠区：自定义请求头（握手携带）+ WS 子协议 -->
@@ -416,7 +416,7 @@ onUnmounted(() => {
           <span class="rt-sub-label">{{ t('realtime.subprotocolsLabel') }}</span>
           <input
             v-model="wsSubprotocols"
-            class="rf-input rf-input-sm rt-sub-input"
+            class="miyo-input miyo-input-sm rt-sub-input"
             :placeholder="t('realtime.subprotocolsPh')"
             :title="t('realtime.subprotocolsHint')"
             :disabled="!!wsConnId"
@@ -435,17 +435,17 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="row rf-mt-2">
+      <div class="row miyo-mt-2">
         <input
           v-model="wsSendText"
-          class="rf-input rt-url"
+          class="miyo-input rt-url"
           :placeholder="t('realtime.sendPh')"
           spellcheck="false"
           :disabled="!wsConnId || wsState !== 'open'"
           @keydown.enter="wsSend('text')"
         />
         <button
-          class="rf-btn rf-btn-sm rf-btn-primary"
+          class="miyo-btn miyo-btn-sm miyo-btn-primary"
           type="button"
           :disabled="!wsConnId || wsState !== 'open' || !wsSendText"
           @click="wsSend('text')"
@@ -453,7 +453,7 @@ onUnmounted(() => {
           <Icon name="send" :size="13" /> {{ t('editor.send') }}
         </button>
         <button
-          class="rf-btn rf-btn-sm rf-btn-ghost"
+          class="miyo-btn miyo-btn-sm miyo-btn-ghost"
           type="button"
           :disabled="!wsConnId || wsState !== 'open' || !wsSendText"
           :title="t('realtime.pingHint')"
@@ -466,27 +466,27 @@ onUnmounted(() => {
 
     <!-- SSE -->
     <div v-else class="rt-pane">
-      <div class="row rf-mb-2">
+      <div class="row miyo-mb-2">
         <input
           v-model="sseUrl"
-          class="rf-input rt-url"
+          class="miyo-input rt-url"
           placeholder="http://127.0.0.1:4010/events"
           spellcheck="false"
           :disabled="!!sseConnId"
         />
         <button
           v-if="!sseConnId"
-          class="rf-btn rf-btn-sm rf-btn-primary"
+          class="miyo-btn miyo-btn-sm miyo-btn-primary"
           type="button"
           :disabled="sseConnecting || !sseUrl.trim()"
           @click="sseConnect"
         >
           {{ sseConnecting ? t('realtime.subscribing') : t('realtime.subscribe') }}
         </button>
-        <button v-else class="rf-btn rf-btn-sm rf-btn-danger" type="button" @click="sseDisconnect()">
+        <button v-else class="miyo-btn miyo-btn-sm miyo-btn-danger" type="button" @click="sseDisconnect()">
           {{ t('realtime.unsubscribe') }}
         </button>
-        <button class="rf-btn rf-btn-sm rf-btn-ghost" type="button" @click="sseLog = []">{{ t('realtime.clearLog') }}</button>
+        <button class="miyo-btn miyo-btn-sm miyo-btn-ghost" type="button" @click="sseLog = []">{{ t('realtime.clearLog') }}</button>
         <span v-if="sseLastId" class="hint-inline">{{ t('realtime.lastEventId', { v: sseLastId }) }}</span>
       </div>
 

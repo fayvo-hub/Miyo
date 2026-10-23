@@ -15,7 +15,7 @@ import GrpcPanel from './GrpcPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { makeDraft } from '../testUtils/draftFixture'
-import type { Endpoint, ProtoFile, ServiceCatalog } from '../types/foxApi'
+import type { Endpoint, ProtoFile, ServiceCatalog } from '../types/miyoApi'
 
 const apiMock = vi.hoisted(() => ({
   grpcListServices: vi.fn(),
@@ -24,7 +24,7 @@ const apiMock = vi.hoisted(() => ({
   grpcDeleteProtoFile: vi.fn(async () => undefined),
 }))
 
-vi.mock('../composables/useFoxApi', () => ({ useFoxApi: () => apiMock }))
+vi.mock('../composables/useMiyoApi', () => ({ useMiyoApi: () => apiMock }))
 vi.mock('../composables/useToast', () => ({
   useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn(), toast: vi.fn() }),
 }))
@@ -90,7 +90,7 @@ beforeEach(() => {
 describe('GrpcPanel：配置绑定', () => {
   it('服务 / 方法输入回显 spec，TLS 开关反映 use_tls', async () => {
     const { wrapper, draft } = await mountPanel()
-    const inputs = wrapper.findAll('input.rf-input')
+    const inputs = wrapper.findAll('input.miyo-input')
     expect((inputs[0].element as HTMLInputElement).value).toBe('grpcbin.GRPCBin')
     expect((inputs[1].element as HTMLInputElement).value).toBe('DummyUnary')
     const tls = wrapper.find('input[type="checkbox"]')
@@ -102,7 +102,7 @@ describe('GrpcPanel：配置绑定', () => {
 
   it('编辑服务输入写回 spec.service', async () => {
     const { wrapper, draft } = await mountPanel()
-    const serviceInput = wrapper.findAll('input.rf-input')[0]
+    const serviceInput = wrapper.findAll('input.miyo-input')[0]
     await serviceInput.setValue('hello.HelloService')
     expect(draft.request.body.mode === 'grpc' && draft.request.body.spec.service).toBe('hello.HelloService')
   })
@@ -230,8 +230,8 @@ describe('GrpcPanel：服务目录', () => {
     await flushPromises()
     // 当前 method 是 DummyUnary（unary）→ 无徽标；把方法切到 LotsOfReplies → 有徽标
     expect(wrapper.find('.stream-badge').exists()).toBe(false)
-    const serviceInput = wrapper.findAll('input.rf-input')[0]
-    const methodInput = wrapper.findAll('input.rf-input')[1]
+    const serviceInput = wrapper.findAll('input.miyo-input')[0]
+    const methodInput = wrapper.findAll('input.miyo-input')[1]
     await serviceInput.setValue('hello.HelloService')
     await methodInput.setValue('LotsOfReplies')
     await nextTick()
