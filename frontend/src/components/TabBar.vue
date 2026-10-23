@@ -2,8 +2,8 @@
 /**
  * TabBar：打开中的接口标签页。
  * - 每个标签：方法标签（GET 绿 / POST 黄…）+ 截断的接口名；宽 120–200px；
- * - 布局：「+」紧跟末尾 tab，溢出时吸在右边缘（Chrome 式，sticky 实现），
- *   tab 再多也不会把它滚丢；
+ * - 布局：末尾两个平级按钮——「+」新建、「⋯」标签管理；溢出时各自吸在
+ *   右边缘（Chrome 式，sticky 实现），tab 再多也不会把它们滚丢；
  * - 激活态 = text-1 + 底部主题色下划线；未保存草稿在标题旁显示小圆点，
  *   hover 时圆点被 ✕ 替换（两者不同时出现，避免挤占）；
  * - 关闭按钮 hover 才出现；脏标签关闭走 Popconfirm；
@@ -63,9 +63,9 @@ const tabs = computed(() =>
 )
 
 // ---------- 标签管理菜单：关闭当前 / 其他 / 全部（有未保存时行内二次确认） ----------
-// 菜单在触发器右侧展开（left 对齐），贴着 + 按钮往右下开，避免盖住左侧标签。
+// 菜单在触发器右侧展开（left 对齐），贴着 ⋯ 按钮往右下开，避免盖住左侧标签。
 const tabMenu = ref<InstanceType<typeof Menu> | null>(null)
-const tabArrowEl = ref<HTMLButtonElement | null>(null)
+const tabMoreEl = ref<HTMLButtonElement | null>(null)
 
 /** 含未保存标签时，二次确认才放行批量关闭（与单标签 Popconfirm 同语义）。 */
 function unsavedConfirm(count: number): string {
@@ -103,7 +103,7 @@ const TAB_MENU_ITEMS = computed<MenuItem[]>(() => {
 })
 
 function openTabMenu(): void {
-  if (tabArrowEl.value) tabMenu.value?.openAt(tabArrowEl.value, TAB_MENU_ITEMS.value, 'left')
+  if (tabMoreEl.value) tabMenu.value?.openAt(tabMoreEl.value, TAB_MENU_ITEMS.value, 'left')
 }
 
 function runMenuAction(item: MenuItem): void {
@@ -216,28 +216,30 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
         <IconButton v-else class="tab-close" name="x" :size="12" :title="t('common.close')" @click.stop="close(tab.id)" />
       </div>
       <Tooltip :content="t('tabbar.newRequestHint')">
-        <div class="tab-add-group">
-          <button
-            class="tab-add tab-add-main"
-            type="button"
-            :aria-label="t('tabbar.newRequest')"
-            @click="store.openNewEndpoint(null)"
-          >
-            <Icon name="plus" :size="15" />
-          </button>
-          <span class="tab-add-sep" aria-hidden="true"></span>
-          <button
-            ref="tabArrowEl"
-            class="tab-add tab-add-arrow"
-            type="button"
-            :aria-label="t('tabbar.tabMenu')"
-          :title="t('tabbar.tabMenu')"
-          @click="openTabMenu"
-          >
-            <Icon name="chevron-down" :size="12" />
-          </button>
-        </div>
+        <button
+          class="tab-add"
+          type="button"
+          :aria-label="t('tabbar.newRequest')"
+          @click="store.openNewEndpoint(null)"
+        >
+          <Icon name="plus" :size="15" />
+        </button>
       </Tooltip>
+      <!-- 标签页管理：独立「⋯」按钮（不再与「+」共用一枚胶囊）。
+           原设计把 + 与 ⌄ 拼成一个组合按钮，下拉只占 16px、箭头又像在
+           「展开 +」，用户第一眼读不出这里藏的是「关闭其他 / 关闭全部」。
+           拆成两个平级按钮后，+ 只管新建、⋯ 只管管理，各司其职。 -->
+      <button
+        ref="tabMoreEl"
+        class="tab-add tab-more"
+        type="button"
+        :title="t('tabbar.tabMenu')"
+        :aria-label="t('tabbar.tabMenu')"
+        aria-haspopup="menu"
+        @click="openTabMenu"
+      >
+        <Icon name="more-horizontal" :size="15" :stroke-width="1.5" />
+      </button>
     </div>
     <Menu ref="tabMenu" @select="onTabMenuSelect" @confirm="onTabMenuConfirm" />
   </div>
@@ -263,7 +265,7 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
   overflow-y: hidden;
 }
 
-/* 新建组跟在末尾 tab 后面；溢出时吸在右边缘（Chrome 式），永远可见 */
+/* 新建「+」/ 管理「⋯」跟在末尾 tab 后面；溢出时吸在右边缘（Chrome 式），永远可见 */
 .tab-scroll > .tt-trigger {
   position: sticky;
   right: 0;
@@ -271,6 +273,51 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
   flex-shrink: 0;
   align-self: center;
   margin-bottom: 2px;
+}
+
+/* ---- 右侧两个平级动作按钮：+ 新建 / ⋯ 管理 ---- */
+.tab-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex-shrink: 0;
+  height: 28px;
+  width: 28px;
+  margin-bottom: 2px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: var(--bg-panel);
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+.tab-add:hover {
+  background: var(--bg-active);
+}
+.tab-add:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.tab-add:active {
+  transform: scale(0.92);
+}
+
+/* 管理按钮：与 + 同尺寸同底，仅图标颜色退到次级，避免与 + 抢焦点 */
+.tab-more {
+  color: var(--text-2);
+  /* 溢出吸右时要盖住下方滚过的标签，需实底 */
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  margin-left: 2px;
+}
+.tab-more:hover {
+  color: var(--text-1);
 }
 
 .tab {
@@ -360,61 +407,5 @@ function onTabActivateKey(event: KeyboardEvent, id: string): void {
 .tab-close:hover {
   background: var(--danger-tint);
   color: var(--danger);
-}
-
-/* ---- 快捷新建「+」：主区 + 箭头下拉 组合按钮（吸住时盖住下方滚过的标签，需实底） ---- */
-.tab-add-group {
-  display: inline-flex;
-  align-items: stretch;
-  align-self: center;
-  flex-shrink: 0;
-  height: 28px;
-  margin: 0 2px 2px 4px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  overflow: hidden;
-  background: var(--bg-panel);
-  transition:
-    border-color var(--dur) var(--ease),
-    background var(--dur) var(--ease);
-}
-.tab-add-group:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-active);
-}
-.tab-add-group:focus-within {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.tab-add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--accent);
-  cursor: pointer;
-  padding: 0;
-  transition:
-    background var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-}
-.tab-add-main {
-  width: 26px;
-}
-.tab-add-arrow {
-  width: 16px;
-  color: var(--text-2);
-}
-.tab-add-arrow:hover {
-  color: var(--text-1);
-}
-.tab-add:active {
-  transform: scale(0.92);
-}
-.tab-add-sep {
-  width: 1px;
-  background: var(--border);
 }
 </style>

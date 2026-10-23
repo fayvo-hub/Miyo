@@ -2,7 +2,8 @@
  * TabBar 单测：
  * 回归——tab 开多时「+」新建按钮被滚出可视区（+ 在滚动区外固定时，
  * 离末尾 tab 太远；之前在滚动区内末尾时又会被滚丢）。
- * 现状：＋紧跟末尾 tab，溢出时 sticky 吸在右边缘（Chrome 式），两种情况都可见。
+ * 现状：＋与 ⋯ 紧跟末尾 tab，溢出时各自 sticky 吸在右边缘（Chrome 式），
+ * 两种情况都可见。
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
@@ -58,35 +59,38 @@ function mountBar() {
 }
 
 describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
-  it('「+」是滚动区内最后一个孩子：tab 少时紧贴末尾', () => {
+  it('「+」与「⋯」是滚动区内最后两个孩子：tab 少时紧贴末尾', () => {
     const wrapper = mountBar()
     const scroll = document.querySelector('.tab-scroll')
     expect(scroll).toBeTruthy()
     const kids = Array.from(scroll!.children)
-    // 8 个 tab + 末尾的 + 触发包裹层
-    expect(kids).toHaveLength(9)
+    // 8 个 tab + 「+」触发包裹层 + 「⋯」管理按钮
+    expect(kids).toHaveLength(10)
     expect(kids.slice(0, 8).every((el) => el.classList.contains('tab'))).toBe(true)
+    // 顺序：+ 在 ⋯ 左边
     const addWrap = kids[8] as HTMLElement
-    expect(addWrap.querySelector('.tab-add-group')).toBeTruthy()
+    expect(addWrap.querySelector('.tab-add')).toBeTruthy()
+    expect((kids[9] as HTMLElement).classList.contains('tab-more')).toBe(true)
     wrapper.unmount()
   })
 
-  it('「+」包裹层 sticky 右吸：溢出时钉在右边缘', () => {
+  it('「+」与「⋯」分别 sticky 右吸：溢出时钉在右边缘', () => {
     const wrapper = mountBar()
     // jsdom 无布局且本工程 vitest 不注入 SFC 样式，定位能力用源码断言
     //（themePattern.spec.ts 同款做法）；DOM 顺序由上一用例覆盖
     const src = readFileSync(join(process.cwd(), 'src/components/TabBar.vue'), 'utf8')
     const style = src.slice(src.indexOf('<style'))
     expect(style).toContain('.tab-scroll > .tt-trigger')
-    expect(style).toMatch(/position:\s*sticky/)
-    expect(style).toMatch(/right:\s*0/)
+    // 「⋯」是 trigger 的兄弟，需自带 sticky 才不会滚丢
+    expect(style).toMatch(/\.tab-more\s*\{[\s\S]*?position:\s*sticky/)
+    expect(style).toMatch(/\.tab-more\s*\{[\s\S]*?right:\s*0/)
     wrapper.unmount()
   })
 
-  it('点击「+」主区新建空请求（行为保持）', () => {
+  it('点击「+」新建空请求（行为保持）', () => {
     const wrapper = mountBar()
     document
-      .querySelector<HTMLButtonElement>('.tab-add-main')!
+      .querySelector<HTMLButtonElement>('.tab-add:not(.tab-more)')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
     expect(mocked.openNewEndpoint).toHaveBeenCalledWith(null)
     wrapper.unmount()
@@ -114,10 +118,10 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     wrapper.unmount()
   })
 
-  /** 打开箭头下拉菜单，返回菜单项文案列表。 */
+  /** 打开「⋯」下拉菜单，返回菜单项文案列表。 */
   async function openMenuLabels(): Promise<string[]> {
     document
-      .querySelector<HTMLButtonElement>('.tab-add-arrow')!
+      .querySelector<HTMLButtonElement>('.tab-more')!
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
     return Array.from(document.querySelectorAll('.rf-menu-item')).map(
@@ -189,7 +193,7 @@ describe('TabBar：新建按钮紧跟末尾且不被滚丢', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1600 })
     const wrapper = mountBar()
     try {
-      const arrow = document.querySelector<HTMLElement>('.tab-add-arrow')!
+      const arrow = document.querySelector<HTMLElement>('.tab-more')!
       vi.spyOn(arrow, 'getBoundingClientRect').mockReturnValue({
         left: 1200,
         right: 1240,
