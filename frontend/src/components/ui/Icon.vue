@@ -56,6 +56,8 @@ export type IconName =
   | 'more-horizontal'
   | 'alert-triangle'
   | 'users'
+  | 'minus'
+  | 'square'
 
 const ICONS: Record<IconName, string> = {
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
@@ -122,6 +124,8 @@ const ICONS: Record<IconName, string> = {
   plug:
     '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>',
   'more-horizontal': '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  minus: '<path d="M5 12h14"/>',
+  square: '<rect width="12" height="12" x="6" y="6" rx="1.5"/>',
   'alert-triangle':
     '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.73-2Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   keyboard:

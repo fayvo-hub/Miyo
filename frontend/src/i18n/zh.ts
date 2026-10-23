@@ -11,6 +11,10 @@ export const zh = {
   'app.updateTag': '更新 v{v}',
   'app.viewDetails': '查看详情',
 
+  'window.minimize': '最小化',
+  'window.maximize': '最大化',
+  'window.restore': '还原',
+
   'common.cancel': '取消',
   'common.confirm': '确认',
   'common.save': '保存',
@@ -151,7 +155,8 @@ export const zh = {
   'history.loadMore': '加载更多',
 
   'tabbar.newRequest': '新建 HTTP 请求',
-  'tabbar.newRequestHint': '新建请求 (⌘N)',
+  'tabbar.newRequestHint': '新建请求 / 导入 cURL',
+  'tabbar.createTab': '新建…',
   'tabbar.tabMenu': '标签页管理',
   'tabbar.closeCurrent': '关闭当前标签页',
   'tabbar.closeOthers': '关闭其他标签页',

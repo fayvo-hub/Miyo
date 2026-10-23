@@ -25,6 +25,7 @@ import SettingsDialog from '../components/SettingsDialog.vue'
 import HeaderUpdateTag from '../components/HeaderUpdateTag.vue'
 import DashboardNav from '../components/projectlist/DashboardNav.vue'
 import ProjectTabs from '../components/ProjectTabs.vue'
+import WindowControls from '../components/WindowControls.vue'
 import ImportDialog from '../components/ImportDialog.vue'
 import ProjectCard from '../components/projectlist/ProjectCard.vue'
 import CustomSelect from '../components/ui/CustomSelect.vue'
@@ -504,6 +505,7 @@ useWindowDrag(topBarEl)
           />
         </span>
       </div>
+      <WindowControls />
     </header>
 
     <div class="dash-body">
@@ -774,6 +776,11 @@ useWindowDrag(topBarEl)
 .top-tabs {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Windows 自绘窗口控制钮贴窗口右缘（抵消顶栏右内边距） */
+.dash-top :deep(.win-controls) {
+  margin-right: -16px;
 }
 
 .top-brand {

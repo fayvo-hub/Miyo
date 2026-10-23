@@ -13,6 +13,10 @@ export const en: Record<ZhKey, string> = {
   'app.updateTag': 'Update v{v}',
   'app.viewDetails': 'View details',
 
+  'window.minimize': 'Minimize',
+  'window.maximize': 'Maximize',
+  'window.restore': 'Restore',
+
   'common.cancel': 'Cancel',
   'common.confirm': 'Confirm',
   'common.save': 'Save',
@@ -154,7 +158,8 @@ export const en: Record<ZhKey, string> = {
   'history.loadMore': 'Load more',
 
   'tabbar.newRequest': 'New HTTP request',
-  'tabbar.newRequestHint': 'New request (⌘N)',
+  'tabbar.newRequestHint': 'New request / Import cURL',
+  'tabbar.createTab': 'New…',
   'tabbar.tabMenu': 'Tab management',
   'tabbar.closeCurrent': 'Close current tab',
   'tabbar.closeOthers': 'Close other tabs',
