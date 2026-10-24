@@ -89,6 +89,7 @@ Everything lives in a local `miyo.db`; environment variable values are **AES-256
 - Backup (JSON) & restore (full ID remapping, never overwrites existing data)
 - Configurable data directory (in-app picker or `MIYO_DATA_DIR`, applied on restart)
 - Dark / light / follow-system theme
+- Headless test runner (`miyo-cli`): run API collections in CI with JUnit output
 
 ## AI Agent integration
 
@@ -180,6 +181,7 @@ scripts/package-tauri.sh                # package distributables in one step
 | [docs/en/USER_GUIDE.md](docs/en/USER_GUIDE.md) | End-user manual |
 | [docs/en/AGENT.md](docs/en/AGENT.md) | AI Agent integration (MCP / HTTP control plane) |
 | [docs/en/MIGRATION.md](docs/en/MIGRATION.md) | Migration from Apifox / Postman |
+| [docs/CLI.md](docs/CLI.md) | Headless CLI test runner (Chinese) |
 | [CHANGELOG.md](CHANGELOG.md) | Version highlights (Chinese) |
 | [docs/README.md](docs/README.md) | Docs index (Chinese) |
 | [docs/SPEC.md](docs/SPEC.md) | Historical spec, frozen (Chinese) |

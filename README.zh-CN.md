@@ -88,7 +88,7 @@ Rust LTO 优化 + 单一进程模型 + SQLite 零拷贝本地存储——秒开�
 - 删除撤销、目录树多选批量操作、快捷键帮助（Ctrl+/）、设置页日志查看
 - 备份（JSON）与恢复（ID 全量重映射，绝不覆盖现有数据）
 - 数据目录可配置（设置页更改或 `MIYO_DATA_DIR` 覆盖，重启生效）
-- 深色 / 浅色 / 跟随系统主题
+- 无头测试运行器（`miyo-cli`）：在 CI 运行 API 集合并输出 JUnit 报告
 
 ## AI Agent 集成
 
@@ -173,6 +173,10 @@ scripts/package-tauri.sh                # 一键打包分发包
 ```
 
 > 架构原理、Crate 划分、IPC 与数据流等开发细节见 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**（Tauri 2 + Vue 3 三层架构，含架构图）。
+
+## CLI 测试运行器
+
+不打开界面，在终端 / CI 里运行集合：`miyo-cli run ./备份.json --env 生产环境 --junit report.xml`。详见 [docs/CLI.md](docs/CLI.md)。
 
 ## 文档
 

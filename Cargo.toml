@@ -17,6 +17,7 @@ members = [
     "crates/miyo-mcp",
     "crates/miyo-sign",
     "crates/miyo-sync",
+    "crates/miyo-cli",
 ]
 
 [workspace.package]
@@ -32,6 +33,7 @@ description = "Miyo — lightweight cross-platform API debugging client (backend
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # serde_yaml 已停止维护，serde_norway 是其 API 兼容的社区接续分支
+clap = { version = "4", features = ["derive"] }
 serde_norway = "0.9"
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
