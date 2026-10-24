@@ -344,6 +344,7 @@ export const en: Record<ZhKey, string> = {
   'editor.deleteExampleConfirm': 'Delete example "{name}"?',
   'editor.deleteExample': 'Delete example',
   'editor.empty': 'Select an endpoint on the left to start editing',
+  'editor.emptyNew': 'New endpoint',
   'editor.saveEndpoint': 'Save endpoint',
   'editor.nameHint': 'Name this endpoint (required):',
   'editor.namePh': 'e.g. List users',

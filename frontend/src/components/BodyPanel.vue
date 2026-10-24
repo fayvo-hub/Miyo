@@ -417,6 +417,17 @@ const binPath = useDebouncedField(
   },
   () => [props.draft?.id, (bodyAny.value as unknown as { path?: string } | undefined)?.path],
 )
+
+/** 暴露给 EndpointEditor：save/send（⌘S / ⌘Enter，inInput 快捷键不经过 blur）
+ *  等读草稿的动作在取值前统一刷出防抖镜像，避免静默丢最后 150ms 键入。 */
+defineExpose({
+  flushPendingInput: (): void => {
+    rawText.flush()
+    gqlQuery.flush()
+    gqlOp.flush()
+    binPath.flush()
+  },
+})
 </script>
 
 <template>

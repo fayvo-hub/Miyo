@@ -1501,6 +1501,9 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
   const grpcStreams = ref<Map<string, GrpcStreamState>>(new Map())
 
+  /** 单条流保留的消息上限（截断最旧；详情面板按 sequence 回落最新）。 */
+  const MAX_STREAM_MESSAGES = 500
+
   /** 某接口当前（最近一次）的服务端流状态。 */
   function grpcStreamOf(endpointId: string): GrpcStreamState | null {
     for (const st of grpcStreams.value.values()) {
@@ -1521,6 +1524,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         if (!st) return
         if (payload.kind === 'message') {
           st.messages.push(payload as unknown as GrpcMessageEvent)
+          // 服务端流可能高频推送：与 RealtimeView 的 MAX_LOG 同口径截断最旧，
+          // 防止长时间流式调用的内存 / DOM 无界增长
+          if (st.messages.length > MAX_STREAM_MESSAGES) {
+            st.messages.splice(0, st.messages.length - MAX_STREAM_MESSAGES)
+          }
         } else if (payload.kind === 'end') {
           st.status = 'done'
           st.end = payload as unknown as GrpcEndEvent

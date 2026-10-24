@@ -340,6 +340,7 @@ export const zh = {
   'editor.deleteExampleConfirm': '删除示例「{name}」？',
   'editor.deleteExample': '删除示例',
   'editor.empty': '从左侧选择接口开始编辑',
+  'editor.emptyNew': '新建接口',
   'editor.saveEndpoint': '保存接口',
   'editor.nameHint': '请为接口填写名称（必填）：',
   'editor.namePh': '例如：获取用户列表',

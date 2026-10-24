@@ -12,6 +12,7 @@ import { useLocaleStore } from '../stores/locale'
 import { useWorkspaceStore } from '../stores/workspace'
 import { useMiyoApi } from '../composables/useMiyoApi'
 import { methodTextTone } from '../utils/methodTone'
+import type { GrpcMessageEvent } from '../types/miyoApi'
 import JsonTree from './JsonTree.vue'
 import Icon from './ui/Icon.vue'
 import Tooltip from './ui/Tooltip.vue'
@@ -93,12 +94,38 @@ function prettyJson(raw: string): string {
 const activeStreamMessage = ref(0)
 const pinned = ref(false)
 watch(
-  () => props.stream?.messages.length ?? 0,
-  (len) => {
-    if (len > 0 && !pinned.value) activeStreamMessage.value = len - 1
+  // 盯最后一条的 sequence 而非 length：store 对流消息有 cap（截断最旧），
+  // 达到上限后 length 恒定，按 length 无法继续跟随最新
+  () => {
+    const msgs = props.stream?.messages
+    return msgs?.length ? msgs[msgs.length - 1].sequence : 0
+  },
+  (lastSeq) => {
+    if (lastSeq > 0 && !pinned.value) activeStreamMessage.value = lastSeq
   },
   { immediate: true },
 )
+
+/** 当前查看的消息：按 sequence 精确匹配（pinMessage 存的即 sequence，
+ *  旧实现把 sequence 当索引用，错位一条且最后一条显示空）；
+ *  pinned 的消息被 cap 截断淘汰时回落到最新一条。 */
+const activeMessage = computed(() => {
+  const msgs = props.stream?.messages
+  if (!msgs?.length) return undefined
+  return msgs.find((m) => m.sequence === activeStreamMessage.value) ?? msgs[msgs.length - 1]
+})
+
+/** 消息预览缓存：prettyJson 解析开销大，流式高频追加 + 时间线重渲染时
+ *  避免对全部历史消息重复解析（WeakMap 随消息对象一起回收）。 */
+const previewCache = new WeakMap<GrpcMessageEvent, string>()
+function streamPreview(msg: GrpcMessageEvent): string {
+  let p = previewCache.get(msg)
+  if (p === undefined) {
+    p = prettyJson(msg.message_json).replace(/\s+/g, ' ').slice(0, 120)
+    previewCache.set(msg, p)
+  }
+  return p
+}
 watch(
   () => props.stream?.streamId,
   () => {
@@ -193,7 +220,7 @@ function metaRows(metadata: [string, string][]): Array<{ key: string; value: str
         >
           <span class="stream-seq">#{{ msg.sequence }}</span>
           <span class="stream-elapsed">{{ msg.elapsed_ms.toFixed(0) }}ms</span>
-          <span class="stream-preview">{{ prettyJson(msg.message_json).replace(/\s+/g, ' ').slice(0, 120) }}</span>
+          <span class="stream-preview">{{ streamPreview(msg) }}</span>
         </button>
       </div>
       <div v-else-if="stream.status === 'running'" class="stream-waiting">
@@ -202,8 +229,8 @@ function metaRows(metadata: [string, string][]): Array<{ key: string; value: str
       </div>
 
       <div v-if="stream.messages.length" class="grpc-body">
-        <p class="section-label">{{ t('grpc.messageDetail', { n: Math.max(1, activeStreamMessage + 1) }) }}</p>
-        <pre class="stream-detail">{{ prettyJson(stream.messages[activeStreamMessage]?.message_json ?? '{}') }}</pre>
+        <p class="section-label">{{ t('grpc.messageDetail', { n: Math.max(1, activeMessage?.sequence ?? 0) }) }}</p>
+        <pre class="stream-detail">{{ prettyJson(activeMessage?.message_json ?? '{}') }}</pre>
       </div>
 
       <div

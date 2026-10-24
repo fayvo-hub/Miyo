@@ -752,6 +752,21 @@ const urlPath = computed({
 })
 
 /** 提交地址栏输入并归一化（失焦 / 发送 / 保存前调用；重复执行幂等）。 */
+/** 读取草稿前统一收口：提交地址栏镜像 + 刷出 Body 防抖镜像。
+ *  save/send/代码生成/压测/命名确认都经此，保证 ⌘S / ⌘Enter 在输入框内
+ *  触发时（不经过 blur）也能拿到包含最后 150ms 键入的完整草稿。 */
+const bodyPanelRef = ref<InstanceType<typeof BodyPanel> | null>(null)
+
+function commitPendingInput(): void {
+  commitUrlPath()
+  flushPendingBodyInput()
+}
+
+/** 刷出 BodyPanel 尚未落盘的防抖镜像（raw / GraphQL query+op / binary path）。 */
+function flushPendingBodyInput(): void {
+  bodyPanelRef.value?.flushPendingInput()
+}
+
 function commitUrlPath(): void {
   if (draft.value) applyUrlInput(draft.value.path, true)
 }
@@ -855,7 +870,7 @@ window.addEventListener('resize', closeSettings)
 
 async function send(): Promise<void> {
   if (!draft.value) return
-  commitUrlPath()
+  commitPendingInput()
   const targetId = draft.value.id
   if (sendingMap.value.has(targetId)) {
     toast.info(t('editor.sendingHint'))
@@ -922,10 +937,12 @@ async function sendGrpc(): Promise<void> {
     const result = await store.sendGrpc(d, rid)
     if (result.kind === 'unary') {
       grpcResponses.value.set(targetId, result.response)
+      evictOldest(grpcResponses.value, targetId)
       void store.loadHistories()
     } else {
       // 服务端流：清掉旧 unary 响应，让流式时间线接管响应区
       grpcResponses.value.set(targetId, null)
+      evictOldest(grpcResponses.value, targetId)
     }
     sendErrors.value.set(targetId, null)
     triggerFlash()
@@ -937,6 +954,7 @@ async function sendGrpc(): Promise<void> {
     } else {
       sendErrors.value.set(targetId, err instanceof Error ? err.message : String(err))
       grpcResponses.value.set(targetId, null)
+      evictOldest(grpcResponses.value, targetId)
       triggerFlash()
     }
   } finally {
@@ -982,7 +1000,7 @@ const folderOptions = computed<FolderOption[]>(() => {
 
 async function save(): Promise<void> {
   if (!draft.value) return
-  commitUrlPath()
+  commitPendingInput()
   const name = draft.value.name.trim()
   if (isDefaultName('endpoint', name)) {
     pendingName.value = ''
@@ -998,7 +1016,7 @@ async function save(): Promise<void> {
 
 async function confirmName(): Promise<void> {
   if (!draft.value) return
-  commitUrlPath()
+  commitPendingInput()
   const name = pendingName.value.trim()
   if (!name) {
     toast.warning(t('editor.nameRequired'))
@@ -1590,7 +1608,7 @@ onUnmounted(() => {
         <ParamsPanel v-if="activeTab === 'params'" :draft="draft" />
         <AuthPanel v-else-if="activeTab === 'auth'" :draft="draft" />
         <HeadersPanel v-else-if="activeTab === 'headers'" :draft="draft" />
-        <BodyPanel v-else-if="activeTab === 'body'" :draft="draft" />
+        <BodyPanel ref="bodyPanelRef" v-else-if="activeTab === 'body'" :draft="draft" />
         <GrpcPanel v-else-if="activeTab === 'grpc'" :draft="draft" />
         <PathVariablesPanel v-else-if="activeTab === 'path'" :draft="draft" />
         <RequestExamplesPanel v-else-if="activeTab === 'examples'" :draft="draft" />
@@ -1720,7 +1738,11 @@ onUnmounted(() => {
     />
   </div>
   <div v-else class="editor-empty">
+    <Icon name="file" :size="26" class="editor-empty-icon" aria-hidden="true" />
     <p>{{ t('editor.empty') }}</p>
+    <button class="miyo-btn miyo-btn-primary" type="button" @click="store.openNewEndpoint(null)">
+      <Icon name="plus" :size="13" /> {{ t('editor.emptyNew') }}
+    </button>
   </div>
 
   <Modal v-model:open="showNameDialog" :title="t('editor.saveEndpoint')" width="420px">
@@ -2853,10 +2875,21 @@ onUnmounted(() => {
 
 .editor-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   height: 100%;
   color: var(--text-3);
+}
+
+.editor-empty-icon {
+  color: var(--text-4, var(--text-3));
+  opacity: 0.7;
+}
+
+.editor-empty .miyo-btn {
+  margin-top: 4px;
 }
 
 /* ---- 名称输入对话框 ---- */
