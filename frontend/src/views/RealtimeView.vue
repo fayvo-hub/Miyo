@@ -311,6 +311,9 @@ function onSseEvent(payload: SseEventPayload): void {
 // ---------- 事件订阅 ----------
 let unlistenWs: UnlistenFn | null = null
 let unlistenSse: UnlistenFn | null = null
+/** 卸载标志：listen 是异步注册，路由在 IPC 返回前切走时监听器会晚于
+ *  onUnmounted 到达——此时立即解绑，避免事件打进已卸载组件。 */
+let listenersDisposed = false
 
 onMounted(async () => {
   void detectWindow()
@@ -318,6 +321,11 @@ onMounted(async () => {
     if ('__TAURI_INTERNALS__' in window) {
       unlistenWs = await listen<WsEventPayload>('miyo:ws-event', (e) => onWsEvent(e.payload))
       unlistenSse = await listen<SseEventPayload>('miyo:sse-event', (e) => onSseEvent(e.payload))
+      if (listenersDisposed) {
+        unlistenWs()
+        unlistenSse()
+        unlistenWs = unlistenSse = null
+      }
     }
   } catch {
     // 非 Tauri（浏览器预览）环境：忽略
@@ -325,6 +333,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  listenersDisposed = true
   unlistenWs?.()
   unlistenSse?.()
   // 视图卸载即断开：后台会话随之释放，避免泄漏。
