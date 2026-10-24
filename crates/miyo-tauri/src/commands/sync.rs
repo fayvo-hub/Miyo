@@ -189,6 +189,9 @@ pub async fn sync_pull_apply(
 }
 
 /// 覆盖前把本地快照写入 `sync/backups/{project_id}-{时间戳}.json`。
+///
+/// 序列化 + 写盘为同步 IO 且快照可达数 MB：包 `spawn_blocking`，
+/// 避免阻塞 tokio runtime worker（同 import_export.rs 的 tokio::fs 口径）。
 async fn write_pre_pull_backup(
     project_id: Uuid,
     snapshot: &BackupFile,
@@ -196,14 +199,26 @@ async fn write_pre_pull_backup(
     let dir = miyo_core::paths::default_data_dir()
         .join("sync")
         .join("backups");
-    std::fs::create_dir_all(&dir)?;
-    let name = format!(
-        "{}-{}.json",
-        project_id,
-        chrono::Utc::now().format("%Y%m%dT%H%M%S")
-    );
-    let path = dir.join(&name);
-    std::fs::write(&path, snapshot.serialize()?)?;
+    let serialized = tokio::task::spawn_blocking({
+        let snapshot = snapshot.clone();
+        move || snapshot.serialize()
+    })
+    .await
+    .map_err(|e| miyo_core::AppError::Io(std::io::Error::other(format!("备份任务失败：{e}"))))??;
+    let path = tokio::task::spawn_blocking(move || -> std::io::Result<std::path::PathBuf> {
+        std::fs::create_dir_all(&dir)?;
+        let name = format!(
+            "{}-{}.json",
+            project_id,
+            chrono::Utc::now().format("%Y%m%dT%H%M%S")
+        );
+        let path = dir.join(name);
+        std::fs::write(&path, serialized.as_bytes())?;
+        Ok(path)
+    })
+    .await
+    .map_err(|e| miyo_core::AppError::Io(std::io::Error::other(format!("备份任务失败：{e}"))))?
+    .map_err(miyo_core::AppError::Io)?;
     tracing::info!(path = %path.display(), "拉取覆盖前已留档本地快照");
     Ok(path.display().to_string())
 }

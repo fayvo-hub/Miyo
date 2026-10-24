@@ -13,9 +13,28 @@ const DEFAULT_PROTOCOL_VERSION: &str = "2025-06-18";
 
 // ---------- 入口 ----------
 
-/// 处理一行请求：自动 `discover_default()` 建立控制面连接。
+/// 进程级缓存的控制面客户端：MCP 生命周期内复用连接池与端口发现结果，
+/// 免去每条 JSON-RPC 重建 reqwest Client / 重扫 4110~4129 端口段的开销。
+/// 健康检查失败（桌面端重启 / 换端口）时丢弃并重新发现。
+static CLIENT_CACHE: tokio::sync::Mutex<Option<ControlClient>> =
+    tokio::sync::Mutex::const_new(None);
+
+async fn cached_client() -> Result<ControlClient, AppError> {
+    let mut cached = CLIENT_CACHE.lock().await;
+    if let Some(client) = cached.as_ref() {
+        if client.health().await.is_ok() {
+            return Ok(client.clone());
+        }
+        eprintln!("miyo-mcp: 缓存的控制面连接失效，重新发现");
+    }
+    let client = ControlClient::discover_default().await?;
+    *cached = Some(client.clone());
+    Ok(client)
+}
+
+/// 处理一行请求：复用进程级缓存的控制面连接（失效时自动重新发现）。
 pub async fn handle_line_discover(line: &str) -> Option<String> {
-    handle_line_with(line, || Box::pin(ControlClient::discover_default())).await
+    handle_line_with(line, || Box::pin(cached_client())).await
 }
 
 pub(crate) async fn handle_line_with(

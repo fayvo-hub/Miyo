@@ -78,6 +78,9 @@ fn list_log_files() -> CommandResult<Vec<LogFile>> {
     Ok(out)
 }
 
+const MAX_TAIL_BYTES: u64 = 512 * 1024;
+const MAX_LINES: u64 = 2000;
+
 /// 读取日志尾部（默认 300 行，上限 2000 行；只读末尾 512KB，大文件不爆内存）。
 #[tauri::command(rename_all = "camelCase")]
 pub async fn log_tail(file: Option<String>, lines: Option<u64>) -> CommandResult<String> {
@@ -87,11 +90,21 @@ pub async fn log_tail(file: Option<String>, lines: Option<u64>) -> CommandResult
     if name.contains('/') || name.contains('\\') || name.contains("..") {
         return Err(CommandError::validation("非法的文件名"));
     }
-    let path = dir.join(&name);
-    const MAX_TAIL_BYTES: u64 = 512 * 1024;
-    const MAX_LINES: u64 = 2000;
     let want = lines.unwrap_or(300).clamp(1, MAX_LINES) as usize;
-    // 只 seek 到末尾 512KB 再读：滚动日志可达数百 MB，整文件读入会内存尖峰。
+    // tail 读取（seek + read_to_end）为同步 IO：挪进 blocking 线程池，
+    // 与同文件 list_log_files 的口径一致。
+    tokio::task::spawn_blocking(move || read_log_tail(dir.join(&name), want))
+        .await
+        .map_err(|e| CommandError::with_code("INTERNAL", format!("日志读取任务失败：{e}")))?
+}
+
+/// 同步实现：只读文件末尾 [`MAX_TAIL_BYTES`]，返回最后 `want` 行。
+fn read_log_tail(path: std::path::PathBuf, want: usize) -> CommandResult<String> {
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("miyo.log")
+        .to_string();
     let mut file = std::fs::File::open(&path)
         .map_err(|e| CommandError::with_code("IO", format!("读取日志失败（{name}）：{e}")))?;
     use std::io::{Read, Seek, SeekFrom};

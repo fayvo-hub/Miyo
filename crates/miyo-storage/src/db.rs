@@ -153,14 +153,28 @@ async fn snapshot_database(pool: &SqlitePool, path: &Path) -> Result<()> {
         .fetch_optional(pool)
         .await
         .unwrap_or(None);
+    // 复制 + 修剪是纯同步文件 IO（整库 copy 可达数百 MB）：挪进 blocking
+    // 线程池，避免阻塞 runtime worker。
+    tokio::task::spawn_blocking({
+        let path = path.to_path_buf();
+        move || copy_and_prune_snapshots(&path, &dir)
+    })
+    .await
+    .unwrap_or_else(|e| tracing::warn!("快照任务失败（继续启动）：{e}"));
+    Ok(())
+}
+
+/// 快照的纯同步部分：复制库文件 + 修剪旧快照（失败仅告警）。
+/// 由 [`snapshot_database`] 经 `spawn_blocking` 调用。
+fn copy_and_prune_snapshots(path: &Path, dir: &Path) {
     let stamp = chrono::Local::now().format("%Y%m%d-%H%M%S");
     let dest = dir.join(format!("miyo-{stamp}.db"));
     if let Err(e) = std::fs::copy(path, &dest) {
         tracing::warn!("迁移前快照失败（继续启动）：{e}");
-        return Ok(());
+        return;
     }
     // 修剪：仅保留最近 SNAPSHOT_RETENTION 份。
-    let mut snaps: Vec<PathBuf> = std::fs::read_dir(&dir)
+    let mut snaps: Vec<PathBuf> = std::fs::read_dir(dir)
         .map(|rd| {
             rd.filter_map(|e| e.ok().map(|e| e.path()))
                 .filter(|p| {
@@ -184,7 +198,6 @@ async fn snapshot_database(pool: &SqlitePool, path: &Path) -> Result<()> {
         snaps.remove(0);
     }
     tracing::info!("迁移前快照已保存：{}", dest.display());
-    Ok(())
 }
 
 /// 迁移后自检：`PRAGMA integrity_check` 非 ok 即报错并指引恢复。
