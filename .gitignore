@@ -22,3 +22,4 @@ node_modules/
 /frontend/src-tauri/binaries/
 .openchamber/
 .zcode/
+/dist/
