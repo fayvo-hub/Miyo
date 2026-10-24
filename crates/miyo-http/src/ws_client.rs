@@ -56,6 +56,9 @@ const DEFAULT_MAX_MISSED_PONGS: u32 = 3;
 const DEFAULT_BACKOFF_BASE: Duration = Duration::from_millis(500);
 /// 默认重连退避最大延迟。
 const DEFAULT_BACKOFF_MAX: Duration = Duration::from_secs(30);
+
+/// 离线补发单次载入的条数上限（超出放弃最旧，见 ws_messages::list_pending_ws_messages）。
+const PENDING_REPLAY_MAX: i64 = 5000;
 /// 持久化待发消息的保留期：超过 24 小时自动清理（过期丢弃）。
 const WS_MESSAGE_TTL: chrono::Duration = chrono::Duration::hours(24);
 
@@ -506,13 +509,19 @@ async fn load_persisted(inner: &WsInner) -> VecDeque<(Uuid, WsOutgoing)> {
         return VecDeque::new();
     };
     let _ = storage::purge_expired_ws_messages(pool, &inner.target, WS_MESSAGE_TTL).await;
-    match storage::list_pending_ws_messages(pool, &inner.target).await {
-        Ok(records) => records
-            .into_iter()
-            .filter_map(|r| {
-                WsOutgoing::from_record(r.message_type, &r.payload).map(|msg| (r.id, msg))
-            })
-            .collect(),
+    match storage::list_pending_ws_messages(pool, &inner.target, PENDING_REPLAY_MAX).await {
+        Ok(records) => {
+            if records.len() as i64 == PENDING_REPLAY_MAX {
+                tracing::warn!(
+                    "WebSocket 离线补发达到上限 {} 条，更旧的积压已放弃",
+                    PENDING_REPLAY_MAX
+                );
+            }
+            records
+        }
+        .into_iter()
+        .filter_map(|r| WsOutgoing::from_record(r.message_type, &r.payload).map(|msg| (r.id, msg)))
+        .collect(),
         Err(e) => {
             tracing::warn!("读取待发 WebSocket 消息失败：{}", e.user_message());
             VecDeque::new()
@@ -887,7 +896,7 @@ mod tests {
         for i in 0..OUTBOX_CAPACITY + 20 {
             client.send_text(format!("msg{i}")).await.unwrap();
         }
-        let pending = storage::list_pending_ws_messages(&pool, target)
+        let pending = storage::list_pending_ws_messages(&pool, target, 1000)
             .await
             .unwrap();
         assert_eq!(pending.len(), 20, "溢出消息应全部落库");
@@ -1001,7 +1010,7 @@ mod tests {
         );
 
         // 补发成功后持久化记录应被删除。
-        let pending = storage::list_pending_ws_messages(&pool, &target)
+        let pending = storage::list_pending_ws_messages(&pool, &target, 1000)
             .await
             .unwrap();
         assert!(pending.is_empty(), "补发后记录应删除：{pending:?}");
@@ -1055,7 +1064,7 @@ mod tests {
         let mut events = client.subscribe();
         // 连接成功 → 会话启动时清理过期消息。
         wait_event(&mut events, |e| *e == WsEvent::State(WsState::Open)).await;
-        let pending = storage::list_pending_ws_messages(&pool, &target)
+        let pending = storage::list_pending_ws_messages(&pool, &target, 1000)
             .await
             .unwrap();
         assert!(pending.is_empty(), "过期消息应被清理：{pending:?}");

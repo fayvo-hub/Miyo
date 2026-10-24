@@ -360,7 +360,9 @@ async fn ws_message_enqueue_list_delete() {
         .await
         .unwrap();
 
-    let list = repo::list_pending_ws_messages(&db, "ws://a").await.unwrap();
+    let list = repo::list_pending_ws_messages(&db, "ws://a", 100)
+        .await
+        .unwrap();
     assert_eq!(list.len(), 2);
     assert_eq!(list[0].message_type, WsMessageType::Text);
     assert_eq!(list[0].payload, "hello");
@@ -368,11 +370,13 @@ async fn ws_message_enqueue_list_delete() {
     assert_eq!(list[1].payload, "AQID");
 
     repo::delete_ws_messages(&db, &[list[0].id]).await.unwrap();
-    let after = repo::list_pending_ws_messages(&db, "ws://a").await.unwrap();
+    let after = repo::list_pending_ws_messages(&db, "ws://a", 100)
+        .await
+        .unwrap();
     assert_eq!(after.len(), 1);
     assert_eq!(after[0].id, list[1].id);
     assert_eq!(
-        repo::list_pending_ws_messages(&db, "ws://b")
+        repo::list_pending_ws_messages(&db, "ws://b", 100)
             .await
             .unwrap()
             .len(),
@@ -404,7 +408,9 @@ async fn ws_message_purges_expired() {
         .await
         .unwrap();
     assert_eq!(removed, 1);
-    let list = repo::list_pending_ws_messages(&db, "ws://a").await.unwrap();
+    let list = repo::list_pending_ws_messages(&db, "ws://a", 100)
+        .await
+        .unwrap();
     assert_eq!(list.len(), 1);
     assert_eq!(list[0].payload, "fresh");
 }
