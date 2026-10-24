@@ -401,13 +401,32 @@ function onMockSelect(item: MenuItem): void {
   else if (item.key === 'rules') showMockRules.value = true
 }
 
-/** 顶栏溢出菜单：GraphQL/实时（视图切换）+ 快捷键 + 团队同步——低频工具收拢，右栏减负。 */
-const TOOLS_ITEMS = computed<MenuItem[]>(() => [
-  { key: 'tools-graphql', label: t('workspace.graphql'), icon: 'code', checked: route.path === '/graphql' },
-  { key: 'tools-realtime', label: t('workspace.realtime'), icon: 'zap', checked: route.path === '/realtime' },
-  { key: 'tools-shortcuts', label: t('workspace.shortcutsHint'), icon: 'keyboard', dividerBefore: true },
-  { key: 'tools-sync', label: t('sync.title'), icon: 'refresh' },
-])
+/** 顶栏直达工具按钮（GraphQL/实时）只在常规宽度展开：窄窗口右栏放不下，
+ *  收进溢出菜单（TOOLS_ITEMS 同步增删，两个入口互斥出现）。 */
+const WIDE_TOOLS_QUERY = '(min-width: 1180px)'
+const wideTools = ref(window.matchMedia(WIDE_TOOLS_QUERY).matches)
+const wideToolsMql = window.matchMedia(WIDE_TOOLS_QUERY)
+function onWideToolsChange(event: MediaQueryListEvent): void {
+  wideTools.value = event.matches
+}
+wideToolsMql.addEventListener('change', onWideToolsChange)
+onBeforeUnmount(() => wideToolsMql.removeEventListener('change', onWideToolsChange))
+
+/** 顶栏溢出菜单：窄窗口承载 GraphQL/实时（视图切换）+ 快捷键 + 团队同步。 */
+const TOOLS_ITEMS = computed<MenuItem[]>(() => {
+  const items: MenuItem[] = []
+  if (!wideTools.value) {
+    items.push(
+      { key: 'tools-graphql', label: t('workspace.graphql'), icon: 'code', checked: route.path === '/graphql' },
+      { key: 'tools-realtime', label: t('workspace.realtime'), icon: 'zap', checked: route.path === '/realtime' },
+    )
+  }
+  items.push(
+    { key: 'tools-shortcuts', label: t('workspace.shortcutsHint'), icon: 'keyboard', dividerBefore: !wideTools.value },
+    { key: 'tools-sync', label: t('sync.title'), icon: 'refresh' },
+  )
+  return items
+})
 
 const toolsBtn = ref<HTMLButtonElement | null>(null)
 
@@ -434,6 +453,7 @@ interface AgentEventPayload {
 }
 
 let unlistenAgent: UnlistenFn | null = null
+let agentListenerDisposed = false
 
 // 关闭最后一个项目标签（或项目被删）后回到项目列表
 watch(
@@ -456,6 +476,11 @@ onMounted(() => {
       await store.refresh()
       toast.info(t('workspace.agentImported', { name: payload.name ?? t('workspace.untitled') }))
     }).then((unlisten) => {
+      // 组件在 IPC 返回前已卸载：立即解绑，避免泄漏
+      if (agentListenerDisposed) {
+        unlisten()
+        return
+      }
       unlistenAgent = unlisten
     })
   }
@@ -466,6 +491,7 @@ const topBarEl = ref<HTMLElement | null>(null)
 useWindowDrag(topBarEl)
 
 onBeforeUnmount(() => {
+  agentListenerDisposed = true
   menuRef.value?.close()
   unlistenAgent?.()
   if (apiSearchTimer) clearTimeout(apiSearchTimer)
@@ -502,7 +528,26 @@ onBeforeUnmount(() => {
         </button>
         <EnvironmentBar />
         <div class="tb-tool-group" role="toolbar" :aria-label="t('workspace.tools')">
-          <!-- 溢出菜单：GraphQL/实时/快捷键/同步（低频工具收拢，右栏减负） -->
+          <!-- 直达按钮：GraphQL/实时（常规宽度展示，窄窗口由溢出菜单接管） -->
+          <template v-if="wideTools">
+            <IconButton
+              class="tb-tool"
+              :class="{ active: route.path === '/graphql' }"
+              name="code"
+              :size="15"
+              :title="t('workspace.graphql')"
+              @click="router.push('/graphql')"
+            />
+            <IconButton
+              class="tb-tool"
+              :class="{ active: route.path === '/realtime' }"
+              name="zap"
+              :size="15"
+              :title="t('workspace.realtime')"
+              @click="router.push('/realtime')"
+            />
+          </template>
+          <!-- 溢出菜单：窄窗口承载 GraphQL/实时，常驻快捷键/同步 -->
           <button
             ref="toolsBtn"
             class="tb-tool tb-more"
