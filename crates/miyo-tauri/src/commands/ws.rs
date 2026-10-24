@@ -13,7 +13,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::task::JoinHandle;
 
 use miyo_http::ws_client::{WsClient, WsEvent, WsMessage, WsOptions};
@@ -99,6 +99,13 @@ pub async fn ws_connect(
             .await
             .map_err(CommandError::from)?;
 
+    // 连接成功后以写锁复查：并发同 id 连接时后到者让位（丢弃新建连接）。
+    // 检查与插入之间跨越了网络 await，单次快路径检查不足以关闭竞态窗口。
+    let mut ws = state.ws.write().await;
+    if ws.contains_key(&id) {
+        return Err(CommandError::validation("该连接已存在，请先断开"));
+    }
+
     // 事件转发：广播订阅 → Tauri 事件（任务随会话持有，断开时 abort）。
     let mut rx = client.subscribe();
     let app_handle = app.clone();
@@ -139,11 +146,8 @@ pub async fn ws_connect(
         }
     });
 
-    state
-        .ws
-        .write()
-        .await
-        .insert(id.clone(), WsSession { client, forward });
+    ws.insert(id.clone(), WsSession { client, forward });
+    drop(ws);
     Ok(id)
 }
 
@@ -273,12 +277,17 @@ pub async fn sse_connect(
     let id = args
         .connection_id
         .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-    if state.sse.read().await.contains_key(&id) {
+    // 校验 / 占位 / 建客户端 / 启动转发任务在同一把写锁内完成，
+    // 关闭 contains_key 与 insert 之间的 check-then-act 竞态窗口。
+    let mut sse = state.sse.write().await;
+    if sse.contains_key(&id) {
         return Err(CommandError::validation("该订阅已存在，请先断开"));
     }
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(300))
+        // SSE 是永不结束的长连接：只设连接超时。总超时（timeout）会把每条
+        // 订阅在超时点无条件掐断（此前 300s 总超时导致 5 分钟必断）。
+        .connect_timeout(std::time::Duration::from_secs(15))
         .no_proxy()
         .build()
         .map_err(|e| CommandError::with_code("IO", format!("HTTP 客户端初始化失败：{e}")))?;
@@ -301,54 +310,66 @@ pub async fn sse_connect(
         let emit = |payload: SseEventPayload| {
             let _ = app_handle.emit("miyo:sse-event", &payload);
         };
-        let resp = match req.send().await {
-            Ok(r) => r,
-            Err(e) => {
-                emit(SseEventPayload::Error {
-                    connection_id: forward_id.clone(),
-                    message: format!("SSE 连接失败：{e}"),
-                });
-                return;
-            }
-        };
-        if !resp.status().is_success() {
-            emit(SseEventPayload::Error {
-                connection_id: forward_id.clone(),
-                message: format!("SSE 服务端返回 HTTP {}", resp.status()),
-            });
-            return;
-        }
-        emit(SseEventPayload::Open {
-            connection_id: forward_id.clone(),
-        });
-        use futures::StreamExt;
-        let mut stream = resp.bytes_stream();
-        while let Some(chunk) = stream.next().await {
-            match chunk {
-                Ok(bytes) => {
-                    if bytes.is_empty() {
-                        continue;
-                    }
-                    emit(SseEventPayload::Chunk {
-                        connection_id: forward_id.clone(),
-                        chunk: String::from_utf8_lossy(&bytes).into_owned(),
-                    });
-                }
+        async {
+            let resp = match req.send().await {
+                Ok(r) => r,
                 Err(e) => {
                     emit(SseEventPayload::Error {
                         connection_id: forward_id.clone(),
-                        message: format!("SSE 读取中断：{e}"),
+                        message: format!("SSE 连接失败：{e}"),
                     });
-                    break;
+                    return;
+                }
+            };
+            if !resp.status().is_success() {
+                emit(SseEventPayload::Error {
+                    connection_id: forward_id.clone(),
+                    message: format!("SSE 服务端返回 HTTP {}", resp.status()),
+                });
+                return;
+            }
+            emit(SseEventPayload::Open {
+                connection_id: forward_id.clone(),
+            });
+            use futures::StreamExt;
+            let mut stream = resp.bytes_stream();
+            while let Some(chunk) = stream.next().await {
+                match chunk {
+                    Ok(bytes) => {
+                        if bytes.is_empty() {
+                            continue;
+                        }
+                        emit(SseEventPayload::Chunk {
+                            connection_id: forward_id.clone(),
+                            chunk: String::from_utf8_lossy(&bytes).into_owned(),
+                        });
+                    }
+                    Err(e) => {
+                        emit(SseEventPayload::Error {
+                            connection_id: forward_id.clone(),
+                            message: format!("SSE 读取中断：{e}"),
+                        });
+                        break;
+                    }
                 }
             }
+            emit(SseEventPayload::Closed {
+                connection_id: forward_id.clone(),
+            });
         }
-        emit(SseEventPayload::Closed {
-            connection_id: forward_id,
-        });
+        .await;
+        // 任务自然结束（连接失败 / 服务端关流 / 读中断）统一清理自身条目：
+        // 防止句柄泄漏与同 id 重连被拒；abort 路径由 sse_disconnect 清理。
+        app_handle
+            .state::<AppState>()
+            .sse
+            .write()
+            .await
+            .remove(&forward_id);
     });
 
-    state.sse.write().await.insert(id.clone(), task);
+    sse.insert(id.clone(), task);
+    drop(sse);
     Ok(id)
 }
 
