@@ -269,6 +269,11 @@ footer a:hover { color: var(--text); }
           <tr><td>Cold start</td><td class="hl">&lt; 1 s</td><td>2–4 s</td><td>2–5 s</td><td>2–4 s</td></tr>
           <tr><td>Runtime memory</td><td class="hl">~40 MB</td><td>500 MB+</td><td>300 MB+</td><td>200 MB+</td></tr>
           <tr><td>App shell</td><td class="hl">System WebView</td><td>Chromium + Node.js</td><td>Chromium + Node.js</td><td>Chromium + Node.js</td></tr>
+          <tr><td>Account required</td><td class="hl">No — local-first</td><td>Sign-in pushed</td><td>No</td><td>Sign-in pushed</td></tr>
+          <tr><td>Built-in mock server</td><td class="hl">Yes (port probing, rules, delays/faults)</td><td>Cloud, limited on free</td><td>—</td><td>Yes</td></tr>
+          <tr><td>GUI tests + CLI in one app</td><td class="hl">Yes (miyo-cli, JUnit)</td><td>Via separate Newman</td><td>Via bruno-cli</td><td>—</td></tr>
+          <tr><td>Load testing</td><td class="hl">Built-in (QPS / P50-P99)</td><td>Paid plans</td><td>—</td><td>—</td></tr>
+          <tr><td>License</td><td class="hl">Apache-2.0</td><td>Proprietary</td><td>MIT</td><td>Proprietary</td></tr>
         </tbody>
       </table>
     </div>
@@ -382,6 +387,10 @@ footer a:hover { color: var(--text); }
       </a>
       <a class="dl-card" href="./docs/en/migration/">
         <div class="os">🚚</div><h3>Migration Guide</h3><p>Move from Apifox / Postman</p>
+      </a>
+      <a class="dl-card" href="./docs/en/cli/">
+        <h3>CLI test runner</h3>
+        <p>Run API collections headlessly in CI with JUnit reports — fail the pipeline on regressions.</p>
       </a>
       <a class="dl-card" href="./docs/changelog/">
         <div class="os">📗</div><h3>Changelog</h3><p>What's new in each version</p>

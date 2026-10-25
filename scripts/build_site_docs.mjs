@@ -39,6 +39,8 @@ const PAGES = [
   { src: 'docs/en/MIGRATION.md', slug: 'migration', lang: 'en', title: 'Migration Guide', pair: 'docs/MIGRATION.md', desc: 'Migrate from Apifox / Postman to Miyo: export, import, environments and auth mapping.' },
   { src: 'docs/AGENT.md', slug: 'agent', lang: 'zh', title: 'Agent 集成', pair: 'docs/en/AGENT.md', desc: 'MCP Server 与本机 HTTP 控制面：一句话把 cURL 或后端代码保存为接口。' },
   { src: 'docs/en/AGENT.md', slug: 'agent', lang: 'en', title: 'Agent Integration', pair: 'docs/AGENT.md', desc: 'MCP server and local HTTP control plane: save a cURL or backend snippet as an endpoint.' },
+  { src: 'docs/CLI.md', slug: 'cli', lang: 'zh', title: 'CLI 测试运行器', pair: 'docs/en/CLI.md', desc: 'miyo-cli：在终端 / CI 无头运行测试集合，输出 JUnit 报告，失败即流水线红。' },
+  { src: 'docs/en/CLI.md', slug: 'cli', lang: 'en', title: 'CLI Test Runner', pair: 'docs/CLI.md', desc: 'miyo-cli: run API collections headlessly in CI with JUnit reports — fail the pipeline on regressions.' },
   { src: 'CHANGELOG.md', slug: 'changelog', lang: 'zh', title: '更新日志', pair: null, desc: 'Miyo 各版本变化速览。' },
 ]
 

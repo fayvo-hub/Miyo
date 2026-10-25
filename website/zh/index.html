@@ -282,6 +282,11 @@ footer a:hover { color: var(--text); }
           <tr><td>首屏启动</td><td class="hl">&lt; 1 秒</td><td>2–4 秒</td><td>2–5 秒</td><td>2–4 秒</td></tr>
           <tr><td>运行时内存</td><td class="hl">~40 MB</td><td>500 MB+</td><td>300 MB+</td><td>200 MB+</td></tr>
           <tr><td>应用壳</td><td class="hl">系统 WebView</td><td>Chromium + Node.js</td><td>Chromium + Node.js</td><td>Chromium + Node.js</td></tr>
+          <tr><td>需要账号</td><td class="hl">否 — 本地优先</td><td>引导登录</td><td>否</td><td>引导登录</td></tr>
+          <tr><td>内置 Mock 服务</td><td class="hl">内置（端口探测 / 规则 / 延迟与故障注入）</td><td>云端，免费档限额</td><td>—</td><td>有</td></tr>
+          <tr><td>GUI 测试 + CLI 一体</td><td class="hl">是（miyo-cli，JUnit 报告）</td><td>需外挂 Newman</td><td>bruno-cli</td><td>—</td></tr>
+          <tr><td>压测</td><td class="hl">内置（QPS / P50-P99）</td><td>付费档</td><td>—</td><td>—</td></tr>
+          <tr><td>开源协议</td><td class="hl">Apache-2.0</td><td>专有</td><td>MIT</td><td>专有</td></tr>
         </tbody>
       </table>
     </div>
@@ -392,6 +397,10 @@ footer a:hover { color: var(--text); }
       </a>
       <a class="dl-card" href="../docs/migration/">
         <div class="os">🚚</div><h3>迁移手册</h3><p>从 Apifox / Postman 搬家</p>
+      </a>
+      <a class="dl-card" href="../docs/cli/">
+        <h3>CLI 测试运行器</h3>
+        <p>在终端 / CI 无头运行测试集合，输出 JUnit 报告——接口回归，流水线直接红。</p>
       </a>
       <a class="dl-card" href="../docs/changelog/">
         <div class="os">📗</div><h3>更新日志</h3><p>各版本变化速览</p>
