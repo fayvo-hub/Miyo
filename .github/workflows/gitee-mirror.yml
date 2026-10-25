@@ -1,0 +1,23 @@
+name: Mirror to Gitee
+
+# 把 main 与全部 tag 镜像到 Gitee（国内访问加速）。
+# 前置：仓库 Secrets 配置 GITEE_TOKEN（Gitee 私人令牌，需 projects 写权限），
+#       且 Gitee 上已手动创建同名仓库 weihubeats/Miyo。
+# 首次同步建议本地执行一次全量：git push --mirror <gitee 地址>
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push main + tags to Gitee
+        run: |
+          git push --force "https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/weihubeats/Miyo.git" main
+          git push --force "https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/weihubeats/Miyo.git" --tags
