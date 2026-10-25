@@ -3,20 +3,37 @@
 [![Release](https://img.shields.io/github/v/release/weihubeats/Miyo?include_prereleases&sort=semver)](https://github.com/weihubeats/Miyo/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/Miyo/ci.yml?branch=main)](https://github.com/weihubeats/Miyo/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/weihubeats/Miyo/releases)
 
-> A lightweight cross-platform API debugging client in ~10 MB. One installer, ready to run.
+> A ~10 MB, offline-first API client — debug HTTP / WebSocket / SSE / GraphQL / gRPC, with a built-in mock server, GUI test runner and a CLI for CI. No account. Apache-2.0.
 
-**Website**: [https://weihubeats.github.io/Miyo/](https://weihubeats.github.io/Miyo/)
+**Download**: [Releases](https://github.com/weihubeats/Miyo/releases) · **Website & docs**: [weihubeats.github.io/Miyo](https://weihubeats.github.io/Miyo/) · **Language**: English · [简体中文](README.zh-CN.md)
 
-**Language / 语言**：English · [简体中文](README.zh-CN.md)
+<!-- 待系统代理回环修复后重录：![Miyo quickstart demo](docs/imags/demo-debug.gif) -->
 
-<!--
-  Screenshots: docs/imags/home.png (dashboard), docs/imags/api-home.png (workspace).
-  Replace the paths below after updating the screenshots.
--->
-[![Miyo dashboard](docs/imags/home.png)](docs/imags/home.png)
+## Why Miyo, in one table
 
-[![Miyo workspace](docs/imags/api-home.png)](docs/imags/api-home.png)
+| | Miyo | Postman | Bruno | Insomnia |
+| --- | --- | --- | --- | --- |
+| Installer | **~10 MB** | ~310 MB | ~433 MB | ~200 MB |
+| Account | **Not required** | Sign-in pushed | Not required | Sign-in pushed |
+| Built-in mock server | **Yes** | Cloud, limited | — | Yes |
+| GUI tests + CI CLI | **Yes (JUnit out)** | Via Newman | Via bruno-cli | — |
+| Load testing | **Built-in** | Paid plans | — | — |
+| License | **Apache-2.0** | Proprietary | MIT | Proprietary |
+
+Full measured table (cold start, memory, app shell) on the [website](https://weihubeats.github.io/Miyo/).
+
+## Highlights
+
+- **Debug** — HTTP, WebSocket, SSE, GraphQL, gRPC; environments with `{{variable}}` interpolation; cURL paste-to-import; multi-tab with per-tab drafts
+- **Mock server** — port probing, rules, template variables, delay & fault injection: frontend and backend stop blocking each other
+- **Test → CI** — write assertions and variable chains in the GUI, run the collection headlessly with `miyo-cli` (JUnit report, exit-code semantics)
+- **Load testing** — concurrency, QPS, P50/P90/P99, built in
+- **Local-first security** — everything in a local SQLite file; secrets AES-256-GCM encrypted with a key that never leaves your machine
+- **AI Agent integration** — built-in MCP server: save a cURL to Miyo by asking Claude Code / Cursor in one sentence
+- **Team sync** — push project snapshots to git / S3 / DB remotes with automatic secret redaction
+- **Import** — OpenAPI 3 / Swagger 2 / Postman v2.1 / cURL; undo delete; shortcut help; dark / light / follow-system theme
 
 ## Why Miyo?
 

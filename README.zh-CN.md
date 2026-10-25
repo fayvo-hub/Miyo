@@ -3,20 +3,37 @@
 [![Release](https://img.shields.io/github/v/release/weihubeats/Miyo?include_prereleases&sort=semver)](https://github.com/weihubeats/Miyo/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/weihubeats/Miyo/ci.yml?branch=main)](https://github.com/weihubeats/Miyo/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://github.com/weihubeats/Miyo/releases)
 
-> 约 10 MB 的轻量跨平台 API 调试工具。一个安装包，开箱即用。
+> 一个 ~10MB 的本地优先 API 客户端——调试 HTTP / WebSocket / SSE / GraphQL / gRPC，内置 Mock 服务、GUI 测试运行器和 CI 用的 CLI。无需账号，Apache-2.0 开源。
 
-**官网**：[https://weihubeats.github.io/Miyo/](https://weihubeats.github.io/Miyo/zh/)
+**下载**：[Releases](https://github.com/weihubeats/Miyo/releases) · **官网与文档**：[weihubeats.github.io/Miyo](https://weihubeats.github.io/Miyo/) · **语言**：[English](README.md) · 简体中文
 
-**语言 / Language**：[English](README.md) · 简体中文
+<!-- 待系统代理回环修复后重录：![Miyo 快速上手演示](docs/imags/demo-debug.gif) -->
 
-<!--
-  示例图片：docs/imags/home.png（主页）、docs/imags/api-home.png（工作区）。
-  更新截图后替换下面两行的路径即可。
--->
-[![Miyo 主页截图](docs/imags/home.png)](docs/imags/home.png)
+## 一张表看懂 Miyo
 
-[![Miyo 工作区截图](docs/imags/api-home.png)](docs/imags/api-home.png)
+| | Miyo | Postman | Bruno | Insomnia |
+| --- | --- | --- | --- | --- |
+| 安装包 | **~10 MB** | ~310 MB | ~433 MB | ~200 MB |
+| 账号 | **不需要** | 引导登录 | 不需要 | 引导登录 |
+| 内置 Mock | **有** | 云端限额 | 无 | 有 |
+| GUI 测试 + CI CLI | **有（JUnit 报告）** | 需外挂 Newman | bruno-cli | 无 |
+| 压测 | **内置** | 付费档 | 无 | 无 |
+| 开源协议 | **Apache-2.0** | 专有 | MIT | 专有 |
+
+完整实测数据（冷启动、内存、应用壳）见[官网](https://weihubeats.github.io/Miyo/)。
+
+## 核心能力
+
+- **调试** — HTTP、WebSocket、SSE、GraphQL、gRPC；环境变量 `{{插值}}` + AES-256-GCM 加密；cURL 粘贴导入；多项目多标签、草稿独立
+- **Mock 服务** — 端口自动探测、规则匹配、模板变量、延迟与故障注入：前后端不用互相等
+- **测试 → CI** — GUI 里写断言和变量链，`miyo-cli` 无头跑集合（JUnit 报告 + 退出码语义），接口回归流水线直接红
+- **压测** — 并发、QPS、P50/P90/P99 分位耗时，内置
+- **本地优先安全** — 数据全在本地 SQLite，敏感值 AES-256-GCM 加密，密钥不出本机
+- **AI Agent 集成** — 内置 MCP Server，在 Claude Code / Cursor 里一句话把 cURL 存成接口
+- **团队同步** — 项目快照推 git / S3 / 数据库远端，敏感值自动脱敏
+- **导入** — OpenAPI 3 / Swagger 2 / Postman v2.1 / cURL；删除撤销、快捷键帮助、深浅主题
 
 ## 为什么选择 Miyo？
 
