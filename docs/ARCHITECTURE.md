@@ -158,7 +158,8 @@ UI 规范：`src/style.css` 定义设计令牌（`--bg-* / --text-* / --accent: 
   → 目标服务器
   ← 响应 → miyo-http 解析（状态/头/体/耗时/大小）
   ← 同时写入 miyo-storage request_histories
-  ← 返回 ExecuteResponse → 前端 ResponsePanel 渲染
+  ← 返回 ExecuteResponse（含实际发出形态 RequestSnapshot，不落库）
+  ← → 前端 ResponsePanel 渲染响应与「请求」页签
 ```
 
 请求可随时取消（`cancel_request`，Abort 令牌）；下载模式走 stream 落盘。

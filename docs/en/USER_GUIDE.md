@@ -119,7 +119,7 @@ Workspace layout:
 | Auth | **Auth** tab picks the scheme (None / Basic / Bearer / API Key / OAuth2 — all four OAuth2 flows: authorization code / client credentials / password / implicit; tokens attach automatically) |
 | Save | Click "Save"; unsaved changes are flagged with **●** on the tab title, and switching tabs never loses drafts |
 
-**Send**: click "Send" — the right pane shows status, duration, size, headers and body; recent requests go into "History" (below the address bar).
+**Send**: click "Send" — the right pane shows status, duration, size, headers and body; recent requests go into "History" (below the address bar). The **Request** tab on the left of the response area shows the request that was actually sent (rendered URL with query params, effective headers, cookies replayed from the jar, request body). It is transient and never written to history.
 
 > Multiple tabs can edit different endpoints at once, each with its own draft; closing an unsaved tab asks first.
 
