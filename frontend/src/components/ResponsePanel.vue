@@ -18,10 +18,11 @@ import { formatBytes, formatDuration } from '../utils/format'
 import FindBar from './ui/FindBar.vue'
 import Icon from './ui/Icon.vue'
 import JsonTree from './JsonTree.vue'
+import MethodText from './ui/MethodText.vue'
 import SegmentedControl, { type SegmentOption } from './ui/SegmentedControl.vue'
 import Tabs, { type TabItem } from './ui/Tabs.vue'
 import Tooltip from './ui/Tooltip.vue'
-import type { ExecuteResponse } from '../types/miyoApi'
+import type { ExecuteResponse, RequestSnapshot } from '../types/miyoApi'
 
 const props = defineProps<{
   response: ExecuteResponse
@@ -40,7 +41,7 @@ const locale = useLocaleStore()
 const t = locale.t
 
 // ---------- 状态 ----------
-const activeTab = ref<'body' | 'headers' | 'cookies' | 'examples'>('body')
+const activeTab = ref<'request' | 'body' | 'headers' | 'cookies' | 'examples'>('body')
 type ViewMode = 'pretty' | 'raw' | 'preview'
 const viewMode = ref<ViewMode>('pretty')
 
@@ -99,11 +100,29 @@ const LINE_HIGHLIGHT_LIMIT = 10_000
 
 /** 正文是否有非空白内容（computed 缓存：trim 是全量扫描，禁止进模板逐渲染执行）。 */
 const hasBody = computed(() => props.response.body.trim() !== '')
+
+// ---------- 请求（本次实际发出的报文，临时数据不落库） ----------
+/** 旧后端 / 未经过 HTTP 引擎发送（gRPC / 手工构造）时为 null，页签不占位。 */
+const request = computed<RequestSnapshot | null>(() => props.response.request ?? null)
+const requestHeaderRows = computed(() =>
+  (request.value?.headers ?? []).map(([k, v]) => ({ k, v })),
+)
+const requestCookieRows = computed(() =>
+  (request.value?.cookies ?? []).map(([name, value]) => ({ name, value })),
+)
+/** 渲染前模板与实际 URL 一致时无对照价值，不展示。 */
+const requestTemplate = computed(() => {
+  const snap = request.value
+  return snap?.url_template && snap.url_template !== snap.url ? snap.url_template : ''
+})
+
 watch(
   () => props.response,
   () => {
     visibleLines.value = LINE_CHUNK
     treeExpanded.value = false
+    // 新响应没有请求快照时，先把页签从「请求」上撤下来（否则空白页签）。
+    if (activeTab.value === 'request' && !props.response.request) activeTab.value = 'body'
   },
 )
 
@@ -249,6 +268,8 @@ const responseTabs = computed<TabItem[]>(() => [
   ...(props.examplesCount && props.examplesCount > 0
     ? [{ key: 'examples', label: t('response.tabExamples'), count: props.examplesCount }]
     : []),
+  // 「请求」置末：主视图以响应为主，实际发出报文是排查时的补充信息（无快照不占位）。
+  ...(request.value ? [{ key: 'request', label: t('response.tabRequest') }] : []),
 ])
 
 // ---------- 操作 ----------
@@ -594,6 +615,44 @@ onUnmounted(() => {
       >
         <Icon name="chevrons-up-down" :size="14" />
       </span>
+    </div>
+
+    <!-- 本次实际发出的请求报文（Apifox「实际请求」同款）：
+         只读展示，随响应临时返回、不落库；无快照时不渲染（页签同步隐藏）。 -->
+    <div v-show="!collapsed" v-if="activeTab === 'request' && request" class="rp-scroll">
+      <div class="rp-req-line">
+        <MethodText :method="request.method" />
+        <span class="rp-req-url">{{ request.url }}</span>
+      </div>
+      <p v-if="requestTemplate" class="rp-req-template">
+        {{ t('response.reqTemplate') }}: <span class="rp-req-template-val">{{ requestTemplate }}</span>
+      </p>
+
+      <div class="rp-section">
+        {{ t('response.reqHeaders') }}
+        <span class="rp-section-count">{{ requestHeaderRows.length }}</span>
+      </div>
+      <div v-for="(h, i) in requestHeaderRows" :key="`h${i}`" class="rp-header-row">
+        <span class="rp-header-key">{{ h.k }}</span>
+        <span class="rp-header-val">{{ h.v }}</span>
+      </div>
+      <p v-if="!requestHeaderRows.length" class="rp-empty">{{ t('response.reqNoHeaders') }}</p>
+
+      <div class="rp-section">
+        {{ t('response.reqCookies') }}
+        <span class="rp-section-count">{{ requestCookieRows.length }}</span>
+        <span class="rp-section-hint">{{ t('response.reqCookiesHint') }}</span>
+      </div>
+      <div v-for="(c, i) in requestCookieRows" :key="`c${i}`" class="rp-header-row">
+        <span class="rp-header-key">{{ c.name }}</span>
+        <span class="rp-header-val">{{ c.value }}</span>
+      </div>
+      <p v-if="!requestCookieRows.length" class="rp-empty">{{ t('response.reqNoCookies') }}</p>
+
+      <div class="rp-section">{{ t('response.reqBody') }}</div>
+      <p v-if="request.body_omitted" class="rp-note">{{ t('response.reqBodyTruncated') }}</p>
+      <pre v-if="request.body" class="rp-req-body">{{ request.body }}</pre>
+      <p v-else class="rp-empty">{{ t('response.reqNoBody') }}</p>
     </div>
 
     <div v-show="!collapsed" v-if="activeTab === 'body'" class="rp-body">
@@ -1033,6 +1092,78 @@ onUnmounted(() => {
   color: var(--text-2);
   word-break: break-all;
   overflow-wrap: anywhere;
+}
+
+/* ---- 请求（实际发出形态，只读） ---- */
+.rp-req-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 12px 8px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.rp-req-url {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-1);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.rp-req-template {
+  margin: 0;
+  padding: 6px 12px 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.rp-req-template-val {
+  font-family: var(--font-mono);
+  color: var(--text-2);
+}
+
+.rp-section {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 12px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.rp-section-count {
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.rp-section-hint {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.rp-req-body {
+  margin: 4px 12px 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
 }
 
 /* ---- Cookies ---- */

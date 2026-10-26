@@ -458,6 +458,26 @@ export interface RequestHistory {
   created_at: string
 }
 
+/** 本次请求实际发出形态的快照（Rust `RequestSnapshot`）。
+ * 变量渲染、认证注入、全局参数与 Cookie 回放之后的最终值；
+ * 临时随响应返回，不落历史，供「请求」页签排查错误。
+ */
+export interface RequestSnapshot {
+  method: string
+  /** 实际发送的完整 URL（含 query 参数）。 */
+  url: string
+  /** 渲染前 URL 模板（含 `{{变量}}`）；与实际 URL 相同时调用方置空。 */
+  url_template?: string | null
+  /** 实际发送的请求头（含认证注入与自动 Content-Type / Content-Length）。 */
+  headers: [string, string][]
+  /** Cookie Jar 自动回放的 `[name, value]`。 */
+  cookies: [string, string][]
+  /** 请求体预览（文本）；流式 / 二进制体为摘要说明。 */
+  body: string
+  /** `body` 是否非完整原文（截断或摘要）。 */
+  body_omitted: boolean
+}
+
 /** 执行请求出参（Rust `ExecuteResponse`）。 */
 export interface ExecuteResponse {
   status: number
@@ -472,6 +492,8 @@ export interface ExecuteResponse {
    * 可选：旧后端返回缺失时按 `false` 处理。
    */
   body_omitted?: boolean
+  /** 本次请求实际发出的形态（旧后端 / 手工构造场景缺失）。 */
+  request?: RequestSnapshot | null
 }
 
 /** cURL 命令解析结果（Rust `CurlParsed`，miyo-tauri `parse_curl_command` 返回）。 */
