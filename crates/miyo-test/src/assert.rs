@@ -291,6 +291,7 @@ mod tests {
             size_bytes: body.len(),
             cookies: Vec::new(),
             truncated: false,
+            request: None,
         }
     }
 

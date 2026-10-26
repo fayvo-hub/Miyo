@@ -8,6 +8,7 @@ use base64::Engine;
 use bytes::Bytes;
 use futures::StreamExt;
 use reqwest::{Client, Method, Response};
+use serde::Serialize;
 use url::Url;
 
 use miyo_core::model::{
@@ -31,6 +32,30 @@ pub struct CookieData {
     pub value: String,
 }
 
+/// 请求体快照预览上限（64 KB）：够定位「实际发出去的是什么」，
+/// 大表单 / 大文件体不随 IPC 回传。
+const SNAPSHOT_BODY_BYTES: usize = 64 * 1024;
+
+/// 本次请求实际发出形态的快照（变量渲染、全局参数注入、认证应用、
+/// Cookie Jar 回放之后的最终值），供前端「请求」页签排查错误。
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct RequestSnapshot {
+    pub method: String,
+    /// 实际发送的完整 URL（含 query 参数）。
+    pub url: String,
+    /// 渲染前 URL 模板（含 `{{变量}}`）：由调用方填充，便于对照变量替换结果。
+    pub url_template: Option<String>,
+    /// 实际发送的请求头（含认证注入与自动 Content-Type / Content-Length；
+    /// Cookie 单列，见 `cookies`）。
+    pub headers: Vec<(String, String)>,
+    /// Cookie Jar 自动回放的 `(name, value)`。
+    pub cookies: Vec<(String, String)>,
+    /// 请求体预览（文本）；流式 / 二进制体为摘要说明。
+    pub body: String,
+    /// `body` 是否非完整原文（截断或摘要）。
+    pub body_omitted: bool,
+}
+
 /// 响应数据。
 #[derive(Debug, Clone, PartialEq)]
 pub struct HttpResponseData {
@@ -42,6 +67,9 @@ pub struct HttpResponseData {
     pub size_bytes: usize,
     pub cookies: Vec<CookieData>,
     pub truncated: bool,
+    /// 本次请求实际发出的形态（见 [`RequestSnapshot`]）；
+    /// 手工构造的响应（测试 / 脚本沙箱）为 `None`。
+    pub request: Option<RequestSnapshot>,
 }
 
 impl HttpResponseData {
@@ -102,6 +130,9 @@ enum Payload {
         content_type: Option<String>,
         /// 已知总长度时附带（如 binary 单文件），服务端可据此做进度与校验。
         content_length: Option<u64>,
+        /// 快照正文预览：流式体发出后无法回读，构造阶段顺带记下可读形态
+        /// （如 multipart 各字段）；`None` 时快照只给摘要。
+        preview: Option<String>,
     },
 }
 
@@ -133,6 +164,9 @@ fn upload_file_name(path: &Path) -> String {
 /// 表单整体同样流式发送。content-type 由 `Form::boundary` 拼出（含 boundary）。
 async fn build_multipart(fields: &[MultipartField]) -> Result<Payload, AppError> {
     let mut form = reqwest::multipart::Form::new();
+    // 快照预览：文本 part 记真实值，文件 part 记字段名 + 路径。
+    // 流式体发出后无法回读，可读形态只能在构造阶段留下。
+    let mut preview = String::new();
     for field in fields {
         if !field.enabled {
             continue;
@@ -144,6 +178,7 @@ async fn build_multipart(fields: &[MultipartField]) -> Result<Payload, AppError>
         match field.value_type {
             MultipartValueType::Text => {
                 form = form.text(key.to_string(), field.value.clone());
+                push_preview_line(&mut preview, &format!("{key}={}", field.value));
             }
             MultipartValueType::FilePath => {
                 let path = Path::new(&field.value);
@@ -156,6 +191,7 @@ async fn build_multipart(fields: &[MultipartField]) -> Result<Payload, AppError>
                     .mime_str("application/octet-stream")
                     .map_err(|e| AppError::Validation(format!("multipart 构建失败：{e}")))?;
                 form = form.part(key.to_string(), part);
+                push_preview_line(&mut preview, &format!("{key}=[文件] {}", path.display()));
             }
         }
     }
@@ -167,6 +203,7 @@ async fn build_multipart(fields: &[MultipartField]) -> Result<Payload, AppError>
         body: reqwest::Body::wrap_stream(stream),
         content_type: Some(content_type),
         content_length: None,
+        preview: Some(preview),
     })
 }
 
@@ -216,6 +253,7 @@ async fn build_payload(spec: &RequestSpec) -> Result<Payload, AppError> {
                 body: reqwest::Body::wrap_stream(stream),
                 content_type: Some("application/octet-stream".into()),
                 content_length: if len > 0 { Some(len) } else { None },
+                preview: None,
             })
         }
     }
@@ -300,6 +338,147 @@ fn has_header(headers: &[(String, String)], name: &str) -> bool {
     headers
         .iter()
         .any(|(k, _)| k.trim().eq_ignore_ascii_case(name))
+}
+
+/// 构造本次实际发出请求的快照（见 [`RequestSnapshot`]）。
+///
+/// 头与体按真实发送逻辑推导：spec 头（已含认证注入）+ 用户未显式设置时的
+/// 自动 Content-Type / Content-Length；Cookie 取当前 URL 在 Jar 中的回放值。
+/// Digest 认证首轮不带 Authorization（401 质询后才补发），快照取首轮。
+fn build_request_snapshot(
+    method: HttpMethod,
+    url: &Url,
+    headers: &[(String, String)],
+    payload: &Payload,
+    disable_cookies: bool,
+) -> RequestSnapshot {
+    let mut snapshot_headers: Vec<(String, String)> = headers
+        .iter()
+        .filter(|(k, _)| !k.is_empty())
+        .cloned()
+        .collect();
+    let mut body = String::new();
+    let mut body_omitted = false;
+    match payload {
+        Payload::None => {}
+        Payload::Bytes(bytes, content_type) => {
+            push_auto_header(
+                &mut snapshot_headers,
+                headers,
+                "Content-Type",
+                content_type.as_deref(),
+            );
+            let text = String::from_utf8_lossy(bytes);
+            let (preview, truncated) = truncate_text(&text, SNAPSHOT_BODY_BYTES);
+            body = preview;
+            body_omitted = truncated;
+        }
+        Payload::Stream {
+            content_type,
+            content_length,
+            preview,
+            ..
+        } => {
+            push_auto_header(
+                &mut snapshot_headers,
+                headers,
+                "Content-Type",
+                content_type.as_deref(),
+            );
+            if let Some(len) = content_length {
+                push_auto_header(
+                    &mut snapshot_headers,
+                    headers,
+                    "Content-Length",
+                    Some(&len.to_string()),
+                );
+            }
+            let kind = content_type.as_deref().unwrap_or("流式请求体");
+            match preview {
+                // multipart 等构造期留了可读形态：直接当正文展示（与 Bytes 同口径截断）。
+                Some(text) => {
+                    let (shown, cut) = truncate_text(text, SNAPSHOT_BODY_BYTES);
+                    body = shown;
+                    body_omitted = cut;
+                }
+                None => {
+                    body = match content_length {
+                        Some(len) => format!("[{kind}：边读边发，{len} 字节]"),
+                        None => format!("[{kind}：边读边发，长度未知]"),
+                    };
+                    body_omitted = true;
+                }
+            }
+        }
+    }
+    let cookies = if disable_cookies {
+        Vec::new()
+    } else {
+        // trait 方法（与 `SharedJarRef` 同一实现）；禁用 Cookie 的请求走 EmptyJar。
+        use reqwest::cookie::CookieStore as _;
+        parse_cookie_pairs(crate::cookie::shared_jar().cookies(url))
+    };
+    RequestSnapshot {
+        method: method.to_string(),
+        url: url.to_string(),
+        url_template: None,
+        headers: snapshot_headers,
+        cookies,
+        body,
+        body_omitted,
+    }
+}
+
+/// 快照头补齐：只在用户未显式设置同名头时补自动值（与发送逻辑同口径）。
+fn push_auto_header(
+    out: &mut Vec<(String, String)>,
+    existing: &[(String, String)],
+    name: &str,
+    value: Option<&str>,
+) {
+    if let Some(v) = value {
+        if !has_header(existing, name) && !has_header(out, name) {
+            out.push((name.to_string(), v.to_string()));
+        }
+    }
+}
+
+/// 按字节上限截断文本（字符边界安全），返回预览与是否截断。
+fn truncate_text(text: &str, max_bytes: usize) -> (String, bool) {
+    if text.len() <= max_bytes {
+        return (text.to_string(), false);
+    }
+    let mut end = max_bytes;
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    (text[..end].to_string(), true)
+}
+
+/// 追加一行 multipart 快照预览；累计超上限后不再追加（快照侧仍会截断标记）。
+/// 单行本身可能超上限（超大文本字段），由 `truncate_text` 兜底。
+fn push_preview_line(out: &mut String, line: &str) {
+    if out.len() >= SNAPSHOT_BODY_BYTES {
+        return;
+    }
+    if !out.is_empty() {
+        out.push('\n');
+    }
+    out.push_str(line);
+}
+
+/// Cookie 头拆成 `(name, value)`（Jar 回放形如 `a=1; b=2`）。
+fn parse_cookie_pairs(header: Option<reqwest::header::HeaderValue>) -> Vec<(String, String)> {
+    let Some(Ok(text)) = header.map(|v| v.to_str().map(|s| s.to_string())) else {
+        return Vec::new();
+    };
+    text.split(';')
+        .filter_map(|pair| {
+            pair.split_once('=')
+                .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
+        })
+        .filter(|(k, _)| !k.is_empty())
+        .collect()
 }
 
 /// 认证字段转 Header / Query。
@@ -706,6 +885,9 @@ async fn send_request_inner(
     apply_auth(&mut headers, &mut query_extra, &spec.auth, &sign_ctx).await?;
     append_query(&mut url, &query_extra);
 
+    // 实际发出形态快照（前端「请求」页签）：URL / 头 / Cookie / 体均已定型。
+    let request = build_request_snapshot(method, &url, &headers, &payload, spec.disable_cookies);
+
     // 签名阶段建好的 payload 复用为首轮请求体（原来 Digest 循环内再建一次：
     // 重复序列化 / 重复开文件）；仅 Digest 401 重发时才重建——流式 body
     //（文件流 / multipart）一次性不可复用，重建 = 重新打开，语义一致。
@@ -760,6 +942,7 @@ async fn send_request_inner(
                 body,
                 content_type,
                 content_length,
+                ..
             } => {
                 if let Some(ct) = &content_type {
                     if !has_header(&headers, "content-type") {
@@ -862,6 +1045,7 @@ async fn send_request_inner(
         size_bytes,
         cookies,
         truncated,
+        request: Some(request),
     })
 }
 
@@ -878,6 +1062,110 @@ pub fn describe_http_error(e: &reqwest::Error) -> String {
 mod tests {
     use super::*;
     use miyo_core::model::RequestSpec;
+
+    /// 快照必须反映「实际发出」的形态：自动 Content-Type、渲染后的 URL、体预览。
+    #[test]
+    fn request_snapshot_reflects_effective_request() {
+        let url = Url::parse("https://api.example.com/users?page=2").unwrap();
+        let headers = vec![("X-Token".to_string(), "tok".to_string())];
+        let payload = Payload::Bytes(b"{\"a\":1}".to_vec(), Some("application/json".into()));
+        let snap = build_request_snapshot(HttpMethod::POST, &url, &headers, &payload, true);
+        assert_eq!(snap.method, "POST");
+        assert_eq!(snap.url, "https://api.example.com/users?page=2");
+        assert!(snap
+            .headers
+            .contains(&("X-Token".to_string(), "tok".to_string())));
+        assert!(snap
+            .headers
+            .contains(&("Content-Type".to_string(), "application/json".to_string())));
+        // 自动值不得重复：同名头只出现一次
+        assert_eq!(
+            snap.headers
+                .iter()
+                .filter(|(k, _)| k.eq_ignore_ascii_case("content-type"))
+                .count(),
+            1
+        );
+        assert!(snap.cookies.is_empty()); // disable_cookies 分支：不读 Cookie Jar
+        assert_eq!(snap.body, "{\"a\":1}");
+        assert!(!snap.body_omitted);
+        assert!(snap.url_template.is_none()); // 模板由调用方（Tauri 层）填入
+    }
+
+    /// 超长体只留 64 KB 预览并标记截断；流式体给摘要，不落地整段内容。
+    #[test]
+    fn request_snapshot_truncates_body_and_summarizes_stream() {
+        let url = Url::parse("https://api.example.com/upload").unwrap();
+        let big = vec![b'x'; SNAPSHOT_BODY_BYTES + 32];
+        let snap = build_request_snapshot(
+            HttpMethod::POST,
+            &url,
+            &[],
+            &Payload::Bytes(big, None),
+            true,
+        );
+        assert!(snap.body_omitted);
+        assert_eq!(snap.body.len(), SNAPSHOT_BODY_BYTES);
+
+        let stream = Payload::Stream {
+            body: reqwest::Body::from("abc".to_string()),
+            content_type: Some("multipart/form-data".into()),
+            content_length: Some(1234),
+            preview: None,
+        };
+        let snap = build_request_snapshot(HttpMethod::POST, &url, &[], &stream, true);
+        assert!(snap.body_omitted);
+        assert!(snap.body.contains("1234"));
+        assert!(snap
+            .headers
+            .contains(&("Content-Length".to_string(), "1234".to_string())));
+    }
+
+    /// 无文件的 form-data（纯文本字段）必须能看清实际参数，而不是流式摘要：
+    /// multipart 体在构造阶段就把可读形态存进快照。
+    #[tokio::test]
+    async fn multipart_snapshot_lists_text_fields() {
+        let spec = RequestSpec {
+            body: BodySpec::Multipart {
+                fields: vec![
+                    MultipartField {
+                        key: "id".into(),
+                        value_type: MultipartValueType::Text,
+                        value: "88880034".into(),
+                        enabled: true,
+                    },
+                    MultipartField {
+                        key: "status".into(),
+                        value_type: MultipartValueType::Text,
+                        value: "2".into(),
+                        enabled: true,
+                    },
+                    // 禁用字段既不发送也不入快照
+                    MultipartField {
+                        key: "off".into(),
+                        value_type: MultipartValueType::Text,
+                        value: "skip".into(),
+                        enabled: false,
+                    },
+                ],
+            },
+            ..Default::default()
+        };
+        let payload = build_payload(&spec).await.unwrap();
+        let url = Url::parse("https://cloud.example.cn/index.php?c=book&a=togglestatus").unwrap();
+        let snap = build_request_snapshot(HttpMethod::POST, &url, &[], &payload, true);
+        assert_eq!(snap.body, "id=88880034\nstatus=2", "实际字段应逐个可见");
+        assert!(!snap.body_omitted);
+        assert!(
+            !snap.body.contains("边读边发"),
+            "文本表单不应退化为流式摘要"
+        );
+        // boundary 仍在 Content-Type 上（服务端需要），但不再当成正文主体
+        assert!(snap
+            .headers
+            .iter()
+            .any(|(k, v)| k == "Content-Type" && v.starts_with("multipart/form-data; boundary=")));
+    }
 
     /// 极简本地 HTTP 服务。
     fn start_server(

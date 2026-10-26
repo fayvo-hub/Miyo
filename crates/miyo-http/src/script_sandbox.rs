@@ -1031,6 +1031,7 @@ mod tests {
             size_bytes: 15,
             cookies: Vec::new(),
             truncated: false,
+            request: None,
         };
         let snapshot = ScriptResponseData::from_response(&resp);
         assert_eq!(snapshot.status, 404);
