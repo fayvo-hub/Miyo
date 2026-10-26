@@ -1,14 +1,18 @@
 /**
  * BodyPanel 单测：raw JSON 编辑 + 格式化的数据流（回归：格式化使用了修改前的旧内容）。
  */
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { reactive } from 'vue'
 import BodyPanel from './BodyPanel.vue'
 import { useLocaleStore } from '../stores/locale'
 import { makeDraft } from '../testUtils/draftFixture'
+import { resetBodyDrafts } from '../utils/bodyDrafts'
 import type { Endpoint } from '../types/miyoApi'
+
+// 草稿表按接口 id 隔离且活在模块作用域：夹具 id 固定，用例间必须重置。
+beforeEach(resetBodyDrafts)
 
 function jsonDraft(raw: string): Endpoint {
   const d = makeDraft()
@@ -281,5 +285,113 @@ describe('BodyPanel：raw JSON 编辑与格式化', () => {
     expect(jsonEditors).toHaveLength(1)
     // 主 query textarea（flex:1）吸收剩余高度，variables 只贴内容生长
     expect(jsonEditors[0]!.props('autoHeight')).toBe(true)
+  })
+})
+
+/**
+ * 回归：发送内容恒等于「当前选中类型下方的参数」。
+ *
+ * 页签是数据的独立分区：raw 文本、form-data 字段、urlencoded 字段、GraphQL query
+ * 各自保存，互不覆盖；切换类型只换 request.body 的引用，不靠推导回填（推导会给出
+ * 空 json 文本 / 空字段表，正是「输入框里有参数、带出去的却不对」的来源）。
+ * 草稿按接口隔离且跨组件卸载存活（BodyPanel 切到 Params/Headers 页签即重建）。
+ */
+describe('BodyPanel：发送内容 = 当前类型自己的参数', () => {
+  function bodyTabOf(wrapper: ReturnType<typeof mountPanel>, label: string) {
+    return wrapper.findAll('.seg-item').find((b) => b.text() === label)!
+  }
+  function ctOf(d: Endpoint) {
+    return d.request.headers.filter((h) => h.key.toLowerCase() === 'content-type').map((h) => h.value)
+  }
+
+  it('raw(JSON) 参数 → form-data → 切回 raw：文本与 Content-Type 都在', async () => {
+    const draft = jsonDraft('{"user":"alice"}')
+    const wrapper = mountPanel(draft)
+
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+    expect((draft.request.body as { mode: string }).mode).toBe('multipart')
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+
+    expect(rawOf(draft)).toBe('{"user":"alice"}')
+    expect(ctOf(draft)).toEqual(['application/json'])
+  })
+
+  it('form-data 字段 → raw → 切回 form-data：字段仍在（两种类型互不覆盖）', async () => {
+    const draft = reactive(makeDraft())
+    draft.request.body = {
+      mode: 'multipart',
+      fields: [{ key: 'avatar', value_type: 'text', value: 'a.png', enabled: true }],
+    }
+    const wrapper = mountPanel(draft)
+
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+    expect(draft.request.body).toEqual({ mode: 'text', raw: '' })
+    await wrapper.find('textarea.body-input').setValue('id=7')
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+
+    expect(draft.request.body).toMatchObject({
+      mode: 'multipart',
+      fields: [{ key: 'avatar', value: 'a.png' }],
+    })
+    expect((wrapper.find('input.mp-key').element as HTMLInputElement).value).toBe('avatar')
+
+    // 再切回 raw：刚填的文本也还在（互不覆盖）
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+    expect(rawOf(draft)).toBe('id=7')
+  })
+
+  it('Content-Type 跟随当前类型，切回后恢复', async () => {
+    const draft = jsonDraft('{"a":1}')
+    const wrapper = mountPanel(draft)
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+    // form-data 的 boundary 由执行器生成，显式头必须移除
+    expect(ctOf(draft)).toEqual([])
+    await bodyTabOf(wrapper, 'x-www-form-urlencoded').trigger('click')
+    expect(ctOf(draft)).toEqual(['application/x-www-form-urlencoded'])
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+    expect(ctOf(draft)).toEqual(['application/json'])
+  })
+
+  it('cURL 导入的 urlencoded 文本（raw + Text 子类型）：切走再切回不被换成 text/plain', async () => {
+    const draft = reactive(makeDraft())
+    // 复现用户导入：-d 'a=1&b=2' + Content-Type: application/x-www-form-urlencoded
+    draft.request.body = { mode: 'text', raw: 'a=1&b=2' }
+    draft.request.headers.push({
+      key: 'Content-Type',
+      value: 'application/x-www-form-urlencoded',
+      enabled: true,
+      description: '',
+    })
+    const wrapper = mountPanel(draft)
+
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+
+    expect(rawOf(draft)).toBe('a=1&b=2')
+    expect((draft.request.body as { mode: string }).mode).toBe('text')
+    expect(ctOf(draft)).toEqual(['application/x-www-form-urlencoded'])
+  })
+
+  it('form-data ↔ x-www-form-urlencoded 仍实时互转字段', async () => {
+    const draft = reactive(makeDraft())
+    draft.request.body = {
+      mode: 'multipart',
+      fields: [{ key: 'k', value_type: 'text', value: 'v', enabled: true }],
+    }
+    const wrapper = mountPanel(draft)
+    await bodyTabOf(wrapper, 'x-www-form-urlencoded').trigger('click')
+    expect(draft.request.body).toMatchObject({ mode: 'urlencoded', fields: [{ key: 'k', value: 'v' }] })
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+    expect(draft.request.body).toMatchObject({ mode: 'multipart', fields: [{ key: 'k', value: 'v' }] })
+  })
+
+  it('键入未落盘（150ms 内）就切类型：内容仍保留', async () => {
+    const draft = reactive(makeDraft())
+    draft.request.body = { mode: 'text', raw: '' }
+    const wrapper = mountPanel(draft)
+    await wrapper.find('textarea.body-input').setValue('id=7')
+    await bodyTabOf(wrapper, 'form-data').trigger('click')
+    await bodyTabOf(wrapper, 'raw').trigger('click')
+    expect(rawOf(draft)).toBe('id=7')
   })
 })
