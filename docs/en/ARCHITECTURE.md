@@ -164,7 +164,8 @@ Frontend EndpointEditor (Send)
   → target server
   ← response → miyo-http parses (status/headers/body/duration/size)
   ← also written to miyo-storage request_histories
-  ← ExecuteResponse returned → frontend ResponsePanel renders
+  ← ExecuteResponse returned (with the actually-sent RequestSnapshot, never persisted)
+  ← → frontend ResponsePanel renders the response and the Request tab
 ```
 
 Requests can be cancelled anytime (`cancel_request`, abort token); downloads stream to disk.

@@ -8,7 +8,7 @@ use miyo_core::model::{
     AuthSpec, BodySpec, DynamicSignatureConfig, HttpMethod, KeyValue, RequestHistory, RequestSpec,
 };
 use miyo_core::VariableMap;
-use miyo_http::client::HttpResponseData;
+use miyo_http::client::{HttpResponseData, RequestSnapshot};
 use miyo_storage::repository as repo;
 
 use crate::error::{CommandError, CommandResult};
@@ -44,6 +44,9 @@ pub struct ExecuteResponse {
     pub truncated: bool,
     /// `body` 是否仅为 IPC 预览（超限时截断；全文经 `get_response_body` 按需取回）。
     pub body_omitted: bool,
+    /// 本次请求实际发出的形态（临时随响应返回，不落历史）：
+    /// 前端「请求」页签据此定位 URL / 头 / Cookie / 体的问题。
+    pub request: Option<RequestSnapshot>,
 }
 
 /// IPC 正文预览上限：webview 对 invoke 返回值做同步 `JSON.parse`，
@@ -131,6 +134,11 @@ pub async fn execute_request(
         let full = resp.body_text();
         let (body, body_omitted) = cap_ipc_body(&full);
         let content_type = resp.content_type();
+        // 请求快照补上渲染前模板：前端据此对照变量替换结果（一致时不展示）。
+        let mut request = resp.request;
+        if let Some(snap) = request.as_mut() {
+            snap.url_template = Some(args.url.clone());
+        }
         let response = ExecuteResponse {
             status: resp.status,
             headers: resp.headers,
@@ -140,6 +148,7 @@ pub async fn execute_request(
             size_bytes: resp.size_bytes,
             truncated: resp.truncated,
             body_omitted,
+            request,
         };
 
         // 5.1 被截断的全文入缓存：前端复制 / 保存示例按 request_id 取回。
@@ -624,6 +633,7 @@ mod tests {
             size_bytes: 2,
             truncated: false,
             body_omitted: false,
+            request: None,
         };
         let history = build_history(
             Uuid::new_v4(),

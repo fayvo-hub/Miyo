@@ -271,6 +271,74 @@ describe('ResponsePanel：卸载间隙稳定性（回归：emitsOptions 崩溃�
   })
 })
 
+/** 请求快照样本（Rust `RequestSnapshot` 镜像：变量渲染 / 认证注入后的终值）。 */
+function makeSnapshot(): NonNullable<ExecuteResponse['request']> {
+  return {
+    method: 'POST',
+    url: 'https://api.example.com/v1/users?page=2',
+    url_template: 'https://{{host}}/v1/users?page={{page}}',
+    headers: [
+      ['content-type', 'application/json'],
+      ['authorization', 'Bearer token'],
+    ],
+    cookies: [['sid', 'abc123']],
+    body: '{"name":"miyo"}',
+    body_omitted: false,
+  }
+}
+
+describe('ResponsePanel：「请求」页签（本次实际发出的报文）', () => {
+  beforeEach(() => {
+    stubScrollIntoView()
+    setActivePinia(createPinia())
+    useLocaleStore().setMode('zh')
+  })
+
+  it('无请求快照（旧后端 / gRPC）时不占位：页签列表无「请求」', () => {
+    const wrapper = mount(ResponsePanel, { props: { response: makeResponse('{}') } })
+    expect(wrapper.findAll('.tab-label').map((n) => n.text())).not.toContain('请求')
+    wrapper.unmount()
+  })
+
+  it('展示 URL / 模板 / 请求头 / Cookie / 请求体', async () => {
+    const wrapper = mount(ResponsePanel, {
+      props: { response: { ...makeResponse('{}'), request: makeSnapshot() } },
+    })
+    expect(wrapper.findAll('.tab-label').at(-1)!.text()).toBe('请求')
+    await wrapper.findAll('.tab').at(-1)!.trigger('click')
+    expect(wrapper.find('.rp-req-url').text()).toBe('https://api.example.com/v1/users?page=2')
+    expect(wrapper.find('.rp-req-template').text()).toContain('https://{{host}}/v1/users')
+    // 2 个请求头 + 1 个 Cookie 共用同一 key/value 行样式
+    expect(wrapper.findAll('.rp-header-row')).toHaveLength(3)
+    expect(wrapper.text()).toContain('Bearer token')
+    expect(wrapper.find('.rp-req-body').text()).toBe('{"name":"miyo"}')
+    wrapper.unmount()
+  })
+
+  it('请求体被截断时给出提示', async () => {
+    const snap = makeSnapshot()
+    snap.body_omitted = true
+    const wrapper = mount(ResponsePanel, {
+      props: { response: { ...makeResponse('{}'), request: snap } },
+    })
+    await wrapper.findAll('.tab').at(-1)!.trigger('click')
+    expect(wrapper.find('.rp-req-body').exists()).toBe(true)
+    expect(wrapper.find('.rp-note').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('URL 模板与实际一致时不展示模板行', async () => {
+    const snap = makeSnapshot()
+    snap.url_template = snap.url
+    const wrapper = mount(ResponsePanel, {
+      props: { response: { ...makeResponse('{}'), request: snap } },
+    })
+    await wrapper.findAll('.tab').at(-1)!.trigger('click')
+    expect(wrapper.find('.rp-req-template').exists()).toBe(false)
+    wrapper.unmount()
+  })
+})
+
 function createInput(): HTMLInputElement {
   const el = document.createElement('input')
   el.className = 'fake'
