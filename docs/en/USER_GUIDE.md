@@ -115,7 +115,7 @@ Workspace layout:
 | Open an endpoint | Click it in the sidebar → opens as a tab (clicking an open tab activates it) |
 | New endpoint | The `+` button in the sidebar toolbar, or "New request" from a folder's `⋯` menu |
 | Edit params | **Params** tab adds query parameters; **Headers** adds request headers (enable toggles whether each is sent) |
-| Edit body | **Body** tab: none / form-data / urlencoded / raw (JSON, text…) / binary / GraphQL; JSON mode has pretty/minify/copy actions |
+| Edit body | **Body** tab: none / form-data / urlencoded / raw (JSON, text…) / binary / GraphQL; JSON mode has pretty/minify/copy actions. Each mode keeps its own parameters and the request sends the parameters of the mode currently selected (switching modes, or visiting another config tab and coming back, keeps every mode's fields and text) |
 | Auth | **Auth** tab picks the scheme (None / Basic / Bearer / API Key / OAuth2 — all four OAuth2 flows: authorization code / client credentials / password / implicit; tokens attach automatically) |
 | Save | Click "Save"; unsaved changes are flagged with **●** on the tab title, and switching tabs never loses drafts |
 

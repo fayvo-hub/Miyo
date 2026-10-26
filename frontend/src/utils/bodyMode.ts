@@ -95,6 +95,11 @@ export function applyRawSubtype(req: RequestSpec, subtype: RawSubtype): void {
   restoreRaw(req, subtype, raw)
 }
 
+/** raw 子类型对应的 MIME。 */
+export function rawMime(subtype: RawSubtype): string {
+  return RAW_SUBTYPES.find((s) => s.value === subtype)?.mime ?? 'text/plain'
+}
+
 /**
  * 还原 raw（子类型 + 文本显式指定）：切到 none 会整体替换 body 并移除
  * Content-Type，切回 raw 时仅靠推导只能默认 text——调用方传入离开前
@@ -102,7 +107,7 @@ export function applyRawSubtype(req: RequestSpec, subtype: RawSubtype): void {
  */
 export function restoreRaw(req: RequestSpec, subtype: RawSubtype, raw: string): void {
   req.body = subtype === 'json' ? { mode: 'json', raw } : { mode: 'text', raw }
-  syncContentType(req.headers, RAW_SUBTYPES.find((s) => s.value === subtype)?.mime ?? 'text/plain')
+  syncContentType(req.headers, rawMime(subtype))
 }
 
 /** KeyValue（urlencoded 行）→ MultipartField（文本 part）。 */

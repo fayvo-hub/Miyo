@@ -121,7 +121,7 @@
 | 打开接口 | 点击左侧目录中的接口 → 在顶部标签栏打开（再次点击已在标签中则激活） |
 | 新建接口 | 标签栏「＋ 新建」，或目录中新建文件夹/接口 |
 | 编辑参数 | **Params** 标签插入 Query 参数；**Headers** 加请求头（启用开关控制是否随请求发送） |
-| 编辑 Body | **Body** 标签 6 种模式：none / form-data / x-www-form-urlencoded / raw（JSON/Text）/ binary（本地文件路径，后端读字节发送）/ GraphQL（query + variables + operationName），JSON 模式有格式化/压缩/复制按钮 |
+| 编辑 Body | **Body** 标签 6 种模式：none / form-data / x-www-form-urlencoded / raw（JSON/Text）/ binary（本地文件路径，后端读字节发送）/ GraphQL（query + variables + operationName），JSON 模式有格式化/压缩/复制按钮；每种模式的参数各自独立保存，发送恒用当前选中模式的参数（切换模式、或切到其他配置标签再回来，各模式填好的字段与文本都还在） |
 | 认证 | **Auth** 标签选择认证方式（None / Basic / Bearer / API Key / OAuth2，OAuth2 覆盖授权码 / 客户端凭证 / 密码 / 隐式四模式，令牌自动附加） |
 | 保存 | 点「保存」；未保存修改在标签标题上以 **●** 标记，切换标签不会丢失草稿 |
 
