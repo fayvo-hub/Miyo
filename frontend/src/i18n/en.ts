@@ -412,7 +412,6 @@ export const en: Record<ZhKey, string> = {
   'response.reqNoCookies': 'No cookies sent with this request',
   'response.reqNoBody': 'No request body',
   'response.reqBodyTruncated': 'Body over 64 KB — showing the first 64 KB',
-  'response.reqUnavailable': 'Request details unavailable (not sent through the HTTP engine)',
 
   'body.none': 'None',
   'body.textPh': 'Plain text',

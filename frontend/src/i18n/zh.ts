@@ -408,7 +408,6 @@ export const zh = {
   'response.reqNoCookies': '本次请求未携带 Cookie',
   'response.reqNoBody': '本次请求无请求体',
   'response.reqBodyTruncated': '请求体超过 64 KB，仅展示前 64 KB',
-  'response.reqUnavailable': '本次请求详情不可用（请求未经过 HTTP 引擎发送）',
 
   'body.none': '无',
   'body.textPh': '纯文本内容',
