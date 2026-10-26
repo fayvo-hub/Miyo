@@ -1494,7 +1494,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
       spec = { ...spec, auth: { ...auth, token: { ...base, access_token: token } as OAuth2Token } }
     }
     const rid = requestId ?? crypto.randomUUID()
-    const ms = timeoutMs ?? endpoint.request.timeout_ms ?? null
+    // 超时解析与后端 resolve_timeout_ms 保持一致：调用方传入 → 接口级 → 全局
+    // （全局未配置时即内置默认 300s，见 refreshGlobalTimeoutMs）。原来只看接口级
+    // 字段，导致「留空用全局」的接口在前端不设 timer，而旧接口若残留 30000 又会
+    // 提前 30s 取消，与设置页展示的全局值不符。
+    const ms = timeoutMs ?? endpoint.request.timeout_ms ?? globalTimeoutMs.value ?? FALLBACK_GLOBAL_TIMEOUT_MS
     let timer: ReturnType<typeof setTimeout> | undefined
     let timedOut = false
     if (ms && ms > 0) {

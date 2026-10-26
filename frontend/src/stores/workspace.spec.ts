@@ -50,6 +50,12 @@ const backend = vi.hoisted(() => {
   const historyCalls: (number | undefined)[] = []
   /** executeRequest 收到的调用参数（断言向后端送出的 URL）。 */
   const execCalls: { url: string; spec: unknown }[] = []
+  /** cancelRequest 收到的 request_id（超时用例断言前端确实取消了在途请求）。 */
+  const cancelCalls: string[] = []
+  /** 注入 executeRequest 行为（超时用例让其悬挂直到 cancel）。 */
+  let executeImpl: ((args: { url: string; spec: unknown }) => Promise<unknown>) | null = null
+  /** 注入 cancelRequest 行为（通常用来 reject 在途的 executeRequest）。 */
+  let cancelImpl: ((id: string) => void) | null = null
   let historyImpl:
     | ((projectId: string, limit?: number, endpointId?: string | null) => Promise<{ id: string }[]>)
     | null = null
@@ -64,6 +70,15 @@ const backend = vi.hoisted(() => {
     historyRows,
     historyCalls,
     execCalls,
+    cancelCalls,
+    setExecuteImpl: (fn: ((args: { url: string; spec: unknown }) => Promise<unknown>) | null) => {
+      executeImpl = fn
+    },
+    executeImpl: () => executeImpl,
+    setCancelImpl: (fn: ((id: string) => void) | null) => {
+      cancelImpl = fn
+    },
+    cancelImpl: () => cancelImpl,
     setHistoryImpl: (
       fn: ((projectId: string, limit?: number, endpointId?: string | null) => Promise<{ id: string }[]>) | null,
     ) => {
@@ -121,6 +136,9 @@ vi.mock('../composables/useMiyoApi', () => ({
     /** 记录 executeRequest 收到的 url/spec，供「用例运行是否代入路径变量」断言。 */
     executeRequest: vi.fn().mockImplementation(async (args: { url: string; spec: unknown }) => {
       backend.execCalls.push(args)
+      // 超时用例需悬挂请求直到 cancelRequest：由测试通过 setExecuteImpl 注入。
+      const impl = backend.executeImpl()
+      if (impl) return impl(args)
       return {
         status: 200,
         status_text: 'OK',
@@ -131,6 +149,11 @@ vi.mock('../composables/useMiyoApi', () => ({
         content_type: 'application/json',
         received_at: new Date().toISOString(),
       }
+    }),
+    cancelRequest: vi.fn().mockImplementation(async (id: string) => {
+      backend.cancelCalls.push(id)
+      const impl = backend.cancelImpl()
+      impl?.(id)
     }),
   }),
 }))
@@ -634,6 +657,85 @@ describe('全局请求超时：未配置时回退后端内置默认', () => {
     await vi.waitFor(() => {
       expect(store.globalTimeoutMs).toBe(FALLBACK_GLOBAL_TIMEOUT_MS)
     })
+  })
+
+  /**
+   * 回归：send() 的超时解析必须与后端 resolve_timeout_ms 一致（接口级 → 全局）。
+   *
+   * 旧 bug：`const ms = timeoutMs ?? endpoint.request.timeout_ms ?? null`，从不看
+   * 全局设置。后果一：接口留空（跟随全局）时前端不设 timer；后果二：接口残留旧
+   * 默认 30000 时按 30s 提前取消，与设置页展示的 300s 不符（用户实测）。
+   */
+  it('接口未设超时：前端按全局值取消（悬挂请求触发 cancelRequest）', async () => {
+    vi.useFakeTimers()
+    try {
+      const store = useWorkspaceStore()
+      await vi.waitFor(() => expect(store.globalTimeoutMs).toBe(FALLBACK_GLOBAL_TIMEOUT_MS))
+
+      // 悬挂请求，直到 cancelRequest 才 reject（模拟弱网挂起）
+      backend.cancelCalls.length = 0
+      backend.setExecuteImpl(
+        (args) =>
+          new Promise((_res, rej) => {
+            backend.setCancelImpl(() => {
+              const e = new Error('cancelled') as Error & { code?: string }
+              e.code = 'CANCELLED'
+              rej(e)
+            })
+            void args
+          }),
+      )
+      const ep = makeEndpoint('ep-global', 'p-a', 'global')
+      // makeEndpoint 夹具默认 30000（旧夹具），这里显式置空以走全局兜底
+      ep.request.timeout_ms = null
+      const p = store.send(ep, 'http://x/global')
+      p.catch(() => {})
+
+      // 未到全局值：不取消
+      await vi.advanceTimersByTimeAsync(FALLBACK_GLOBAL_TIMEOUT_MS - 1)
+      expect(backend.cancelCalls).toHaveLength(0)
+
+      // 到达全局值：取消
+      await vi.advanceTimersByTimeAsync(1)
+      expect(backend.cancelCalls).toHaveLength(1)
+      await expect(p).rejects.toThrow(String(FALLBACK_GLOBAL_TIMEOUT_MS))
+    } finally {
+      backend.setExecuteImpl(null)
+      backend.setCancelImpl(null)
+      vi.useRealTimers()
+    }
+  })
+
+  it('接口级遗留 30000：仍按 30s 取消（显式覆盖优先，与后端一致）', async () => {
+    vi.useFakeTimers()
+    try {
+      const store = useWorkspaceStore()
+      await vi.waitFor(() => expect(store.globalTimeoutMs).toBe(FALLBACK_GLOBAL_TIMEOUT_MS))
+
+      backend.cancelCalls.length = 0
+      backend.setExecuteImpl(
+        () =>
+          new Promise((_res, rej) => {
+            backend.setCancelImpl(() => {
+              const e = new Error('cancelled') as Error & { code?: string }
+              e.code = 'CANCELLED'
+              rej(e)
+            })
+          }),
+      )
+      const ep = makeEndpoint('ep-30k', 'p-a', 'legacy')
+      ep.request.timeout_ms = 30000
+      const p = store.send(ep, 'http://x/legacy')
+      p.catch(() => {})
+
+      await vi.advanceTimersByTimeAsync(30_000)
+      expect(backend.cancelCalls).toHaveLength(1)
+      await expect(p).rejects.toThrow('30000')
+    } finally {
+      backend.setExecuteImpl(null)
+      backend.setCancelImpl(null)
+      vi.useRealTimers()
+    }
   })
 })
 
