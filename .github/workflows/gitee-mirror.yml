@@ -9,6 +9,9 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  # 手动重跑：mirror 因网络抖动失败时（GitHub runner 到 Gitee 偶发 SSL 超时），
+  # 直接在 Actions 页一键重试，无需再靠空提交触发。
+  workflow_dispatch:
 
 jobs:
   mirror:
@@ -17,7 +20,42 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Push main + tags to Gitee
+      # 海外 runner 到 gitee.com 偶发 SSL 卡死（曾整段挂 5 分钟后 timeout）。
+      # 用 http.lowSpeedLimit/Time 让它快速失败，配合下方重试而不是干等默认超时。
+      - name: Configure git (mirror-friendly timeouts + retry)
         run: |
-          git push --force "https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/weihubeats/Miyo.git" main
-          git push --force "https://oauth2:${{ secrets.GITEE_TOKEN }}@gitee.com/weihubeats/Miyo.git" --tags
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 30
+          git config --global http.postBuffer 524288000
+      - name: Push main to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "::group::push main (attempt $i)"
+            if git push --force "https://oauth2:${GITEE_TOKEN}@gitee.com/weihubeats/Miyo.git" main; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "attempt $i failed; retrying in 10s"
+            sleep 10
+          done
+          echo "::error::push main failed after 3 attempts"
+          exit 1
+      - name: Push tags to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          for i in 1 2 3; do
+            echo "::group::push tags (attempt $i)"
+            if git push --force "https://oauth2:${GITEE_TOKEN}@gitee.com/weihubeats/Miyo.git" --tags; then
+              echo "::endgroup::"
+              exit 0
+            fi
+            echo "::endgroup::"
+            echo "attempt $i failed; retrying in 10s"
+            sleep 10
+          done
+          echo "::error::push tags failed after 3 attempts"
+          exit 1
