@@ -222,6 +222,7 @@ export const en: Record<ZhKey, string> = {
   'workspace.importCurl': 'Import cURL',
   'workspace.importDoc': 'Import APIs (Postman / Swagger)',
   'workspace.agentImported': 'AI Agent imported "{name}"',
+  'workspace.backupRestored': 'Backup restored as "{name}", added to project tabs',
   'workspace.untitled': 'Untitled',
   'workspace.projectNameRequired': 'Project name is required',
   'workspace.projectCreated': 'Project created',

@@ -270,6 +270,70 @@ describe('workspace store 多项目快照切换', () => {
   })
 })
 
+describe('备份恢复后刷新（回归：不重启也能看到新项目）', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useLocaleStore().setMode('zh')
+    backend.projects.length = 0
+    backend.endpointsByProject.clear()
+    backend.envsByProject.clear()
+    backend.setActive(null)
+    localStorage.removeItem?.('miyo.open-projects')
+  })
+
+  it('恢复出的全新项目追加为标签，当前项目保持激活并重载自身数据', async () => {
+    const a = makeProject('p-a', '项目A')
+    backend.projects.push(a)
+    backend.endpointsByProject.set('p-a', [makeEndpoint('ep-1', 'p-a', 'users')])
+    backend.envsByProject.set('p-a', [])
+
+    const store = useWorkspaceStore()
+    backend.setActive('p-a')
+    await store.init()
+    expect(store.openProjects.map((t) => t.id)).toEqual(['p-a'])
+
+    // 模拟 backupRestore：新项目已落库（新 id），且当前项目新增了一个接口
+    const restored = makeProject('p-restored', 'pay')
+    backend.projects.push(restored)
+    backend.endpointsByProject.set('p-a', [
+      makeEndpoint('ep-1', 'p-a', 'users'),
+      makeEndpoint('ep-2', 'p-a', 'orders'),
+    ])
+
+    await store.refreshAfterRestore()
+
+    // 新项目进标签栏，当前项目未被切换
+    expect(store.project?.id).toBe('p-a')
+    expect(store.openProjects.map((t) => t.id)).toEqual(['p-a', 'p-restored'])
+    // 当前项目数据重载（能看到恢复合并进来的新接口）
+    expect(store.endpoints.map((e) => e.id)).toEqual(['ep-1', 'ep-2'])
+  })
+
+  it('恢复替换掉的旧项目从标签栏剔除', async () => {
+    backend.projects.push(makeProject('p-a', '项目A'), makeProject('p-dead', '旧项目'))
+    backend.endpointsByProject.set('p-a', [])
+    backend.endpointsByProject.set('p-dead', [])
+    backend.envsByProject.set('p-a', [])
+    backend.envsByProject.set('p-dead', [])
+
+    const store = useWorkspaceStore()
+    backend.setActive('p-a')
+    await store.init()
+    store.openProjects.push({ id: 'p-dead', name: '旧项目' })
+    expect(store.openProjects.map((t) => t.id)).toEqual(['p-a', 'p-dead'])
+
+    // 旧项目已不在后端项目集中（被恢复替换）
+    backend.projects.splice(
+      backend.projects.findIndex((p) => p.id === 'p-dead'),
+      1,
+    )
+    await store.refreshAfterRestore()
+
+    expect(store.project?.id).toBe('p-a')
+    expect(store.openProjects.map((t) => t.id)).toEqual(['p-a'])
+  })
+})
+
 describe('moveEndpoint：移动后打开草稿的 folder_id / sort_order 同步', () => {
   beforeEach(() => {
     // 文案经 i18n 取词，锁定中文（jsdom 默认语言为英文）

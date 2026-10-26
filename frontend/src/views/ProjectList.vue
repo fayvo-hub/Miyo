@@ -357,6 +357,16 @@ function onImported(project: Project): void {
   counts.value[project.id] = 0
 }
 
+/** 设置页备份恢复成功：新项目已落库，重取列表让它在首页立即可见（无需重启）。 */
+function onRestored(projectId: string): void {
+  void load().then(() => {
+    // 恢复项目按 updated_at 排最前：滚动到可视区并短暂高亮，避免用户找不到
+    nextTick(() => {
+      document.querySelector(`[data-project-id="${projectId}"]`)?.scrollIntoView({ block: 'nearest' })
+    })
+  })
+}
+
 // ---------- 拖拽导入（Dropzone） ----------
 // Tauri 拦截了 HTML5 drop 事件（dragDropEnabled），文件拖放只提供物理坐标 +
 // 路径：监听 webview 拖拽事件，命中 Dropzone 区域时读取文件内容走导入弹窗。
@@ -746,7 +756,7 @@ useWindowDrag(topBarEl)
       @close="showImport = false"
     />
 
-    <SettingsDialog v-if="showSettings" @close="showSettings = false" />
+    <SettingsDialog v-if="showSettings" @close="showSettings = false" @restored="onRestored" />
   </div>
 </template>
 

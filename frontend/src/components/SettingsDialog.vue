@@ -51,7 +51,7 @@ import type { Environment, LogFile, Project, ProjectStat, SeqCounter } from '../
 // 环境管理是独立大弹窗：设置面板只在点「编辑 / 新建环境」时才需要它的 chunk。
 const EnvironmentManager = lazyComponent(() => import('./EnvironmentManager.vue'))
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: []; restored: [projectId: string] }>()
 
 const api = useMiyoApi()
 const toast = useToast()
@@ -583,6 +583,8 @@ async function onImportFile(event: Event): Promise<void> {
     toast.success(t('settings.importRestored', { name: summary.name, endpoints: summary.endpoints, envs: summary.environments }), {
       message: extras.join(locale.resolved === 'zh' ? '；' : '; ') || undefined,
     })
+    // 恢复落库为「全新项目」：通知宿主刷新列表/工作区，否则需重启才能看到
+    emit('restored', summary.id)
     emit('close')
   } catch (err) {
     toast.error(t('settings.importFail'), { message: err instanceof Error ? err.message : String(err) })

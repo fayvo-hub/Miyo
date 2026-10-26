@@ -361,6 +361,33 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     await loadEnvironments()
   }
 
+  /**
+   * 备份恢复后刷新：恢复会落库为「全新项目」（新 id），当前工作区需重载
+   * 才能看到它，否则要重启应用。这里重取项目列表并入标签栏（新项目追加为
+   * 一个可切换的标签，当前项目保持激活，不打断用户当前上下文），同时重载
+   * 当前项目的文件夹 / 接口 / 环境——恢复的全局变量/参数是保守合并，可能
+   * 落到当前项目已展示的数据上。
+   */
+  async function refreshAfterRestore(): Promise<void> {
+    try {
+      const all = await api.getProjects()
+      const byId = new Map(all.map((p) => [p.id, p]))
+      // 标签栏对齐真实项目集：剔除已被恢复删除/替换的旧 id，保留顺序
+      const kept = openProjects.value.filter((t) => byId.has(t.id))
+      const names = new Map(kept.map((t) => [t.id, byId.get(t.id)!.name]))
+      openProjects.value = kept.map((t) => ({ id: t.id, name: names.get(t.id)! }))
+      // 备份唤醒的其他项目按 updated_at 追加为标签，方便直接切换
+      const seen = new Set(openProjects.value.map((t) => t.id))
+      for (const p of [...all].sort((a, b) => b.updated_at.localeCompare(a.updated_at))) {
+        if (!seen.has(p.id)) upsertOpenTab(p.id, p.name)
+      }
+      persistOpenProjects()
+    } catch {
+      // 项目列表拉取失败：保留现有标签，工作区仍尽力重载
+    }
+    await refresh()
+  }
+
   /** 切换到另一项目：当前项目 UI 态入快照，目标项目恢复快照或全新加载。
    *  草稿 / 打开的标签页 / 环境选择等在项目间来回切换均不丢失。 */
   async function switchProject(projectId: string): Promise<void> {
@@ -2092,6 +2119,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     openCurlDraft,
     applyCurlToDraft,
     importEndpoints,
+    refreshAfterRestore,
     send,
     loadEnvironments,
     setEnvironment,

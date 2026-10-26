@@ -218,6 +218,7 @@ export const zh = {
   'workspace.importCurl': '导入 cURL',
   'workspace.importDoc': '导入接口 (Postman / Swagger)',
   'workspace.agentImported': 'AI Agent 已导入接口「{name}」',
+  'workspace.backupRestored': '备份已恢复为「{name}」，已加入项目标签',
   'workspace.untitled': '未命名',
   'workspace.projectNameRequired': '项目名称不能为空',
   'workspace.projectCreated': '项目创建成功',

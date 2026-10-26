@@ -219,6 +219,17 @@ async function onSyncApplied(): Promise<void> {
   }
 }
 
+/** 设置页备份恢复成功：恢复为全新项目，重载工作区让新项目标签立即出现（无需重启）。 */
+async function onRestored(projectId: string): Promise<void> {
+  try {
+    await store.refreshAfterRestore()
+  } catch {
+    // loadError 已在 store 内写入（如有）；界面展示重试
+  }
+  const name = store.openProjects.find((t) => t.id === projectId)?.name
+  toast.info(t('workspace.backupRestored', { name: name ?? t('workspace.untitled') }))
+}
+
 async function exportOpenapi(): Promise<void> {
   if (!store.project) return
   try {
@@ -752,7 +763,7 @@ onBeforeUnmount(() => {
     />
     <ImportDialog v-if="showDocImport" @close="showDocImport = false" />
     <MockRuleDialog v-if="showMockRules" @close="showMockRules = false" />
-    <SettingsDialog v-if="showSettings" @close="showSettings = false" />
+    <SettingsDialog v-if="showSettings" @close="showSettings = false" @restored="onRestored" />
     <SyncDialog
       v-if="showSync"
       :open="showSync"
